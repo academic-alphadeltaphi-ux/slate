@@ -1,0 +1,83 @@
+{
+  "_read_me": [
+    "This is the shape of courses.json (setup copies it to Hub/_courses.json) — the one file that says which courses this slate keeps. Two made-up courses",
+    "show every field; copy the shape, never the content. `node scripts/courses.mjs check` says in plain words what is",
+    "wrong with a file, and `node scripts/courses.mjs write` turns it into the code the app reads. Leave a field out",
+    "when the syllabus does not say: a wrong weight or date is worse than a missing one, because it will be trusted.",
+    "Keys of `courses` are the code with a space before the number and the H1/Y1 suffix, as ACORN prints it.",
+    "Leave `calendar` out unless the outline gives other term dates: the UofT calendar is the default."
+  ],
+  "calendar": {
+    "fall": { "name": "Fall 2026", "start": "2026-09-07", "end": "2026-12-07", "reading": ["2026-10-26"] },
+    "winter": { "name": "Winter 2027", "start": "2027-01-04", "end": "2027-04-05", "reading": ["2027-02-15"] },
+    "noClass": ["2026-09-07", "2026-10-12", "2027-03-26"]
+  },
+  "courses": {
+    "ECO 100Y1": {
+      "id": 100001,
+      "code": "ECO100",
+      "name": "Introduction to Economics",
+      "term": "Y",
+      "color": "#2c3e6b",
+      "professor": "Prof. A. Example",
+      "url": "https://q.utoronto.ca/courses/100001",
+      "meetings": [
+        { "day": "Mon", "start": "13:00", "end": "15:00", "kind": "Lecture", "where": "SS 2117" },
+        { "day": "Wed", "start": "11:00", "end": "12:00", "kind": "Tutorial", "where": "SS 1073" }
+      ],
+      "tutorialLag": 1,
+      "textbook": "Ragan, Economics, 17th Canadian ed.",
+      "tests": [
+        { "date": "2026-10-19", "label": "Term test 1 · in class · 20%" },
+        { "date": "2027-02-08", "label": "Term test 2 · in class · 20%" }
+      ],
+      "grading": {
+        "components": [
+          { "key": "tests", "label": "Term tests", "match": "\\btest\\s*([12])\\b", "items": [
+            { "key": "t1", "label": "Term test 1", "date": "2026-10-19", "coverage": "Weeks 1–6" },
+            { "key": "t2", "label": "Term test 2", "date": "2027-02-08", "coverage": "Weeks 13–18", "assumed": true }
+          ] },
+          { "key": "quizzes", "label": "Weekly quizzes", "match": "quiz", "many": true, "dropLowestFraction": 0.2, "note": "lowest 20% dropped" },
+          { "key": "final", "label": "Final exam", "match": "final", "items": [ { "key": "final", "label": "Final exam · April, cumulative" } ] }
+        ],
+        "schemes": [
+          { "name": "As published", "weights": { "tests": 40, "quizzes": 10, "final": 50 } },
+          { "name": "Best test counts double", "weights": { "tests": 40, "quizzes": 10, "final": 50 }, "best": { "tests": 1 } }
+        ]
+      }
+    },
+    "HIS 200H1": {
+      "id": 100002,
+      "code": "HIS200",
+      "name": "An Online Course With No Class Meetings",
+      "term": "F",
+      "color": "#5b3a6e",
+      "professor": "Dr. B. Example",
+      "url": "https://q.utoronto.ca/courses/100002",
+      "meets": "Online, asynchronous · a module a week, released Tuesdays",
+      "meetings": [],
+      "weekly": [ { "from": 2, "kind": "participation", "match": "participation", "text": "Participation quiz", "day": "Sun", "time": "23:59" } ],
+      "tests": [
+        { "date": "2026-10-23", "label": "Midterm · online · 24 h window from 9 am · 30%" }
+      ],
+      "grading": {
+        "components": [
+          { "key": "participation", "label": "Weekly participation", "match": "participation", "many": true, "note": "marked on completion" },
+          { "key": "tests", "label": "Midterm", "match": "midterm", "items": [ { "key": "mid", "label": "Midterm · online", "date": "2026-10-23", "coverage": "Weeks 2–6", "assumed": true } ] },
+          { "key": "essay", "label": "Essay", "match": "essay", "items": [ { "key": "e1", "label": "Essay · due Nov 27", "date": "2026-11-27" } ] }
+        ],
+        "schemes": [ { "name": "As published · no final exam", "weights": { "participation": 20, "tests": 30, "essay": 50 } } ]
+      }
+    }
+  },
+  "syllabus": {
+    "HIS 200H1": {
+      "source": "Course syllabus schedule · a module a week",
+      "weeks": {
+        "1": { "topic": "Course orientation" },
+        "2": { "topic": "Module 1 · Reading the sources" },
+        "3": { "topic": "Module 2 · Empire and trade" }
+      }
+    }
+  }
+}

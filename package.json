@@ -1,0 +1,51 @@
+{
+  "name": "slate-adphi",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -k -n api,vite -c blue,magenta \"node server/index.js\" \"vite\"",
+    "server": "node server/index.js",
+    "build": "vite build",
+    "test": "echo \"This copy has no test suite: it is the shipped app, not the development repo.\" && exit 0",
+    "import": "node scripts/import-courses.mjs",
+    "app": "node scripts/build-app.mjs",
+    "desktop": "SLATE_PORT=5177 npx electron desktop/main.cjs",
+    "build:hwr": "node scripts/build-hwr.mjs",
+    "review": "node scripts/review.mjs",
+    "setup": "node scripts/setup.mjs status"
+  },
+  "dependencies": {
+    "@tiptap/core": "^3.31.3",
+    "@tiptap/extension-hard-break": "^3.31.3",
+    "@tiptap/extension-highlight": "^3.31.3",
+    "@tiptap/extension-image": "^3.31.3",
+    "@tiptap/extension-link": "^3.31.3",
+    "@tiptap/extension-list": "^3.31.3",
+    "@tiptap/extension-mathematics": "^3.31.3",
+    "@tiptap/extension-table": "^3.31.3",
+    "@tiptap/extension-text-style": "^3.31.3",
+    "@tiptap/extension-underline": "^3.31.3",
+    "@tiptap/extensions": "^3.31.3",
+    "@tiptap/markdown": "^3.31.3",
+    "@tiptap/pm": "^3.31.3",
+    "@tiptap/react": "^3.31.3",
+    "@tiptap/starter-kit": "^3.31.3",
+    "chokidar": "^5.0.0",
+    "express": "^5.2.1",
+    "gray-matter": "^4.0.3",
+    "jsdom": "^29.1.1",
+    "katex": "^0.18.7",
+    "pdfjs-dist": "^6.3.289",
+    "perfect-freehand": "^1.2.3",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.1.1",
+    "concurrently": "^10.0.5",
+    "electron": "^44.3.0",
+    "vite": "^8.2.2"
+  },
+  "description": "Slate for Alpha Delta Phi"
+}

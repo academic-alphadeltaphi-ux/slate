@@ -1,0 +1,21 @@
+/* A document's header (SPEC §20.23, cut in stone §20.60): calm, one place, no ruled paper under it — a slab across the
+   top of the sheet, the trail in small capitals and the title in the serif. */
+.pghead { flex: none; margin-top: 52px; padding: 0; }
+.pghead-in { max-width: 780px; margin: 0 auto; padding: 36px 40px 26px; }
+.pghead-trail { font-family: var(--font-display); font-variant-caps: small-caps; font-variant-numeric: lining-nums; text-transform: lowercase; font-size: 14px; letter-spacing: .12em; color: var(--muted); }
+.pghead-title { font-family: var(--font-display); font-size: 38px; font-weight: 400; letter-spacing: -.005em; line-height: 1.15; margin: 8px 0 0; overflow-wrap: anywhere; color: var(--text); }
+.pghead-foot { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-top: 12px; }
+/* Which set a problem document belongs to, and its solutions one button away (SPEC §20.32). */
+.pghead-set { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
+.pghead-set-name { font-size: 12.5px; font-weight: 500; color: var(--text); border: 1px solid var(--edge-2); padding: 3px 9px; border-radius: 3px; }
+.pghead-set-says { font-size: 12.5px; color: var(--muted); margin-right: 4px; }
+.pghead-set .btn svg { vertical-align: -2px; margin-right: 5px; }
+.pghead-from { font-size: 12.5px; color: var(--muted); }
+.pghead-actions { display: flex; gap: 6px; }
+.pghead-actions .btn.small { display: inline-flex; align-items: center; gap: 5px; }
+
+/* Rules belong to Notes. Everything else is a document, on a plain sheet. */
+:root[data-paper="ruled"] .canvas.doc .page { background-image: none; }
+.canvas.doc .page { box-shadow: 0 0 0 1px var(--edge), 0 14px 40px rgba(23,24,26,.08); border-radius: 2px; }
+.canvas.doc::before { display: none; }
+.pghead + .ask-dock .canvas::before { display: none; }

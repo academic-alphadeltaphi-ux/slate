@@ -1,0 +1,199 @@
+/* Home (SPEC §20.17, drawn a fourth time §20.34, cut in stone §20.60), plus the sidebar's course rows and the tab
+   control the screens share. Each block on Home draws its facts its own way, so the page reads as four things rather
+   than one card copied forty times: the courses as panels, the week as a timetable, what to do as an agenda of days,
+   what arrived as a feed. The masthead itself is in styles.css, shared by every screen. */
+
+/* ---- one row per course in the sidebar: the tree says something instead of naming folders ---- */
+.tree-group { font-family: var(--font-display); font-variant-caps: small-caps; text-transform: lowercase; font-size: 13.5px; letter-spacing: .12em; color: var(--muted); padding: 20px 12px 6px; }
+.course-row { height: auto !important; padding-top: 7px; padding-bottom: 7px; align-items: center; }
+.course-row-text { display: flex; flex-direction: column; min-width: 0; flex: 1; line-height: 1.25; }
+.course-row-text b { font-size: 13.5px; font-weight: 500; letter-spacing: 0; }
+.course-row-text small { font-size: 11.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---- tabs: the course screen's terms ---- */
+.tabs { display: inline-flex; gap: 2px; padding: 2px; border-radius: var(--radius-sm); background: var(--pill); }
+.tab { border: 0; background: none; padding: 4px 12px; border-radius: 3px; font-size: 12.5px; font-weight: 500; color: var(--muted); letter-spacing: 0; text-transform: none; }
+.tab:hover { color: var(--text); }
+.tab.on { background: var(--glass-solid); color: var(--text); box-shadow: 0 0 0 1px var(--edge); }
+.cd-weeks { max-width: var(--screen-max); margin-bottom: 14px; }
+.link-pill { border: 1px solid var(--edge-2); background: transparent; color: var(--muted); transition: color .12s, border-color .12s, background .12s; }
+.link-pill:hover { color: var(--text); border-color: var(--muted-2); }
+
+/* ---- one sentence at the top, set like a deck under a headline ---- */
+.td-say { font-family: var(--font-display); font-style: italic; font-size: 23px; font-weight: 400; letter-spacing: 0; line-height: 1.45; margin: 16px 0 0; max-width: 64ch; color: var(--text); }
+.td-say b { font-weight: 400; font-style: normal; color: color-mix(in srgb, var(--c, var(--accent)) var(--c-mix), var(--ink-mix)); }
+.td-say-dim { color: var(--muted); font-weight: 400; }
+.td-body { display: grid; gap: 24px; max-width: var(--screen-max); }
+
+/* ---- a heading for each block: the serif over one hairline ---- */
+.hm-band { display: flex; align-items: baseline; gap: 12px; margin: 30px 0 -6px; padding-bottom: 10px; max-width: var(--screen-max); border-bottom: 3px double color-mix(in srgb, var(--text) 62%, transparent);
+  font-family: var(--font-display); font-size: 28px; font-weight: 400; letter-spacing: 0; color: var(--text); }
+.hm-band:first-of-type { margin-top: 2px; }
+.hm-band em { font-style: normal; font-family: var(--font); font-size: 13px; font-weight: 400; letter-spacing: 0; color: var(--muted); }
+.hm-band-links { margin-left: auto; display: inline-flex; gap: 18px; font-family: var(--font); font-size: 13px; font-weight: 400; letter-spacing: 0; }
+
+/* ---- the courses: a marble panel each, its pigment a rule along the top ---- */
+/* One shelf: every course on one row, as many columns as there are courses (--n, set inline), and the panels narrow
+   rather than wrap — a fourth course used to drop to a second row on its own (SPEC §20.61). Only a pane too narrow
+   to hold them at all folds the shelf in two. */
+.td-courses { display: grid; grid-template-columns: repeat(var(--n, 4), minmax(0, 1fr)); gap: 20px; }
+@container screen (max-width: 640px) { .td-courses { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@container screen (max-width: 400px) { .td-courses { grid-template-columns: minmax(0, 1fr); } }
+.td-panel { display: flex; flex-direction: column; border-radius: var(--radius); overflow: hidden; min-width: 0;
+  background: var(--glass-solid); border: 1px solid var(--edge-2); box-shadow: none;
+  transition: border-color var(--t, .2s) var(--ease, ease), box-shadow var(--t, .2s) var(--ease, ease); }
+.td-panel:hover { border-color: var(--text); }
+.td-panel.live { box-shadow: 0 0 0 2px var(--gilt); }
+.td-panel-head { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: baseline; width: 100%; text-align: left;
+  padding: 20px 24px 18px; border: 0; border-bottom: 0; background: color-mix(in srgb, var(--c) var(--btn-course), var(--btn-mix)); color: var(--on-c); }
+.td-panel-code { font-family: var(--font-display); font-variant-caps: small-caps; font-variant-numeric: lining-nums; text-transform: lowercase; font-size: 14px; letter-spacing: .12em; color: color-mix(in srgb, var(--on-c) 78%, transparent); }
+.td-panel-mark { grid-row: 1 / span 2; align-self: center; font-family: var(--font-display); font-size: 26px; font-weight: 400; letter-spacing: 0; color: var(--on-c); font-variant-numeric: lining-nums tabular-nums; }
+.td-panel-name { grid-column: 1; font-family: var(--font-display); font-size: 23px; font-weight: 400; letter-spacing: 0; line-height: 1.2; color: var(--on-c); }
+.td-panel-head:hover .td-panel-name { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; text-decoration-color: color-mix(in srgb, var(--on-c) 55%, transparent); }
+.td-panel-body { display: grid; flex: 1; align-content: start; }
+.td-slot { padding: 20px 24px 22px; min-width: 0; }
+.td-slot + .td-slot { border-top: 1px solid var(--edge); }
+.td-slot-k { display: flex; align-items: baseline; gap: 8px; font-family: var(--font-display); font-variant-caps: small-caps; text-transform: lowercase; font-size: 13.5px; letter-spacing: .12em; color: var(--muted); margin-bottom: 4px; }
+.td-slot-rel { margin-left: auto; font-family: var(--font); font-variant-caps: normal; text-transform: none; letter-spacing: 0; font-size: 12.5px; font-weight: 500; color: color-mix(in srgb, var(--c) var(--c-mix), var(--ink-mix)); }
+.td-slot-v { font-size: 15.5px; font-weight: 500; letter-spacing: 0; line-height: 1.4; }
+.td-slot-dim { font-weight: 400; color: var(--muted); }
+
+/* What to do before the next class: the course screen's first group, in small, on the course's own panel — set off
+   by one rule in the course's pigment rather than a tinted box. */
+.td-before { margin-top: 14px; padding: 2px 0 2px 14px; border-left: 3px solid var(--c); background: none; border-radius: 0; }
+.td-before-k { font-family: var(--font-display); font-variant-caps: small-caps; text-transform: lowercase; font-size: 13.5px; letter-spacing: .12em; color: color-mix(in srgb, var(--c) var(--c-mix), var(--ink-mix)); margin-bottom: 8px; }
+.td-before-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.td-before-list li { display: flex; align-items: flex-start; gap: 9px; min-width: 0; font-size: 14px; }
+.td-before-list li.done .td-before-title { color: var(--muted); text-decoration: line-through; }
+.td-before-list .todo-tick { width: 19px; height: 19px; margin-top: 1px; }
+.td-before-ic { display: inline-grid; place-items: center; width: 19px; height: 19px; flex: none; color: var(--muted); }
+.td-before-title { flex: 1; min-width: 0; border: 0; background: none; padding: 0; font: inherit; font-weight: 500; line-height: 1.4; color: var(--text); text-align: left; cursor: pointer; }
+.td-before-title:hover { text-decoration: underline; text-underline-offset: 2px; }
+.td-before-go { flex: none; font-size: 12.5px; line-height: 1.5; }
+.td-before-none { margin: 0; font-size: 13.5px; color: var(--muted); }
+.td-before-more { margin-top: 8px; font-size: 12.5px; }
+
+.td-marked { display: flex; align-items: baseline; gap: 12px; }
+.td-marked-n { font-family: var(--font-display); font-size: 40px; font-weight: 400; letter-spacing: -.01em; line-height: 1; color: color-mix(in srgb, var(--c) var(--c-mix), var(--ink-mix)); font-variant-numeric: lining-nums tabular-nums; flex: none; display: flex; align-items: baseline; gap: 5px; }
+.td-marked-n small { font-family: var(--font); font-size: 12.5px; font-weight: 500; color: var(--muted); letter-spacing: 0; }
+.td-marked-t { font-size: 14px; font-weight: 500; line-height: 1.35; min-width: 0; }
+.td-panel-foot { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 14px 24px 16px; margin-top: auto; border-top: 1px solid var(--edge); }
+.td-panel-foot .pill.on { border: 0; font-family: inherit; cursor: pointer; color: var(--on-c); background: color-mix(in srgb, var(--c) var(--btn-course), var(--btn-mix)); padding: 3px 10px; }
+.td-panel-foot .pill.on:hover { filter: brightness(1.12); }
+.td-clear { font-size: 12.5px; color: var(--muted); }
+.td-nudge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 3px; font-size: 12px; font-weight: 500;
+  border: 1px dashed color-mix(in srgb, var(--c) 55%, transparent); background: transparent; color: color-mix(in srgb, var(--c) var(--c-mix), var(--ink-mix)); }
+.td-nudge:hover { background: color-mix(in srgb, var(--c) 10%, transparent); border-style: solid; }
+/* Take notes, on each course panel (SPEC §20.26): the one thing on Home that is the student's to do rather than something
+   that happened to him. */
+.td-take { margin-left: auto; display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 3px;
+  border: 1px solid var(--edge-2); background: var(--glass-solid); font-size: 12.5px; font-weight: 500; color: var(--text); }
+.td-take:hover { border-color: var(--c); color: color-mix(in srgb, var(--c) var(--c-mix), var(--ink-mix)); }
+
+/* ---- the week ---- */
+.td-week { padding: 24px 26px 22px; }
+
+/* ---- to do as an agenda: the date as a calendar page on the left, that day's things beside it ---- */
+.ag { padding: 8px 28px; }
+.ag-add { padding: 16px 0 6px; }
+.ag-empty { padding: 18px 0; }
+.ag-day { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 24px; padding: 20px 0; }
+.ag-day + .ag-day { border-top: 1px solid var(--edge); }
+/* The date as a leaf of a calendar (as on the course page): the weekday cut into an ink band, the day in the serif under
+   it. Today's band is gilt, an overdue group's oxblood; Later and Overdue are a word on the band and nothing under it. */
+.ag-date { display: flex; flex-direction: column; align-items: stretch; align-self: start; width: 76px; border: 1px solid var(--edge-2); border-radius: 3px; overflow: hidden; line-height: 1.05; text-align: center; background: var(--glass-solid); }
+.ag-date b { padding: 5px 4px 4px; font-family: var(--font-display); font-variant-caps: small-caps; text-transform: lowercase; font-size: 12.5px; font-weight: 400; letter-spacing: .12em; color: var(--on-accent); background: var(--accent); }
+.ag-date strong { font-family: var(--font-display); font-size: 34px; font-weight: 400; letter-spacing: -.01em; line-height: 1; margin-top: 8px; color: var(--text); font-variant-numeric: lining-nums tabular-nums; }
+.ag-date span { font-size: 11px; line-height: 1.3; color: var(--muted); margin: 4px 4px 7px; }
+.ag-date .ag-date-word { font-size: 12.5px; }
+.ag-date.today b { background: var(--gilt); color: #fff; }
+.ag-date.today strong { color: var(--gilt); }
+.ag-date.late b { background: var(--danger); color: #fff; }
+.ag-date.late span { color: var(--danger); }
+.ag-rows { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; min-width: 0; }
+.ag-row { display: flex; align-items: center; gap: 12px; min-width: 0; padding: 8px 10px; margin: 0 -10px; border-radius: 3px; }
+.ag-row:hover { background: var(--hover); }
+.ag-row.done .ag-title { color: var(--muted); text-decoration: line-through; }
+.ag-ic { display: inline-grid; place-items: center; width: 21px; height: 21px; flex: none; color: var(--muted); }
+.ag-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.ag-title { border: 0; background: none; padding: 0; font: inherit; font-size: 15px; font-weight: 500; letter-spacing: 0; line-height: 1.4; color: var(--text); text-align: left; cursor: pointer; }
+.ag-title:hover { text-decoration: underline; text-underline-offset: 2px; }
+.ag-main small { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); }
+.ag-row .btn.small { flex: none; }
+
+/* ---- the foot: the morning note and what arrived ---- */
+/* align-items: start — stretched, the note's card grew to the height of fourteen new files and stood mostly empty. */
+.td-foot { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px; align-items: start; }
+/* Claude as the brain (SPEC §20.37): each decision is a row, its kind in a fixed column and its reason under it. */
+.cl-block + .cl-block { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--edge); }
+.cl-block h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; }
+.cl-n { padding: 0 7px; border-radius: 3px; background: var(--code-bg); color: var(--muted); font-family: var(--font); font-variant-caps: normal; text-transform: none; letter-spacing: 0; font-size: 12px; font-weight: 500; }
+.cl-sum { margin: 0 0 6px; font-size: 12.5px; color: var(--muted); }
+.cl-list { list-style: none; margin: 0 0 4px; padding: 0; }
+.cl-list li { display: flex; align-items: baseline; gap: 10px; padding: 6px 0; font-size: 14px; }
+.cl-list li + li { border-top: 1px solid var(--edge); }
+.cl-type { flex: none; width: 78px; font-size: 12.5px; font-weight: 500; color: var(--muted); }
+.cl-list .grow small { display: block; margin-top: 1px; font-size: 12.5px; color: var(--muted); }
+/* Compact by default (SPEC §20.66): the question clamped to four lines, each of three decisions on a line with its reason
+   on one line under it, and the rest behind Show all — it stood at five times the height of the cards beside it. */
+.cl-q { cursor: pointer; }
+.cl:not(.all) .cl-q { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+.cl:not(.all) .cl-q:hover { color: var(--muted); }
+.cl:not(.all) .cl-list .grow, .cl:not(.all) .cl-list .grow small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cl-fields { margin-left: 6px; font-size: 12px; color: var(--muted); }
+.card.note .note-body { color: var(--text); }
+.card.note .md-p { margin-bottom: 7px; }
+.td-note-head { margin: 0; font-family: var(--font-display); font-size: 16px; line-height: 1.6; }
+.td-note-head .md { font-family: var(--font-display); font-size: 16px; }
+.td-note-head .md-p:last-child { margin-bottom: 0; }
+
+/* what arrived, grouped by course: a count line, then the first three */
+.nw { padding-bottom: 12px; }
+.nw > h2 { margin-bottom: 4px; }
+.nw-course { padding: 12px 0 10px; }
+.nw-course + .nw-course { border-top: 1px solid var(--edge); }
+.nw-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px; }
+.nw-sum { font-size: 12.5px; color: var(--muted); }
+.nw-list { list-style: none; margin: 0; padding: 0; }
+.nw-item { display: flex; align-items: baseline; gap: 12px; width: calc(100% + 16px); margin: 0 -8px; padding: 6px 8px; border: 0; border-radius: 3px; background: none; text-align: left; font: inherit; color: var(--text); cursor: pointer; }
+.nw-item:hover { background: var(--hover); }
+.nw-title { flex: 1; min-width: 0; font-size: 14px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nw-what { flex: none; font-size: 12px; color: var(--muted); }
+.nw-more { margin-top: 4px; font-size: 12.5px; }
+
+/* Behind on the fetch (SPEC §20.41): the pass runs every three days and only while the Mac is awake, so a laptop that
+   lives shut needs to be told, not left to look up to date. */
+.hub-stale { color: var(--danger); font-weight: 600; }
+
+/* The first screen of a new install (SPEC §20.48). Home is a page of panels, and before the first fetch there are no
+   panels — so for one run this is the whole page, and it borrowed `.home-empty`, which is the centred grey paragraph
+   five other screens show an error in. It is its own thing: a panel like the courses are, left-aligned, with the
+   gilt along the top because this is the one thing to do on the page. Not `.home-empty`, because an error on the
+   Library screen must not grow a gilt edge — that edge means "do this", and an error is not something to do. */
+.home-first { max-width: 540px; padding: 24px 26px 26px; border-radius: var(--radius);
+  background: var(--glass-solid); border: 1px solid var(--edge); border-top: 3px solid var(--gilt); box-shadow: none; }
+.home-first h2 { margin: 0 0 10px; font-family: var(--font-display); font-size: 24px; font-weight: 400; letter-spacing: 0; line-height: 1.2; color: var(--text); }
+.home-first p { margin: 0 0 18px; font-size: 14px; line-height: 1.55; color: var(--muted); max-width: 48ch; }
+/* A failure keeps its own words — a 401, a refused connection — so they read as the machine's, not as ours. */
+.home-first-why { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; color: var(--text); overflow-wrap: break-word; }
+
+/* the morning note a line at a time (Home.jsx MorningNote): a small-caps label column, the text beside it, the day's
+   blocks as a little timetable; bold for what the eye must catch, a gilt underline for when */
+.mn { display: flex; flex-direction: column; gap: 9px; }
+.mn-row { display: grid; grid-template-columns: 138px 1fr; column-gap: 14px; align-items: baseline; }
+.mn-row.bare { grid-template-columns: 1fr; padding-left: 152px; }
+.mn-label { font-family: var(--font-display); font-variant-caps: all-small-caps; letter-spacing: .1em; font-size: 15px; color: var(--muted); line-height: 1.6; }
+.mn-text .md-p, .mn-what .md-p { margin: 0; }
+.mn b { font-weight: 600; color: var(--text); }
+.mn u { text-decoration: underline; text-decoration-color: var(--gilt); text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
+.mn-blocks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 3px; }
+.mn-blocks li { display: grid; grid-template-columns: 98px 64px 1fr; column-gap: 10px; align-items: baseline; }
+.mn-time { font-variant-numeric: lining-nums tabular-nums; font-size: 14px; color: var(--muted); }
+.mn-course { font-variant-caps: all-small-caps; letter-spacing: .06em; font-weight: 600; font-size: 14px; }
+.mn-more { align-self: flex-start; margin-left: 152px; font-size: 13px; }
+@media (max-width: 640px) {
+  .mn-row, .mn-row.bare { grid-template-columns: 1fr; padding-left: 0; }
+  .mn-blocks li { grid-template-columns: 86px 1fr; }
+  .mn-blocks .mn-what { grid-column: 1 / -1; }
+  .mn-more { margin-left: 0; }
+}

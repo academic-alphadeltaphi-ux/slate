@@ -1,0 +1,28 @@
+/* Whose words these are (SPEC §20.21): a band over an imported page, and a tint on the sheet under it. */
+/* The topbar is absolute and 50px tall (styles.css), and the canvas makes its own spacer for it. The band sits
+   between them, so it carries the spacer instead and the canvas drops its own. */
+.srcbar { display: flex; align-items: center; gap: 11px; padding: 9px 16px; margin: 50px 0 0; flex: none; position: relative; z-index: 1;
+  border-bottom: 1px solid color-mix(in srgb, var(--src, var(--accent)) 28%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--src, var(--accent)) 13%, transparent), color-mix(in srgb, var(--src, var(--accent)) 5%, transparent)); }
+.srcbar-announcement { --src: #9a7420; }
+.srcbar-page { --src: #2c3e6b; }
+.srcbar-ic { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 3px; flex: none;
+  color: color-mix(in srgb, var(--src) var(--c-mix), var(--ink-mix)); background: color-mix(in srgb, var(--src) 12%, transparent); }
+.srcbar-text { display: grid; gap: 0; flex: 1; min-width: 0; line-height: 1.3; }
+.srcbar-text b { font-family: var(--font-display); font-variant-caps: small-caps; text-transform: lowercase; font-size: 13.5px; font-weight: 400; letter-spacing: .12em; color: color-mix(in srgb, var(--src) var(--c-mix), var(--ink-mix)); }
+.srcbar-text span { font-size: 12px; color: var(--muted); }
+.srcbar .btn.small { display: inline-flex; align-items: center; gap: 5px; flex: none; }
+/* The imported text sits in its own bordered block — an inbox card on the page — so what the professor wrote
+   and what you write beside it are never the same thing. The block wraps the blocks the sync wrote; anything you
+   add afterwards is outside it, on the page proper. */
+.el-quercus { position: relative; border-radius: var(--radius-sm); border: 1px solid color-mix(in srgb, var(--src, #9a7420) 35%, transparent);
+  background: color-mix(in srgb, var(--src, #9a7420) 4%, var(--paper)); padding: 38px 18px 14px; margin: 0; }
+.el-quercus::before {
+  content: attr(data-from); position: absolute; top: 0; left: 0; right: 0; height: 28px;
+  display: flex; align-items: center; padding: 0 14px; border-radius: 3px 3px 0 0;
+  font-family: var(--font-display); font-variant-caps: small-caps; text-transform: lowercase; font-size: 13px; letter-spacing: .12em;
+  color: color-mix(in srgb, var(--src, #9a7420) var(--c-mix), var(--ink-mix)); background: color-mix(in srgb, var(--src, #9a7420) 11%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--src, #9a7420) 25%, transparent);
+}
+.el-quercus.k-announcement { --src: #9a7420; }
+.el-quercus.k-page { --src: #2c3e6b; }

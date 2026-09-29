@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.DS_Store
+*.log
+spike/out/
+.claude/launch.json
+desktop/hwr/bin/
+scripts/__pycache__/
+slate.config.json
+
+# a brother's install (SPEC §21): written by setup, never shipped
+setup-state.json
+Setup progress.md
+courses.json
+setup-downloads/

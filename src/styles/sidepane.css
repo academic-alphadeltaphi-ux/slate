@@ -1,0 +1,16 @@
+/* Two panes (SPEC §20.10). The structure (.pane, .main.split, .pane-right, .pane-divider, .ask-dock) is in
+   styles.css; this file carries what only the split needs: which pane owns the tool pill, the active hairline,
+   the narrow-pane toolbar, and the desktop drag regions. Tokens only, light and dark alike. */
+.main.split .pane:not(.active) .tools { display: none; }
+.main.split .pane:not(.active) .topbar .title, .main.split .pane:not(.active) .topbar .crumb { opacity: .55; }
+.main.split .pane.active .topbar { box-shadow: inset 0 -2px 0 var(--gilt); }
+.main.split .pane .topbar .title { max-width: 40%; }
+.pane-bar .pane-title { cursor: default; }
+.pane-bar .pane-title:hover { background: none; }
+.pane-bar .crumb { overflow: hidden; text-overflow: ellipsis; max-width: 30%; }
+.pane-right .canvas-wrap, .pane-right .canvas { min-width: 0; }
+/* The formatting toolbar is ~740 px wide; in a narrow pane it wraps instead of scrolling the page sideways. */
+.pane-right .toolbar { flex-wrap: wrap; max-width: min(740px, calc(var(--w-right, 560px) - 24px)); }
+.pane-divider:hover::after, .pane-divider:active::after { background: var(--gilt); opacity: .5; }
+.electron .pane-bar { -webkit-app-region: drag; }
+.electron .pane-bar button, .electron .pane-bar .title, .electron .pane-bar input { -webkit-app-region: no-drag; }

@@ -1,0 +1,16 @@
+/* Recognised handwriting (SPEC §20.9): an opaque card you read, never glass, sitting under the ink and scaled
+   1/zoom like the toolbar. Tokens only, so light and dark both work without overrides. */
+.ink-text { position: absolute; z-index: 4900; padding: 9px 12px 10px; background: var(--glass-solid); border: 1px solid var(--edge-2); border-radius: var(--radius); box-shadow: var(--shadow); animation: pop .12s ease-out; cursor: default; user-select: text; color: var(--text); font-size: 13px; line-height: 20px; }
+.ink-text-k { display: flex; align-items: center; gap: 6px; font-family: var(--font-display); font-variant-caps: small-caps; text-transform: lowercase; font-size: 13px; letter-spacing: .12em; color: var(--muted); margin-bottom: 4px; min-height: 22px; }
+.ink-text-ic { display: inline-grid; place-items: center; color: var(--muted); }
+.ink-text-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ink-text.stale .ink-text-title { color: var(--muted); }
+.ink-text-body { max-height: 220px; overflow-x: hidden; overflow-y: auto; white-space: pre-wrap; overflow-wrap: anywhere; margin: 2px -6px 8px; padding: 0 6px; }
+.ink-text-line { padding: 1px 6px; margin: 0; border-radius: 3px; }
+.ink-text-line:hover { background: var(--hover); }
+.ink-text-line.low { color: var(--muted); }
+.ink-text-msg { font-size: 12.5px; color: var(--muted); margin: 2px 0 8px; }
+.ink-text-err { color: var(--danger); overflow-wrap: anywhere; }
+.ink-text-link { border: 0; background: none; padding: 0; color: var(--gilt); cursor: pointer; font: inherit; }
+.ink-text-link:hover { text-decoration: underline; }
+.ink-text-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }

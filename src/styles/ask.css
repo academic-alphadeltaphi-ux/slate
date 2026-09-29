@@ -1,0 +1,83 @@
+/* Ask the page (SPEC.md §20.7). The rail is content you read, so it is opaque (§12): --bg, one hairline, no
+   backdrop-filter. `.ask-dock` / `.ask-panel` structure lives in styles.css; everything else is here, tokens only,
+   light and dark from the same rules. */
+/* A bubble over the page, not a column beside it (SPEC §20.31). Docked, it took 400px off the width of whatever
+   was being read — and an image in the thread narrowed the document further, which is the opposite of what asking
+   about a picture is for. It floats now: the page keeps its full width, and the bubble is dragged by its head and
+   sized by its corner, both remembered. */
+.ask-dock { position: relative; }
+.ask-dock > .ask-panel.ask { position: absolute; z-index: 55; right: 18px; bottom: 18px;
+  width: var(--ask-w, 430px); height: var(--ask-h, 560px); max-width: calc(100% - 32px); max-height: calc(100% - 74px);
+  background: var(--bg); border: 1px solid var(--edge-2); border-radius: 8px; overflow: hidden;
+  box-shadow: 0 24px 70px rgba(20, 30, 70, .22), 0 2px 8px rgba(0, 0, 0, .10); animation: ask-in .16s ease-out; }
+/* The dark shadow followed the OS alone, so a Mac in dark mode with slate forced light drew a black halo (SPEC §20.34). */
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .ask-dock > .ask-panel.ask { box-shadow: 0 24px 70px rgba(0, 0, 0, .6); } }
+:root[data-theme="dark"] .ask-dock > .ask-panel.ask { box-shadow: 0 24px 70px rgba(0, 0, 0, .6); }
+.ask-dock > .ask-panel.ask.placed { right: auto; bottom: auto; }
+@keyframes ask-in { from { transform: translateY(10px); opacity: 0 } to { transform: none; opacity: 1 } }
+.ask-head { cursor: grab; }
+.ask-head:active { cursor: grabbing; }
+.ask-grip { display: inline-grid; place-items: center; color: var(--muted-2); flex: none; margin-right: 2px; }
+/* the corner that sizes it */
+.ask-size { position: absolute; right: 2px; bottom: 2px; width: 16px; height: 16px; cursor: nwse-resize; z-index: 2; }
+.ask-size::after { content: ""; position: absolute; right: 4px; bottom: 4px; width: 7px; height: 7px; border-right: 2px solid var(--muted-2); border-bottom: 2px solid var(--muted-2); border-radius: 0 0 3px 0; }
+.ask-head { display: flex; align-items: center; gap: 8px; padding: 12px 8px 4px 16px; }
+.ask-head h2 { font-family: var(--font-display); font-variant-caps: small-caps; text-transform: lowercase; font-size: 15px; font-weight: 400; letter-spacing: .12em; color: var(--text); margin: 0; white-space: nowrap; }
+.ask-head .spacer { flex: 1; }
+.ask-link { border: 0; background: none; color: var(--gilt); padding: 0; font: inherit; font-size: 11.5px; cursor: pointer; white-space: nowrap; border-radius: 3px; }
+.ask-link:hover { text-decoration: underline; }
+.ask-link:focus-visible { outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent); outline-offset: 2px; }
+.ask-src { display: flex; flex-wrap: wrap; gap: 4px; padding: 2px 16px 10px; border-bottom: 1px solid var(--edge); min-height: 30px; align-content: flex-start; }
+.ask-chip { font-size: 11px; color: var(--muted); background: var(--pill); border: 1px solid transparent; border-radius: 3px; padding: 1px 8px; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; cursor: default; }
+.ask-chip.cut { border-color: var(--edge-2); border-style: dashed; }
+.ask-chip.dropped { border-color: var(--edge-2); border-style: dashed; text-decoration: line-through; color: var(--muted-2); }
+.ask-note { font-size: 12px; color: var(--muted); line-height: 1.5; }
+.ask-note.danger { color: var(--danger); }
+.ask-pulse { animation: ask-pulse 1.4s ease-in-out infinite; }
+@keyframes ask-pulse { 50% { opacity: .45 } }
+.ask-thread { flex: 1; min-height: 0; overflow-y: auto; padding: 8px 16px 12px; scrollbar-width: thin; overscroll-behavior: contain; }
+.ask-presets { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 0 14px; }
+.ask-presets .chip { cursor: pointer; }
+.ask-turn { position: relative; padding: 10px 0 6px; border-top: 1px solid var(--edge); }
+.ask-turn:first-child { border-top: 0; }
+.ask-q { position: relative; padding-left: 12px; font-weight: 550; font-size: 13.5px; line-height: 1.45; white-space: pre-wrap; word-wrap: break-word; }
+.ask-q::before { content: ""; position: absolute; left: 0; top: 3px; bottom: 3px; width: 2px; background: var(--gilt); }
+.ask-q-sub { font-weight: 450; color: var(--muted); }
+/* answers use the page's renderer but the rail's own scale: not locked to --lh, that is the page's rule */
+.ask-md { margin-top: 8px; font-family: var(--font-display); font-size: 15.5px; line-height: 1.55; overflow-wrap: anywhere; }
+.ask-md > * + * { margin-top: 8px; }
+.ask-md p + p { margin-top: 8px; }
+.ask-md ul, .ask-md ol { padding-left: 22px; }
+.ask-md li { line-height: 1.5; }
+.ask-md h1, .ask-md h2, .ask-md h3, .ask-md h4 { font-size: 15.5px; line-height: 1.4; font-weight: 700; margin-top: 12px; }
+.ask-md pre { font-family: var(--mono); font-size: 12px; overflow-x: auto; }
+.ask-md code { font-family: var(--mono); }
+.ask-md table { font-family: var(--font); }
+.ask-md table { max-width: 100%; font-size: 13px; }
+.ask-md .katex-display { overflow-x: auto; overflow-y: hidden; }
+.ask-wait { margin-top: 8px; font-size: 12.5px; color: var(--muted); }
+.ask-caret { display: inline-block; width: 2px; height: 14px; margin-left: 2px; vertical-align: -2px; background: var(--gilt); animation: ask-blink 1s steps(2) infinite; }
+@keyframes ask-blink { 50% { opacity: 0 } }
+.ask-err { margin-top: 8px; font-size: 13px; color: var(--danger); line-height: 1.5; }
+.ask-err code { font-family: var(--mono); font-size: 12px; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+.ask-hint { display: block; color: var(--muted); font-size: 12px; }
+.ask-foot { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 8px; font-size: 11.5px; color: var(--muted); }
+.ask-meta { flex-basis: 100%; }
+.ask-foot kbd, .ask-compose kbd { font: 10px var(--font); color: var(--muted-2); margin-left: 4px; }
+.ask-saved { color: color-mix(in srgb, #2f5d45 var(--c-mix), var(--ink-mix)); }
+.ask-compose { display: flex; align-items: flex-end; gap: 8px; padding: 10px 12px 12px 16px; border-top: 1px solid var(--edge); background: var(--bg); }
+.ask-input { flex: 1; min-width: 0; resize: none; max-height: 160px; font: inherit; font-size: 13.5px; line-height: 1.45; padding: 7px 10px; border: 1px solid var(--edge-2); border-radius: var(--radius-sm); background: var(--bg); color: inherit; outline: none; field-sizing: content; }
+.ask-input:focus { border-color: var(--accent); }
+.ask-compose .btn { white-space: nowrap; }
+.ask-compose .btn:disabled { opacity: .5; box-shadow: none; }
+@media print { .ask-panel.ask { display: none !important; } }
+
+/* A passage picked off the page (SPEC §20.28): the subject of the next question, shown above the box so it is
+   obvious the answer will be about those words and not about everything. */
+.ask-quote { position: relative; margin: 0 0 8px; padding: 8px 26px 8px 10px; border-radius: 3px; border-left: 2px solid var(--gilt);
+  background: color-mix(in srgb, var(--gilt) 7%, transparent); }
+.ask-quote-k { font-family: var(--font-display); font-variant-caps: small-caps; text-transform: lowercase; font-size: 13px; font-weight: 400; letter-spacing: .1em; color: var(--gilt); }
+.ask-quote p { margin: 2px 0 0; font-size: 12.5px; line-height: 1.45; color: var(--muted); }
+.ask-quote-x { position: absolute; top: 6px; right: 6px; border: 0; background: none; color: var(--muted-2); display: grid; place-items: center; padding: 2px; border-radius: 3px; }
+.ask-quote-x:hover { color: var(--text); background: var(--hover); }
+.ask-shot img { display: block; max-width: 100%; max-height: 190px; border-radius: 2px; margin-top: 6px; border: 1px solid var(--edge); background: #fff; }

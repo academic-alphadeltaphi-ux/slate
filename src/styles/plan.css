@@ -1,0 +1,44 @@
+/* The plan group (SPEC §20.3): What's next (.wn-*), the coverage counts (.cov-*), the course-card line
+   (.course-test). Tokens only, so light and dark come for free; .home/.card/.list/.tag/.when/.btn live in styles.css. */
+.wn-status { margin: -8px 0 14px; }
+.wn-list li { align-items: flex-start; }
+.wn-list li > .tag { margin-top: 3px; }
+.wn-list li > .when { margin-top: 3px; }
+.wn-list li > .btn { margin-top: 1px; flex: none; }
+.wn-time { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; width: 92px; flex: none; margin-top: 3px; white-space: nowrap; }
+.wn-time.announced { color: var(--gilt); font-weight: 600; }
+.wn-src { color: var(--muted-2); }
+.wn-why { color: var(--muted); font-weight: 500; text-decoration: none; }
+.wn-meeting.cancelled .grow > span:first-child { text-decoration: line-through; color: var(--muted); }
+.wn-meeting.cancelled .wn-why { text-decoration: none; }
+.wn-meeting.cancelled .wn-time, .wn-meeting.cancelled .tag { opacity: .6; }
+.wn-meeting.now .when { color: var(--gilt); font-weight: 600; }
+.wn-meeting.past { opacity: .62; }
+.wn-due.urgent .when { color: var(--danger); font-weight: 600; }
+.wn-cal .wn-cal-ic { display: inline-grid; place-items: center; width: 34px; height: 20px; border-radius: 3px; color: var(--muted); background: var(--pill); margin-top: 1px; flex: none; }
+/* the tickable tasks under a meeting */
+/* the timetable lives in src/styles/timetable.css */
+.wn-issue .wn-quote { font-style: italic; }
+/* the test cards */
+.wn-testgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+.wn-test { text-align: left; display: flex; flex-direction: column; align-items: stretch; border: 1px solid var(--edge); border-radius: var(--radius); padding: 14px 16px; background: var(--glass-solid); box-shadow: none; position: relative; overflow: hidden; color: var(--text); transition: border-color .12s; }
+.wn-test::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--c); }
+.wn-test:hover { border-color: var(--edge-2); }
+.wn-test-title { font-family: var(--font-display); font-size: 17px; font-weight: 400; margin-top: 2px; }
+.wn-count { font-family: var(--font-display); font-size: 36px; font-weight: 400; letter-spacing: -.01em; font-variant-numeric: lining-nums tabular-nums; margin: 6px 0 4px; line-height: 1; }
+.wn-count small { font-size: 12px; font-weight: 500; color: var(--muted); margin-left: 5px; letter-spacing: 0; }
+/* coverage: three counts, no percentage */
+.cov { margin-top: 4px; }
+.cov-head { font-size: 13px; font-weight: 600; margin-bottom: 5px; }
+.cov-head small { color: var(--muted); font-weight: 400; font-size: 12.5px; }
+.cov-none { font-size: 12.5px; padding: 2px 0; }
+.cov-row { display: grid; grid-template-columns: 92px 1fr 42px; align-items: center; gap: 10px; font-size: 12.5px; color: var(--muted); padding: 3px 0; }
+.cov-row.muted { color: var(--muted-2); }
+/* the track is the neutral pill grey, not a tint of the fill, so an empty bar still reads as a bar */
+.cov-bar { height: 5px; border-radius: 2px; background: var(--pill); overflow: hidden; }
+.cov-bar i { display: block; height: 100%; background: var(--c, var(--accent)); border-radius: 2px; }
+.cov-v { text-align: right; font-variant-numeric: tabular-nums; }
+.cov.compact .cov-head { margin-bottom: 2px; }
+/* Home and the course card: one text line of coverage (src/styles/hub.css places it) */
+.course-test { font-size: 12px; color: var(--muted); }
+@media (max-width: 900px) { .wn-time { width: 76px; } }

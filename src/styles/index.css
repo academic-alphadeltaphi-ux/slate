@@ -1,0 +1,21 @@
+/* A container page drawn as an index of what it holds (SPEC §20.16, sharpened §20.34, cut in stone §20.60). */
+.pidx-canvas { display: block; overflow: auto; }
+.pidx { max-width: 900px; margin: 0 auto; padding: 10px 40px 60px; }
+.pidx-head { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 26px; padding-bottom: 14px; border-bottom: 3px double var(--edge-2); }
+.pidx-icon { color: var(--muted); display: inline-flex; margin-top: 8px; }
+.pidx-head h1 { font-family: var(--font-display); font-size: 32px; font-weight: 400; letter-spacing: -.005em; line-height: 1.15; margin: 0; color: var(--text); }
+.pidx-head p { font-size: 13.5px; color: var(--muted); margin: 4px 0 0; }
+.pidx-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+.pidx-card { display: flex; flex-direction: column; align-items: flex-start; gap: 7px; text-align: left; padding: 14px 15px; border-radius: var(--radius-sm); color: var(--text);
+  border: 1px solid var(--edge); background: var(--glass-solid); box-shadow: none; transition: border-color .16s; }
+.pidx-card:hover { border-color: var(--edge-2); }
+.pidx-card-ic { color: var(--muted); display: inline-flex; }
+.pidx-card-title { font-size: 14.5px; font-weight: 500; letter-spacing: 0; overflow-wrap: anywhere; }
+.pidx-card-meta { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); margin-top: auto; }
+.pidx-blank { color: var(--muted); font-size: 13.5px; }
+.pidx-more { margin-top: 12px; }
+.pidx-own { margin-top: 30px; padding-top: 18px; border-top: 1px solid var(--edge); }
+.pidx-own h2 { font-family: var(--font-display); font-variant-caps: small-caps; text-transform: lowercase; font-size: 15px; font-weight: 400; letter-spacing: .12em; color: var(--text); margin: 0 0 10px; }
+.pidx-own-body { font-size: 14.5px; line-height: 1.6; }
+.pidx-own-body p { margin: 0 0 8px; }
+.pidx-write { margin-top: 26px; font-size: 12.5px; }

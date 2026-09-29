@@ -1,0 +1,7 @@
+#!/bin/sh
+# Not git. On a Mac without Apple's developer tools /usr/bin/git is a shim that opens the "install the command line
+# developer tools" dialog, and the Claude command line tool runs git on its own in every session (it asks whether a
+# settings file is tracked). scripts/run.mjs puts this folder first on the PATH of the sessions it starts when the tools
+# are absent (server/devtools.js), so that call fails quietly instead of opening a dialog in the middle of the night.
+echo "git: not installed on this Mac" >&2
+exit 1

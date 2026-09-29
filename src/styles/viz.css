@@ -1,0 +1,106 @@
+/* Small drawings for numbers (SPEC §20.35, cut in stone §20.60): ring, meter, track, stack, timeline. Coloured by --c
+   (the course), falling back to the accent; the current week and the live moment are gilt; tokens only, so light and
+   dark come for free. Imported by src/components/Viz.jsx. */
+
+/* ---- ring: how much of a list is done ---- */
+.vz-ring { position: relative; display: inline-grid; place-items: center; flex: none; }
+.vz-ring svg { position: absolute; inset: 0; }
+.vz-ring-track { stroke: var(--pill); }
+.vz-ring-fill { stroke: var(--c, var(--accent)); transition: stroke-dashoffset var(--t, .3s) var(--ease, ease); }
+.vz-ring-in { position: relative; display: flex; flex-direction: column; align-items: center; line-height: 1.05; }
+.vz-ring-in b { font-family: var(--font-display); font-size: 17px; font-weight: 400; letter-spacing: 0; color: var(--text); font-variant-numeric: lining-nums tabular-nums; }
+.vz-ring-in small { font-size: 10.5px; font-weight: 500; color: var(--muted); }
+.vz-ring.full .vz-ring-in b { color: color-mix(in srgb, var(--c, var(--accent)) var(--c-mix), var(--ink-mix)); }
+
+/* ---- meter: a share as a bar ---- */
+.vz-meter { position: relative; display: inline-block; width: 96px; height: 7px; border-radius: 2px; background: var(--pill); overflow: hidden; flex: none; vertical-align: middle; }
+.vz-meter.wide { width: 100%; }
+.vz-meter i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: inherit; background: color-mix(in srgb, var(--c, var(--accent)) 42%, transparent); transition: width var(--t, .3s) var(--ease, ease); }
+.vz-meter i.strong { background: var(--c, var(--accent)); }
+
+/* ---- track: the weeks of a term in one row ---- */
+.vz-track { display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: 4px; padding-top: 18px; }
+.vz-cell { position: relative; display: flex; flex-direction: column; align-items: stretch; gap: 6px; min-width: 0; padding: 0; border: 0; background: none; color: var(--muted); cursor: pointer; }
+.vz-cell-bar { height: 14px; border-radius: 2px; background: var(--edge-2); transition: transform var(--t-fast, .16s) var(--ease, ease); }
+.vz-cell:hover .vz-cell-bar { transform: scaleY(1.35); }
+.vz-cell-n { font-family: var(--font-display); font-size: 13px; font-weight: 400; text-align: center; font-variant-numeric: lining-nums tabular-nums; }
+.vz-cell.done .vz-cell-bar { background: var(--c, var(--accent)); }
+.vz-cell.partial .vz-cell-bar { background: color-mix(in srgb, var(--c, var(--accent)) 45%, transparent); }
+.vz-cell.empty .vz-cell-bar { background: var(--edge-2); }
+.vz-cell.future .vz-cell-bar { background: transparent; box-shadow: inset 0 0 0 1px var(--edge-2); }
+.vz-cell.now .vz-cell-bar { box-shadow: 0 0 0 2px var(--glass-strong), 0 0 0 4px var(--gilt); }
+.vz-cell.now .vz-cell-n { color: var(--text); }
+/* the week the page is (on the week screen): ringed in ink, its number underlined; the current week's gilt wins when both */
+.vz-cell.open .vz-cell-bar { box-shadow: 0 0 0 2px var(--glass-strong), 0 0 0 4px var(--text); }
+.vz-cell.open .vz-cell-n { color: var(--text); text-decoration: underline; text-underline-offset: 3px; }
+.vz-cell.now.open .vz-cell-bar { box-shadow: 0 0 0 2px var(--glass-strong), 0 0 0 4px var(--gilt); }
+.vz-flag { position: absolute; left: 50%; bottom: calc(100% + 2px); transform: translateX(-50%); white-space: nowrap; font-family: var(--font-display); font-variant-caps: small-caps; text-transform: lowercase; font-variant-numeric: lining-nums; font-size: 11.5px; letter-spacing: .06em; line-height: 1;
+  padding: 2px 5px; border-radius: 2px; color: #fff; background: var(--danger); }
+
+/* ---- stack: what a whole is made of ---- */
+.vz-stack { display: grid; gap: 12px; }
+.vz-stack-bar { display: flex; gap: 3px; height: 18px; }
+.vz-stack-part { position: relative; min-width: 8px; border-radius: 2px; overflow: hidden; background: color-mix(in srgb, var(--part) 20%, transparent); }
+.vz-stack-part i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--part); }
+.vz-stack-key { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.vz-stack-key li { display: flex; align-items: baseline; gap: 8px; min-width: 0; font-size: 13.5px; }
+.vz-stack-key b { min-width: 36px; font-family: var(--font-display); font-size: 14.5px; font-weight: 400; font-variant-numeric: lining-nums tabular-nums; }
+.vz-stack-key span:not(.vz-swatch) { min-width: 0; }
+.vz-stack-key small { margin-left: auto; color: var(--muted); font-size: 12px; white-space: nowrap; }
+.vz-swatch { width: 10px; height: 10px; border-radius: 2px; flex: none; background: var(--part); transform: translateY(1px); }
+/* four shades of the course colour, so parts stay apart without inventing colours */
+.t0 { --part: var(--c, var(--accent)); }
+.t1 { --part: color-mix(in srgb, var(--c, var(--accent)) 62%, var(--ink-mix)); }
+.t2 { --part: color-mix(in srgb, var(--c, var(--accent)) 55%, var(--glass-solid)); }
+.t3 { --part: color-mix(in srgb, var(--c, var(--accent)) 40%, var(--muted-2)); }
+.vz-stack-odd { margin: 0; font-size: 12px; color: var(--danger); }
+
+/* ---- the load of a run of days (SPEC §20.63): class hours as a bar, a bead per thing wanted, the numbers under ---- */
+.ld { --n: 7; }
+.tt .ld { display: contents; }
+.ld-own { display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: 6px; }
+.ld-k { font-family: var(--font-display); font-variant-caps: small-caps; text-transform: lowercase; font-size: 12.5px; letter-spacing: .1em; color: var(--muted); padding: 12px 6px 0 0; text-align: right; }
+.ld-cell { position: relative; min-width: 0; }
+.ld-day { display: flex; flex-direction: column; gap: 5px; width: 100%; padding: 8px 5px 7px; border: 0; border-radius: 3px; background: none; text-align: left; cursor: pointer; transition: background .12s; }
+.ld-day:hover, .ld-day:focus-visible { background: var(--hover); outline: none; }
+.ld-day.today { background: color-mix(in srgb, var(--gilt) 7%, transparent); }
+.ld-head { display: flex; align-items: baseline; gap: 5px; padding-bottom: 5px; margin-bottom: 2px; border-bottom: 1px solid var(--edge-2); }
+.ld-head b { font-family: var(--font-display); font-variant-caps: small-caps; text-transform: lowercase; font-size: 13.5px; font-weight: 400; letter-spacing: .1em; }
+.ld-head i { font-style: normal; font-family: var(--font-display); font-size: 13px; font-variant-numeric: lining-nums; color: var(--muted); }
+.ld-day.today .ld-head b, .ld-day.today .ld-head i { color: var(--gilt); }
+.ld-bar { display: flex; gap: 2px; height: 10px; }
+.ld-seg { display: block; height: 100%; min-width: 3px; border-radius: 2px; background: color-mix(in srgb, var(--c) var(--btn-course), var(--btn-mix)); }
+.ld-due { display: flex; flex-wrap: wrap; align-items: center; gap: 3px; min-height: 8px; }
+.ld-due i { width: 8px; height: 8px; border-radius: 1px; background: color-mix(in srgb, var(--c, var(--gilt)) var(--btn-course), var(--btn-mix)); }
+.ld-due em { font-style: normal; font-size: 10px; line-height: 8px; color: var(--muted); }
+.ld-n { font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ld-tip { position: absolute; z-index: 30; top: calc(100% + 4px); left: 0; width: 250px; padding: 11px 13px 10px; border-radius: 4px; pointer-events: none;
+  background: var(--slab); color: var(--slab-text); box-shadow: var(--shadow); font-size: 12.5px; line-height: 1.45; text-align: left; animation: pop .12s ease-out; }
+.ld-r .ld-tip { left: auto; right: 0; }
+.ld-tip b { display: block; font-family: var(--font-display); font-size: 16px; font-weight: 400; font-variant-numeric: lining-nums; margin-bottom: 2px; }
+.ld-tip small { display: block; color: var(--slab-gilt); font-size: 12px; margin-bottom: 7px; }
+.ld-tip ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 3px; }
+.ld-tip li { display: flex; gap: 8px; align-items: baseline; min-width: 0; }
+.ld-tip li i { flex: none; width: 8px; height: 8px; border-radius: 2px; background: color-mix(in srgb, var(--c, var(--slab-gilt)) var(--slab-btn-course), var(--slab-btn-mix)); transform: translateY(-1px); }
+.ld-tip li span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ld-tip li em { font-style: normal; color: var(--slab-muted); margin-left: auto; flex: none; font-variant-numeric: tabular-nums; }
+.ld-tip-go { display: block; margin-top: 8px; color: var(--slab-muted); font-size: 11.5px; }
+
+/* ---- timeline: dated things down a line ---- */
+.vz-tl { list-style: none; margin: 0; padding: 0; position: relative; }
+.vz-tl::before { content: ""; position: absolute; left: 5px; top: 8px; bottom: 8px; width: 1px; background: var(--edge-2); }
+.vz-tl-item { position: relative; padding-left: 22px; }
+.vz-tl-dot { position: absolute; left: 0; top: 14px; width: 11px; height: 11px; border-radius: 50%; background: var(--glass-solid); box-shadow: inset 0 0 0 2px var(--muted-2); }
+.vz-tl-item.test .vz-tl-dot { background: var(--danger); box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 16%, transparent); }
+.vz-tl-item.due .vz-tl-dot { box-shadow: inset 0 0 0 3px var(--c, var(--accent)); }
+.vz-tl-item.class .vz-tl-dot { background: var(--c, var(--accent)); box-shadow: none; }
+.vz-tl-body { display: flex; align-items: baseline; gap: 12px; width: 100%; padding: 9px 8px; margin: 0 -8px; border: 0; border-radius: 3px; background: none; text-align: left; font: inherit; color: var(--text); }
+button.vz-tl-body { cursor: pointer; width: calc(100% + 16px); }
+button.vz-tl-body:hover { background: var(--hover); }
+.vz-tl-when { display: flex; flex-direction: column; flex: none; width: 96px; line-height: 1.25; }
+.vz-tl-when b { font-family: var(--font-display); font-size: 15px; font-weight: 400; font-variant-numeric: lining-nums tabular-nums; }
+.vz-tl-when small { font-size: 12px; color: var(--muted); }
+.vz-tl-main { display: flex; flex-direction: column; min-width: 0; line-height: 1.3; }
+.vz-tl-title { font-size: 14.5px; font-weight: 500; letter-spacing: 0; }
+.vz-tl-item.test .vz-tl-title { font-weight: 600; }
+.vz-tl-main small { font-size: 12.5px; color: var(--muted); }

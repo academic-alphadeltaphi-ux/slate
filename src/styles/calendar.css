@@ -1,0 +1,9 @@
+/* The calendar status line (SPEC §20.8): one row in the What's Next head. Tokens from styles.css only, so light
+   and dark come for free; nothing here is a card. */
+.cal-status { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 8px; min-width: 0; font-size: 12px; line-height: 1.4; color: var(--muted); }
+.cal-status.danger { color: var(--danger); }
+.cal-status-ic { display: inline-grid; place-items: center; color: inherit; flex: none; }
+.cal-status-text { min-width: 0; }
+.cal-status .link { border: 0; background: none; padding: 0; font: inherit; color: var(--gilt); cursor: pointer; text-decoration: none; }
+.cal-status .link:hover { text-decoration: underline; }
+.cal-status .cal-ext { display: inline-flex; align-items: center; gap: 3px; }

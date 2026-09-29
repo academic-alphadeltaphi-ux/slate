@@ -1,0 +1,6 @@
+/* problems — the kind chip of a Problems page and the page-list hover meta (SPEC §20.2). Imported by
+   ProblemsChip.jsx. Tokens only; light and dark come from styles.css. The tick strike rule
+   (`.prose li[data-checked="true"] > div > p`) is the one shared rule and lives in styles.css. */
+.problems-chip { font-variant-numeric: tabular-nums; cursor: default; }
+.problems-chip.busy { opacity: .6; }
+.pl-problems { margin-right: 6px; color: var(--muted); font-variant-numeric: tabular-nums; }

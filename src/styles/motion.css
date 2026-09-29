@@ -1,0 +1,77 @@
+/* Motion (SPEC §20.16). Everything here animates transform and opacity only, so it runs on the compositor and
+   never reflows; nothing animates layout, colour transitions stay short. One shared easing, one shared duration
+   scale, and a stagger that makes a screen assemble itself rather than appear. The whole file is switched off by
+   `prefers-reduced-motion`, which is the last block. */
+:root {
+  --ease: cubic-bezier(.2, .8, .2, 1);      /* out-expo-ish: fast start, soft landing */
+  --ease-back: cubic-bezier(.34, 1.4, .5, 1);
+  --t-fast: .16s; --t: .3s; --t-slow: .46s;
+}
+
+@keyframes rise { from { opacity: 0; transform: translateY(14px) scale(.985) } to { opacity: 1; transform: none } }
+@keyframes fade { from { opacity: 0 } to { opacity: 1 } }
+@keyframes slideIn { from { opacity: 0; transform: translateX(-10px) } to { opacity: 1; transform: none } }
+@keyframes pop { from { opacity: 0; transform: scale(.9) } to { opacity: 1; transform: none } }
+@keyframes sheen { from { background-position: -180% 0 } to { background-position: 180% 0 } }
+@keyframes pulse { 0%, 100% { opacity: 1 } 50% { opacity: .45 } }
+
+/* ---- a screen assembles itself ---- */
+.home > .home-head { animation: rise var(--t-slow) var(--ease) backwards; }
+.td-say { animation: rise var(--t-slow) var(--ease) .06s backwards; }
+.td-body > *, .td-courses > *, .td-foot > *, .cd-pair > *, .wk-main > *, .wk-rail > *, .home-grid > *, .more-body > *, .cx-head, .cx-main > *, .cx-side > * {
+  animation: rise var(--t-slow) var(--ease) backwards;
+}
+.cx-main > *:nth-child(2), .cx-side > *:nth-child(2) { animation-delay: .05s }
+.cx-main > *:nth-child(3), .cx-side > *:nth-child(3) { animation-delay: .1s }
+.cx-main > *:nth-child(n+4), .cx-side > *:nth-child(n+4) { animation-delay: .15s }
+.td-courses > *:nth-child(2), .td-foot > *:nth-child(2), .td-body > *:nth-child(2), .cd-pair > *:nth-child(2), .wk-main > *:nth-child(2), .wk-rail > *:nth-child(2), .home-grid > *:nth-child(2), .more-body > *:nth-child(2) { animation-delay: .05s }
+.td-courses > *:nth-child(3), .td-body > *:nth-child(3), .cd-pair > *:nth-child(3), .wk-main > *:nth-child(3), .home-grid > *:nth-child(3), .more-body > *:nth-child(3) { animation-delay: .1s }
+.td-body > *:nth-child(4), .wk-main > *:nth-child(4), .home-grid > *:nth-child(4) { animation-delay: .15s }
+.td-body > *:nth-child(5), .wk-main > *:nth-child(5), .home-grid > *:nth-child(5) { animation-delay: .2s }
+.td-body > *:nth-child(n+6), .wk-main > *:nth-child(n+6), .home-grid > *:nth-child(n+6) { animation-delay: .25s }
+.lib-grid > *, .lib-courses-grid > *, .lib-kinds-grid > *, .todo-grid > *, .course-grid > *, .wk-items > *, .pidx-grid > *, .sim-targets > *, .cd-holds > * { animation: rise var(--t) var(--ease) backwards; }
+.lib-grid > *:nth-child(2), .lib-courses-grid > *:nth-child(2), .lib-kinds-grid > *:nth-child(2), .todo-grid > *:nth-child(2), .course-grid > *:nth-child(2), .wk-items > *:nth-child(2), .pidx-grid > *:nth-child(2), .sim-targets > *:nth-child(2), .cd-holds > *:nth-child(2) { animation-delay: .05s }
+.lib-grid > *:nth-child(3), .lib-courses-grid > *:nth-child(3), .lib-kinds-grid > *:nth-child(3), .todo-grid > *:nth-child(3), .course-grid > *:nth-child(3), .wk-items > *:nth-child(3), .pidx-grid > *:nth-child(3), .sim-targets > *:nth-child(3), .cd-holds > *:nth-child(3) { animation-delay: .1s }
+.lib-grid > *:nth-child(n+4), .lib-courses-grid > *:nth-child(n+4), .lib-kinds-grid > *:nth-child(n+4), .todo-grid > *:nth-child(n+4), .course-grid > *:nth-child(n+4), .wk-items > *:nth-child(n+4), .pidx-grid > *:nth-child(n+4), .cd-holds > *:nth-child(n+4) { animation-delay: .15s }
+.wn-card { animation: pop var(--t) var(--ease) backwards; }
+.list li { animation: fade var(--t) ease backwards; }
+.list li:nth-child(2) { animation-delay: .03s } .list li:nth-child(3) { animation-delay: .06s }
+.list li:nth-child(4) { animation-delay: .09s } .list li:nth-child(n+5) { animation-delay: .12s }
+.tg tbody tr { animation: fade .34s ease backwards; }
+.tg tbody tr:nth-child(2) { animation-delay: .02s } .tg tbody tr:nth-child(3) { animation-delay: .04s }
+.tg tbody tr:nth-child(4) { animation-delay: .06s } .tg tbody tr:nth-child(5) { animation-delay: .08s }
+.tg tbody tr:nth-child(n+6) { animation-delay: .1s }
+.sidebar .row { animation: slideIn var(--t) var(--ease) backwards; }
+.sidebar .nb:nth-child(2) .row { animation-delay: .04s } .sidebar .nb:nth-child(3) .row { animation-delay: .07s }
+.sidebar .nb:nth-child(n+4) .row { animation-delay: .1s }
+.pagelist .row { animation: slideIn .24s var(--ease) backwards; }
+
+/* ---- things you touch ---- */
+.btn, .icon-btn, .pill, .tab, .link-pill, .wk-empty, .wk-chip, .tw-week, .more-btn, .wk-navbtn, .cd-hold, .cd-class {
+  transition: transform var(--t-fast) var(--ease), background var(--t-fast) ease, color var(--t-fast) ease, border-color var(--t-fast) ease, box-shadow var(--t-fast) var(--ease);
+}
+.btn:active, .icon-btn:active, .tab:active, .link-pill:active, .wk-empty:active, .more-btn:active { transform: scale(.94); }
+.wn-card { transition: transform var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), border-color var(--t-fast) ease; }
+.sidebar .row { transition: background var(--t-fast) ease, transform var(--t-fast) var(--ease); }
+.sidebar .row:hover { transform: translateX(2px); }
+.md-item input[type=checkbox], .td-todo input { transition: transform var(--t-fast) var(--ease-back); }
+.md-item input[type=checkbox]:checked, .td-todo input:checked { transform: scale(1.18); }
+.fold svg, .disclosure { transition: transform var(--t-fast) var(--ease); }
+
+/* ---- state ---- */
+.more-body { animation: rise var(--t) var(--ease); }
+.wn-card.now { animation: pop var(--t) var(--ease) backwards; }
+.wn-card.now::after { content: ""; position: absolute; inset: -1px; border-radius: var(--radius-sm); pointer-events: none;
+  box-shadow: 0 0 0 1px var(--gilt); animation: pulse 2.4s ease-in-out infinite; }
+.wn-card { position: relative; }
+.td-live::after { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: currentColor; margin-left: 6px; animation: pulse 1.8s ease-in-out infinite; }
+.btn:disabled { transition: opacity var(--t) ease; }
+.home-error { animation: rise var(--t) var(--ease); }
+
+/* ---- the page canvas ---- */
+.el { transition: box-shadow var(--t-fast) var(--ease), outline-color var(--t-fast) ease; }
+.canvas, .pidx { animation: fade var(--t) ease; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}

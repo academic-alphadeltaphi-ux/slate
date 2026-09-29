@@ -1,0 +1,40 @@
+/* Export dialog (SPEC §20.10). Tokens only; the dialog itself is opaque (.dialog paints var(--bg)). */
+.export-dialog { width: 520px; }
+.export-dialog .exp-count { color: var(--text); font-weight: 600; }
+.exp-check { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 13px; cursor: pointer; }
+.exp-check input { accent-color: var(--accent); width: 14px; height: 14px; margin: 0; }
+.exp-summary { margin-top: 10px; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.exp-path { font-family: var(--mono); font-size: 12px; color: var(--text); }
+.exp-bar { height: 4px; border-radius: 1px; background: var(--pill); margin-top: 14px; overflow: hidden; }
+.exp-bar span { display: block; height: 100%; background: var(--accent-grad); border-radius: 2px; transition: width .4s ease; }
+.exp-progress { margin-top: 10px; font-size: 13px; font-variant-numeric: tabular-nums; display: flex; flex-wrap: wrap; gap: 0 4px; }
+.exp-current { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.exp-time { color: var(--muted-2); }
+.exp-hint { margin-top: 6px; font-size: 12px; color: var(--muted-2); }
+.exp-result { margin-top: 8px; font-size: 13px; line-height: 1.5; }
+.exp-result strong { word-break: break-word; }
+.exp-sub { color: var(--muted); font-variant-numeric: tabular-nums; }
+.exp-note { margin-top: 8px; font-size: 12.5px; color: var(--muted); line-height: 1.45; }
+.exp-note.danger { color: var(--danger); }
+.exp-failed { margin: 10px 0 0; padding: 0; list-style: none; font-size: 12.5px; max-height: 180px; overflow: auto; }
+.exp-failed li { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0; border-top: 1px solid var(--edge); }
+.exp-failed li span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.exp-failed small { color: var(--danger); text-align: right; }
+.export-dialog .btn:disabled { opacity: .5; filter: none; transform: none; cursor: default; }
+
+/* Save a copy (SPEC §20.28): three formats, each a row that says what it is for. */
+.sv { max-width: 460px; }
+.sv-body { display: grid; gap: 6px; }
+.sv-row { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 12px 13px; border-radius: var(--radius-sm);
+  border: 1px solid var(--edge); background: var(--glass-solid); transition: transform .12s, border-color .12s; }
+.sv-row:not(:disabled):hover { border-color: var(--accent); }
+.sv-row:disabled { opacity: .55; }
+.sv-ic { display: inline-grid; place-items: center; width: 30px; height: 30px; flex: none; border-radius: 3px; color: var(--muted); background: var(--pill); }
+.sv-main { flex: 1; min-width: 0; display: grid; gap: 1px; }
+.sv-main b { font-size: 13.5px; font-weight: 500; }
+.sv-main small { font-size: 11.5px; color: var(--muted); }
+.sv-go { font-size: 12px; color: var(--gilt); font-weight: 500; flex: none; }
+.sv-note { margin: 4px 0 0; }
+.sv-done { display: flex; align-items: center; gap: 8px; margin-top: 8px; padding-top: 10px; border-top: 1px solid var(--edge); font-size: 12.5px; color: var(--muted); }
+.sv-done .grow { flex: 1; min-width: 0; }
+.sv-done b { color: var(--text); font-weight: 500; }

@@ -1,0 +1,41 @@
+/* What Today's work (SPEC §22, §23) leaves on every screen: the timer's pill, "how long did it take?", attendance and
+   the estimate in the sheets, and why Claude proposed a block. The screen itself is src/styles/day.css (`.dy-`); the
+   first screen's `.dw-` rules went with it, all but the estimate's stepper. */
+/* the estimate's stepper, in the task sheet */
+.dw-step { display: inline-flex; align-items: center; gap: 2px; }
+.dw-step b { font-family: var(--font-display); font-size: 17px; font-weight: 400; min-width: 54px; text-align: center; font-variant-numeric: lining-nums tabular-nums; }
+.dw-step .icon-btn { width: 26px; height: 26px; }
+
+/* the timer's pill: on every screen, over the page, like the tool pill */
+.wt { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); z-index: 60; display: flex; align-items: center; gap: 10px; padding: 8px 10px 8px 14px; border-radius: 999px; background: var(--chrome); color: var(--chrome-text); box-shadow: var(--shadow); max-width: min(680px, calc(100vw - 40px)); }
+.wt-clock { font-family: var(--font-display); font-size: 20px; font-variant-numeric: lining-nums tabular-nums; min-width: 64px; letter-spacing: .02em; }
+.wt.paused .wt-clock { color: var(--chrome-muted); }
+.wt-what { display: grid; gap: 0; min-width: 0; }
+.wt-what b { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wt-what small { font-size: 11px; color: var(--chrome-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wt .btn { padding: 4px 10px; font-size: 12.5px; }
+.wt .icon-btn { color: inherit; }
+.wt-ask { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; }
+.wt-ask span { color: var(--chrome-muted); }
+.topbar .wt-chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; padding: 3px 10px; border-radius: 999px; background: var(--pill); color: var(--text); font-variant-numeric: tabular-nums; cursor: pointer; border: 0; font: inherit; }
+.topbar .wt-chip i { width: 7px; height: 7px; border-radius: 50%; background: var(--gilt); display: inline-block; }
+
+/* how long did it take? */
+.hl .hl-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.hl .hl-chips .tab { display: grid; gap: 0; padding: 6px 12px; text-align: center; }
+.hl .hl-chips .tab small { font-size: 10.5px; color: var(--muted-2); }
+.hl .hl-chips .tab.on small { color: inherit; opacity: .8; }
+.hl-row { display: flex; align-items: center; gap: 10px; }
+.hl-row input { width: 64px; font: inherit; padding: 4px 6px; border: 1px solid var(--edge-2); border-radius: var(--radius-sm); background: var(--paper); color: var(--text); }
+.hl-why { margin-top: 14px; }
+
+/* attendance and the estimate in the sheets */
+.cs-attend, .cs-est { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 14px 0 0; padding-top: 12px; border-top: 1px solid var(--edge); font-size: 13.5px; }
+.cs-attend b, .cs-est > b { font-weight: 500; }
+.cs-attend .tabs { display: inline-flex; gap: 4px; }
+.cs-est small { font-size: 12.5px; }
+.tt-ev.missed { box-shadow: inset 0 0 0 2px var(--danger); }
+.tt-ev.missed .tt-ev-flag { color: var(--on-c); }
+/* Why Claude proposed a block, in its task sheet (SPEC §23): the reason lives here, never on the calendar. */
+.cs-why { margin: 14px 0 0; padding: 10px 12px; border-radius: 10px; background: color-mix(in srgb, #8b6cf6 9%, transparent); font-size: 13.5px; line-height: 1.45; }
+.cs-why b { display: block; font-weight: 600; font-size: 12px; color: #7c5cf0; margin-bottom: 2px; }

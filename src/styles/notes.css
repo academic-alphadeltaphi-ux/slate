@@ -1,0 +1,89 @@
+/* Taking notes, and the notes you have taken (SPEC §20.26, cut in stone §20.60). The picker borrows the sheet furniture
+   (.cs, .cs-head, .cs-body from timetable.css); everything else is np- (the picker) and nt- (the Notes screen). */
+
+/* ---- the picker ---- */
+.np { max-width: 560px; --accent: var(--c); --on-accent: var(--on-c); --accent-grad: color-mix(in srgb, var(--c) var(--btn-course, 84%), var(--btn-mix)); }   /* the primary button, the rings and the fills follow the course */
+.np-body { display: grid; gap: 18px; }
+.np-step { display: grid; gap: 8px; }
+.np-k { font-family: var(--font-display); font-variant-caps: small-caps; text-transform: lowercase; font-size: 14px; font-weight: 400; letter-spacing: .12em; color: var(--text); }
+.np-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.np-chip { border: 1px solid var(--edge-2); background: transparent; border-radius: 3px; padding: 5px 14px; font-size: 13px; font-weight: 500; color: var(--text); transition: all var(--t-fast, .12s) ease; }
+.np-chip:hover { border-color: var(--c, var(--accent)); }
+.np-chip.on { color: color-mix(in srgb, var(--c, var(--accent)) var(--c-mix), var(--ink-mix)); border-color: color-mix(in srgb, var(--c, var(--accent)) 60%, transparent); background: color-mix(in srgb, var(--c, var(--accent)) 10%, transparent); }
+
+.np-weeks { display: grid; grid-template-columns: repeat(auto-fill, minmax(58px, 1fr)); gap: 5px; }
+.np-week { display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 7px 4px 6px; border-radius: 3px;
+  border: 1px solid var(--edge); background: transparent; transition: all var(--t-fast, .12s) ease; }
+.np-week b { font-family: var(--font-display); font-size: 16px; font-weight: 400; font-variant-numeric: lining-nums tabular-nums; color: var(--muted); letter-spacing: 0; }
+.np-week span { font-size: 10px; color: var(--muted-2); white-space: nowrap; }
+.np-week:hover { border-color: var(--muted-2); transform: translateY(-1px); }
+.np-week:hover b { color: var(--text); }
+/* a week that already holds a note carries a dot, so a second sheet for it is never opened by accident */
+.np-week.has { border-style: solid; border-color: color-mix(in srgb, var(--c, var(--accent)) 35%, var(--edge)); }
+.np-week { position: relative; }
+.np-week.has::after { content: ""; position: absolute; top: 5px; right: 5px; width: 5px; height: 5px; border-radius: 50%; background: var(--c, var(--accent)); }   /* in the corner: under the number it sat on the date */
+.np-week.now { box-shadow: 0 0 0 2px var(--gilt); }
+.np-week.on { background: color-mix(in srgb, var(--c, var(--accent)) var(--btn-course, 84%), var(--btn-mix)); border-color: transparent; }
+.np-week.on b, .np-week.on span { color: var(--on-c); }
+.np-week.on b::after { background: var(--on-c); }
+
+.np-go { display: flex; align-items: center; gap: 12px; padding-top: 6px; border-top: 1px solid var(--edge); }
+.np-say { flex: 1; min-width: 0; font-size: 12.5px; color: var(--muted); }
+.np-error { margin: 0; }
+
+/* ---- the Notes screen ---- */
+.nt-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: -6px 0 20px; }
+
+/* A note as a sheet: marble, the course's pigment along its top, its title in the serif and its first lines under it. */
+.nt-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; max-width: var(--screen-max); }
+.nt-card { display: flex; flex-direction: column; gap: 7px; align-items: stretch; text-align: left; min-width: 0; padding: 14px 18px 14px; border-radius: var(--radius); cursor: pointer;
+  background: var(--glass-solid); border: 1px solid var(--edge-2); border-top: 5px solid var(--c); box-shadow: none;
+  transition: border-color var(--t-fast, .12s) ease; }
+.nt-card:hover, .nt-card:focus-visible { outline: none; border-color: var(--text); border-top-color: var(--c); }
+.nt-card-top { display: flex; align-items: center; gap: 8px; }
+.nt-card-top .tag { flex: none; }
+.nt-when { margin-left: auto; font-size: 12px; color: var(--muted); white-space: nowrap; }
+.nt-title { font-family: var(--font-display); font-size: 20px; font-weight: 400; letter-spacing: 0; line-height: 1.25; color: var(--text); }
+.nt-body { font-size: 13.5px; color: var(--muted); line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.nt-foot { display: flex; align-items: center; gap: 7px; margin-top: auto; padding-top: 10px; border-top: 1px solid var(--edge); font-size: 12px; color: var(--muted); }
+
+/* the empty state is an invitation, not an apology */
+.nt-blank { display: grid; justify-items: center; gap: 14px; text-align: center; padding: 12vh 20px; }
+.nt-blank h2 { font-family: var(--font-display); font-size: 26px; font-weight: 400; letter-spacing: 0; margin: 0; }
+.nt-blank p { margin: 0; max-width: 48ch; color: var(--muted); font-size: 14.5px; line-height: 1.6; }
+.nt-more { border: 0; background: none; color: var(--muted); font-size: 15px; line-height: 1; padding: 2px 6px; border-radius: 3px; flex: none; opacity: 0; transition: opacity .12s, color .12s, background .12s; }
+.nt-card:hover .nt-more, .nt-more:focus-visible { opacity: 1; }
+.nt-more:hover { color: var(--text); background: var(--hover); }
+
+/* ---- Add files: your own documents into a week (SPEC §20.30) ---- */
+.af { max-width: 620px; }
+.af-drop { display: grid; justify-items: center; gap: 3px; padding: 24px 16px; border-radius: var(--radius-sm); cursor: pointer;
+  border: 1px dashed var(--edge-2); color: var(--muted); text-align: center; transition: border-color .12s, background .12s, color .12s; }
+.af-drop:hover { border-color: color-mix(in srgb, var(--c, var(--accent)) 55%, transparent); background: color-mix(in srgb, var(--c, var(--accent)) 5%, transparent); color: var(--text); }
+.af-drop b { font-size: 13.5px; font-weight: 500; }
+.af-drop small { font-size: 11.5px; color: var(--muted-2); }
+.af-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; max-height: 190px; overflow-y: auto; }
+.af-list li { display: flex; align-items: center; gap: 9px; padding: 6px 8px; border-radius: 3px; font-size: 12.5px; }
+.af-list li:hover { background: var(--hover); }
+.af-list .grow { flex: 1; min-width: 0; display: flex; flex-direction: column; overflow: hidden; }
+.af-list .grow small { font-size: 11px; color: var(--muted-2); }
+.af-ic { color: var(--muted-2); display: inline-flex; flex: none; }
+.af-x { border: 0; background: none; color: var(--muted-2); display: grid; place-items: center; padding: 3px; border-radius: 3px; flex: none; }
+.af-x:hover { color: var(--danger); background: var(--hover); }
+.af-go { font-size: 11.5px; color: color-mix(in srgb, var(--c, var(--accent)) var(--c-mix), var(--ink-mix)); flex: none; }
+.af-cat { width: 100%; height: 32px; margin-top: 6px; padding: 0 11px; border-radius: 3px; border: 1px solid var(--edge-2); background: var(--bg); color: var(--text); font: inherit; font-size: 12.5px; }
+.af-cat:focus { outline: none; border-color: var(--c, var(--accent)); }
+.af-done { margin: 0; font-size: 12.5px; color: color-mix(in srgb, var(--c, var(--accent)) var(--c-mix), var(--ink-mix)); }
+/* Transcribe the recordings once filed (SPEC §20.36): one line you can untick */
+.af-tr { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-radius: var(--radius-sm); border: 1px solid var(--edge); cursor: pointer; }
+.af-tr:hover { border-color: var(--edge-2); }
+.af-tr input { margin: 3px 0 0; flex: none; accent-color: var(--c, var(--accent)); }
+.af-tr .grow { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.af-tr b { font-size: 13.5px; font-weight: 500; color: var(--text); }
+.af-tr small { font-size: 12px; color: var(--muted); }
+
+/* Continue this week's note, or start another beside it (SPEC §20.33). */
+.np-actions { display: inline-flex; gap: 8px; }
+.np-actions .btn svg { vertical-align: -2px; margin-right: 5px; }
+.np-extra { margin-top: 14px; }
+.np-extra .np-chip { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

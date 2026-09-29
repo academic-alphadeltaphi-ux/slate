@@ -1,0 +1,7 @@
+/* Sunday review — the "Last review · Sun, Sep 13" link in the Home head (src/components/ReviewLink.jsx).
+   Same weight as `.home .muted` beside it: 12 px, muted, accent on hover, tabular digits. Tokens only, so light
+   and dark come for free. */
+.review-link { display: inline-flex; align-items: center; gap: 5px; border: 0; background: none; padding: 0; margin: 0; font: inherit; font-size: 12px; line-height: 1; color: var(--muted); cursor: pointer; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.review-link:hover { color: var(--gilt); text-decoration: underline; text-underline-offset: 2px; }
+.review-link:focus-visible { outline: 2px solid var(--gilt); outline-offset: 2px; border-radius: 4px; }
+.review-link svg { flex: none; color: inherit; }

@@ -1,0 +1,62 @@
+/* To do (SPEC §20.19, simplified §20.34, a ledger §20.61). It was a grid of cards, and forty cards that all said
+   "required · Open it" read as one grey wall. It is a ledger now: each group is a heading cut over a double rule, and
+   each thing to do is one line of it — the tick, the course in its pigment, what it is, how crucial, when, and the one
+   button that does it — the way a register reads down rather than across. */
+.todo-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin: -8px 0 22px; }
+.todo-showdone { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+.todo-showdone input { accent-color: var(--accent); margin: 0; }
+.todo-nature .tab { font-size: 12.5px; }
+/* the day the week's load strip sent you here for (SPEC §20.63): one gilt chip, its × the way back to every day */
+.todo-day { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--gilt); color: var(--gilt); background: color-mix(in srgb, var(--gilt) 10%, transparent); font-weight: 600; }
+.todo-day:hover { color: var(--text); border-color: var(--text); }
+
+/* ---- a group: the heading over a double rule, the rows under it ---- */
+.todo-group { margin: 38px 0 0; max-width: var(--screen-max); }
+.todo-group-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 18px; margin: 0; padding-bottom: 10px; border-bottom: 3px double color-mix(in srgb, var(--text) 62%, transparent); }
+.todo-group h2 { display: flex; align-items: baseline; gap: 12px; margin: 0; font-family: var(--font-display); font-size: 30px; font-weight: 400; letter-spacing: 0; line-height: 1.15; color: var(--text); }
+.todo-group-n { font-family: var(--font-display); font-size: 20px; font-weight: 400; color: var(--muted); font-variant-numeric: lining-nums tabular-nums; }
+.todo-group-sub { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--muted); max-width: 72ch; }
+.todo-group.next .todo-group-head { border-bottom-color: var(--gilt); }
+.todo-group.next .todo-group-n { color: var(--gilt); }
+.todo-group.late h2, .todo-group.late .todo-group-n { color: var(--danger); }
+.todo-group.late .todo-group-head { border-bottom-color: color-mix(in srgb, var(--danger) 55%, transparent); }
+
+/* ---- a row: one line of the ledger ---- */
+.todo-rows { list-style: none; margin: 0; padding: 0; }
+.todo-row { display: grid; grid-template-columns: 24px 96px minmax(0, 1fr) auto minmax(0, 168px) auto; align-items: center; gap: 18px; padding: 15px 0 15px 16px; border-top: 1px solid var(--edge); box-shadow: inset 4px 0 0 var(--c); }
+.todo-row:first-child { border-top: 0; }
+.todo-row:hover { background: var(--hover); }
+.todo-row.done { opacity: .55; }
+.todo-row.done .todo-row-title { text-decoration: line-through; color: var(--muted); }
+.todo-row-course { min-width: 0; }
+.todo-row-course .tag { font-size: 14px; }
+.todo-row-yours { font-family: var(--font-display); font-variant-caps: small-caps; text-transform: lowercase; font-size: 13.5px; letter-spacing: .1em; color: var(--muted-2); }
+.todo-row-main { min-width: 0; display: grid; gap: 3px; cursor: pointer; border: 0; background: none; padding: 0; text-align: left; font: inherit; color: var(--text); }
+.todo-row-main:hover .todo-row-title { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--edge-2); }
+.todo-row-main:focus-visible { outline: none; }
+.todo-row-main:focus-visible .todo-row-title { text-decoration: underline; text-underline-offset: 3px; }
+.todo-row-title { font-size: 16.5px; font-weight: 500; letter-spacing: 0; line-height: 1.35; color: var(--text); }
+.todo-row-main small { font-size: 13px; color: var(--muted); }
+.todo-row-flags { display: inline-flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+.todo-row-flags:empty { display: none; }
+.todo-row-due { font-family: var(--font-display); font-size: 16px; font-weight: 400; font-variant-numeric: lining-nums tabular-nums; color: var(--muted); text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.todo-row-due.urgent, .todo-row.late .todo-row-due { color: var(--danger); }
+.todo-row-act { display: flex; justify-content: flex-end; min-width: 108px; }
+.todo-row-act .btn.small { white-space: nowrap; }
+.todo-nodo { font-size: 12.5px; color: var(--muted-2); text-align: right; }
+.todo-do { display: inline-flex; align-items: center; gap: 5px; }
+.todo-tick { width: 22px; height: 22px; flex: none; border-radius: 50%; border: 1.5px solid color-mix(in srgb, var(--c) 65%, var(--edge-2)); background: transparent; color: transparent; display: grid; place-items: center; transition: all var(--t-fast, .12s) var(--ease-back, ease); }
+.todo-tick:hover { border-color: var(--c); color: color-mix(in srgb, var(--c) 60%, transparent); transform: scale(1.1); }
+.todo-tick.on { background: var(--c); border-color: var(--c); color: #fff; }
+.todo-ic { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 3px; flex: none; color: color-mix(in srgb, var(--c) var(--c-mix), var(--ink-mix)); background: color-mix(in srgb, var(--c) 11%, transparent); }
+/* In a room, not on a screen: the icon says so, and there is no button. */
+.todo-row.t-in-class .todo-row-title { font-weight: 500; }
+.todo-clear { padding: 40px 0; font-family: var(--font-display); font-size: 18px; }
+
+/* A narrow pane: the flags, the date and the button drop under the title. */
+@container screen (max-width: 960px) {
+  .todo-row { grid-template-columns: 24px 96px minmax(0, 1fr); gap: 8px 18px; }
+  .todo-row-flags { grid-column: 3; justify-content: flex-start; }
+  .todo-row-due { grid-column: 3; text-align: left; }
+  .todo-row-act { grid-column: 3; justify-content: flex-start; }
+}
