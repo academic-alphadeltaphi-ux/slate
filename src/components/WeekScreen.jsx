@@ -222,17 +222,24 @@ export default function WeekScreen({ path, initialTab = null, onOpen, onOpenTitl
     try { onOpen(await startNewNote(api, wk)) }
     catch (e) { setNote(`Could not start a new note: ${e.message}`) }
   }
-  // A week flagged for review (SPEC §21.13): a flag and a line of what to go over, asked in the dialog every other name is
-  // asked in. It rides on the tests whose weeks include this one — their rows on To do and Home, the course's Next test.
-  const flagWeek = async on => {
-    const w = d.week
-    let note = ''
-    if (on) {
-      note = await dialog.prompt({ title: `Flag ${shortWeek(w.label)} for review`, label: 'What to go over before the test — a few words, or nothing', value: d.review?.note || '', placeholder: 'e.g. the derivations from the second lecture', confirmLabel: d.review ? 'Save' : 'Flag it' })
-      if (note == null) return
-    }
-    try { await api.flagWeek(key, w.n, w.label, on, note); await load(); api.hub().then(setHub).catch(() => { }) }
-    catch (e) { setNote(`Could not flag the week: ${e.message}`) }
+  // Topics of the week flagged for review (SPEC §21.13): which topic — the week's own topics offered, any words taken — and a
+  // line of what to go over, in one dialog. They ride on the tests whose weeks include this one (their rows on To do and
+  // Home, the course's Next test) and become the morning's review task before the test. `t` is the topic to change, or null.
+  const flagTopic = async t => {
+    const w = d.week, flagged = d.review?.topics || []
+    const offered = [w.topic, ...(d.meetings || []).map(m => m.topic?.text)].filter(Boolean).map(s => String(s).trim())
+      .filter((s, i, a) => a.indexOf(s) === i && (t ? true : !flagged.some(f => (f.topic || '').toLowerCase() === s.toLowerCase())))
+    const v = await dialog.form({ title: t ? `Change a topic flagged in ${shortWeek(w.label)}` : `Flag a topic of ${shortWeek(w.label)} for review`,
+      fields: [{ key: 'topic', label: 'Topic', value: t ? t.topic || '' : offered[0] || '', suggestions: offered, placeholder: 'e.g. the IS-LM model', max: 80 },
+        { key: 'note', label: 'What to go over before the test — a few words, or nothing', value: t?.note || '', placeholder: 'e.g. the derivations from Thursday', max: 120 }],
+      confirmLabel: t ? 'Save' : 'Flag it' })
+    if (!v) return
+    try { await api.review(key, w.n, w.label, { ...(t ? { id: t.id } : {}), topic: v.topic, note: v.note }); await load(); api.hub().then(setHub).catch(() => { }) }
+    catch (e) { setNote(`Could not flag that: ${e.message}`) }
+  }
+  const unflagTopic = async t => {
+    try { await api.review(key, d.week.n, d.week.label, { remove: true, id: t.id }); await load(); api.hub().then(setHub).catch(() => { }) }
+    catch (e) { setNote(`Could not take that off: ${e.message}`) }
   }
   // Sending a page to the trash from the shelf it stands on. Nothing is deleted outright — /api/trash is the same
   // move the file tree uses, so it can be put back.
@@ -281,11 +288,15 @@ export default function WeekScreen({ path, initialTab = null, onOpen, onOpenTitl
           <h1 className="home-title">{shortWeek(w.label)}<span className="wk-span">{w.span}</span></h1>
           {/* What the outline calls this week — for an online course, which module it is (SPEC §20.52). */}
           {w.topic && <p className="wk-topic">{w.topic}</p>}
-          {w.n && (d.review
-            ? <p className="wk-review"><Flag kind="review" small />{d.review.note && <span className="wk-review-note">{d.review.note}</span>}
-                {reaches.length > 0 && <span className="wk-review-on">on {reaches.map(t => t.title).join(', ')}</span>}
-                <button className="link" onClick={() => flagWeek(true)}>Edit</button><button className="link" onClick={() => flagWeek(false)}>Unflag</button></p>
-            : <p className="wk-review"><button className="link" onClick={() => flagWeek(true)} title="A flag and a line of what to go over, shown on the tests that cover this week">{I('bookmark', { width: 13, height: 13 })}Flag for review</button></p>)}
+          {w.n && (
+            <div className="wk-review">
+              {(d.review?.topics || []).map(t => (
+                <p key={t.id} className="wk-review-row"><Flag kind="review" small /><b>{t.topic || 'The whole week'}</b>{t.note && <span className="wk-review-note">{t.note}</span>}
+                  <button className="link" onClick={() => flagTopic(t)}>Edit</button><button className="link" onClick={() => unflagTopic(t)}>Remove</button></p>))}
+              <p className="wk-review-row">
+                {(d.review?.topics || []).length > 0 && reaches.length > 0 && <span className="wk-review-on">Shows on {reaches.map(t => t.title).join(', ')} ·</span>}
+                <button className="link" onClick={() => flagTopic(null)} title="A topic of this week and a line of what to go over, shown on the tests that cover it">{I('bookmark', { width: 13, height: 13 })}{(d.review?.topics || []).length ? 'Flag another topic' : 'Flag a topic for review'}</button></p>
+            </div>)}
         </div>
         <div className="home-actions">
           <button className="btn" disabled={!d.prev} title="The week before" onClick={() => onOpenWeek(d.prev)}>‹ Previous</button>

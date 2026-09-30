@@ -48,8 +48,9 @@ export const api = {
   course: key => req('GET', `/api/course?key=${enc(key)}`),
   // his own marks and target for a course (SPEC §21.12): marks whole ({} forgets them), target a percent or null; → { course }
   saveMarks: (course, patch) => req('PUT', '/api/marks', { course, ...patch }),
-  // a week flagged for review (SPEC §21.13): flag true with a one-line note, or false; → { flag }
-  flagWeek: (course, n, week, flag, note = '') => req('PUT', '/api/review', { course, n, week, flag, note }),
+  // a topic flagged for review (SPEC §21.13): { topic, note, id? } flags or changes one, { remove: true, id? } takes one (or
+  // the week's every one) off; → { week } the week's flags as they stand
+  review: (course, n, week, op) => req('PUT', '/api/review', { course, n, week, ...op }),
   term: (key, term) => req('GET', `/api/term?key=${enc(key)}&term=${enc(term)}`),
   week: path => req('GET', `/api/week?path=${enc(path)}`),
   library: () => req('GET', '/api/library'),

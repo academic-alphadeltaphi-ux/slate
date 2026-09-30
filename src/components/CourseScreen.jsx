@@ -404,10 +404,10 @@ function NextTest({ d, onOpen, onOpenWeek }) {
             <button key={w.n} className={'cd-cell ' + w.state + (w.current ? ' current' : '') + (d.review?.[w.n] ? ' flagged' : '')} onClick={() => onOpenWeek?.(w.page.replace(/\.md$/, ''))}
               title={`${w.label}${d.review?.[w.n] ? ' · flagged for review' : ''} · ${w.state === 'future' ? 'not yet' : w.state === 'done' ? (ED.sheets ? `${plural(w.sheets, 'study sheet')}` : 'you have worked on it') : w.state === 'partial' ? (ED.sheets ? 'material, no study sheet' : 'material, nothing written yet') : 'nothing arrived'}`} />))}</div>
           <div className="cd-strip-labels"><span>Week {r.from}</span><span>Week {r.to}</span></div>
-          {/* the weeks of this window he flagged for review, with his line for each (SPEC §21.13) */}
+          {/* the topics of this window he flagged for review, each with its line (SPEC §21.13) */}
           {flagged.length > 0 && (
-            <ul className="cx-review">{flagged.map(f => (
-              <li key={f.n}><Flag kind="review" small text={`Week ${f.n}`} /><button className="link" title={f.week} onClick={() => { const pg = r.weeks.find(w => w.n === f.n)?.page; if (pg) onOpenWeek?.(pg.replace(/\.md$/, '')) }}>{f.note || f.week}</button></li>))}</ul>)}
+            <ul className="cx-review">{flagged.flatMap(f => f.topics.map(t => (
+              <li key={f.n + t.id}><Flag kind="review" small text={`Week ${f.n}`} /><button className="link" title={`${f.week}${t.note ? ` · ${t.note}` : ''}`} onClick={() => { const pg = r.weeks.find(w => w.n === f.n)?.page; if (pg) onOpenWeek?.(pg.replace(/\.md$/, '')) }}><b>{t.topic || 'The whole week'}</b>{t.note ? ` · ${t.note}` : ''}</button></li>)))}</ul>)}
           <CoverageBars test={{ coverage: r.counts, window: r.window }} compact />
         </div>)}
     </section>)

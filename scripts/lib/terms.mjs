@@ -1,4 +1,4 @@
-// Rendered by scripts/courses.mjs from nothing yet (setup writes Hub/_courses.json) on 2026-09-30T05:48:04.314Z — edit the JSON and run `node scripts/courses.mjs write`, never this file.
+// Rendered by scripts/courses.mjs from nothing yet (setup writes Hub/_courses.json) on 2026-09-30T06:38:43.991Z — edit the JSON and run `node scripts/courses.mjs write`, never this file.
 // Rendered by scripts/courses.mjs from Hub/_courses.json — do not edit by hand; edit the JSON and run
 // `node scripts/courses.mjs write`. The calendar, the courses and every helper below are what the app files things by:
 // the term weeks (Week 1 is the week of the first Monday; reading weeks are skipped in the numbering), the courses with

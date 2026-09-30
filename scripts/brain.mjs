@@ -23,8 +23,9 @@ const USAGE = `node scripts/brain.mjs <command> [--root <notes root>] [--json]
   check [--course CODE] [--all]                   what code sees in each open task (link on disk, class, level against the date,
                                                   minutes against the words, duplicates) and documents without for: — flags to decide on
   class <CODE> <YYYY-MM-DD> <Lecture|Tutorial|…> (--cancel "why" | --topic "what it is about" | --clear) --reason "…"
-  review [list] [--course CODE]                   the weeks he flagged for review, with his note (SPEC §21.13)
-  review set <CODE> <week n> [--note "…"] | review clear <CODE> <week n>
+  review [list] [--course CODE]                   the topics he flagged for review, week by week, with his notes (SPEC §21.13)
+  review set <CODE> <week n> [--topic "…"] [--note "…"]   flag a topic of that week (the same words change it; no topic: the week)
+  review clear <CODE> <week n> [--topic "…"]      take one topic off, or every topic of the week
                                                   his flags, set or cleared when he asks — never by the morning on its own
   ask "<question for the student>" [--course CODE] [--page page.md]
   answered <question id> --reason "…"
@@ -43,11 +44,11 @@ import { guardFlags } from './lib/argv.mjs'
 import { notesRoot } from './lib/root.mjs'
 import { writeAtomic } from './lib/problems.mjs'
 import { COURSES, todayIso, weeks } from './lib/terms.mjs'
-import { REVIEW_JSON, readReview, withFlag } from './lib/review.mjs'
+import { REVIEW_JSON, readReview, withReview } from './lib/review.mjs'
 import * as B from './lib/brain.mjs'
 import * as D from './lib/day.mjs'
 
-const VALUE = ['--root', '--to', '--title', '--kind', '--for', '--reason', '--week', '--course', '--page', '--cancel', '--topic', '--run', '--limit', '--note', '--brain', '--model', '--mode', '--date', '--from', '--steer']
+const VALUE = ['--root', '--to', '--title', '--kind', '--for', '--reason', '--week', '--course', '--page', '--cancel', '--topic', '--run', '--limit', '--note', '--brain', '--model', '--mode', '--date', '--from', '--steer', '--topic']
 const BOOL = ['--json', '--dry-run', '--clear', '--all']
 guardFlags([...VALUE, ...BOOL], USAGE)
 
@@ -127,27 +128,28 @@ try {
   } else if (cmd === 'day' && sub !== 'set') {
     fail('day brief | day set | day show')
   } else if (cmd === 'review') {
-    // The weeks he flagged for review (SPEC §21.13), in Hub/_review.json — his, like his marks: the morning reads them and
+    // The topics he flagged for review (SPEC §21.13), in Hub/_review.json — his, like his marks: the morning reads them and
     // writes a task before the test, and sets or clears one only when he asks for it. Not a decision of the brain's, so
-    // not in its log; the week screen's Flag for review writes the same file through the same shape (withFlag).
+    // not in its log; the week screen's Flag a topic for review writes the same file through the same function (withReview).
     const doc = await readReview(ROOT)
     const keyOf = c => Object.keys(COURSES).find(k => k === c || COURSES[k].code.toLowerCase() === String(c || '').toLowerCase()) || null
     if (!sub || sub === 'list') {
       const only = one('--course') ? keyOf(one('--course')) : null
       if (one('--course') && !only) fail(`review --course: ${one('--course')} is not one of ${Object.values(COURSES).map(c => c.code).join(', ')}`)
-      const rows = Object.entries(doc.courses).filter(([k]) => !only || k === only).flatMap(([k, f]) => Object.entries(f).map(([n, x]) => ({ course: code(k), courseKey: k, week: Number(n), label: x.week, note: x.note || null, at: x.at || null })))
-      say(rows.length ? rows.map(r => `${r.course} · ${r.label}${r.note ? ` — ${r.note}` : ''}`).join('\n') : 'No week is flagged for review.', { flags: rows })
+      const rows = Object.entries(doc.courses).filter(([k]) => !only || k === only).flatMap(([k, f]) => Object.entries(f).flatMap(([n, x]) => x.topics.map(t => ({ course: code(k), courseKey: k, week: Number(n), label: x.week, topic: t.topic, note: t.note || null, at: t.at || null }))))
+      say(rows.length ? rows.map(r => `${r.course} · ${r.label} · ${r.topic || 'the whole week'}${r.note ? ` (${r.note})` : ''}`).join('\n') : 'Nothing is flagged for review.', { flags: rows })
     } else if (sub === 'set' || sub === 'clear') {
       const k = keyOf(rest[0]), n = Number(rest[1])
       if (!k) fail(`review ${sub} <CODE> <week n>: ${rest[0] || 'no course given'} is not one of ${Object.values(COURSES).map(c => c.code).join(', ')}`)
       const all = weeks(COURSES[k].term), w = all.find(x => x.n === n)
       if (!w) fail(`review ${sub}: ${code(k)} has weeks 1–${all.length}`)
-      if (sub === 'clear' && !doc.courses[k]?.[n]) fail(`${code(k)} · ${w.label} is not flagged`)
-      const next = withFlag(doc, k, n, sub === 'set' ? { week: w.label, note: one('--note') || '' } : null)
-      if (!DRY) await writeAtomic(REVIEW_JSON(ROOT), JSON.stringify(next, null, 2) + '\n')
-      const f = next.courses[k]?.[n] || null
-      say(`${code(k)} · ${w.label} ${f ? `flagged for review${f.note ? ` — ${f.note}` : ''}` : 'unflagged'}${DRY ? ' (dry run)' : ''}`, { flag: f })
-    } else fail('review [list] [--course CODE] | review set <CODE> <week n> [--note "…"] | review clear <CODE> <week n>')
+      if (sub === 'clear' && !doc.courses[k]?.[n]) fail(`${code(k)} · ${w.label} has nothing flagged`)
+      let r
+      try { r = withReview(doc, k, n, w.label, sub === 'set' ? { topic: one('--topic') || '', note: one('--note') || '' } : { remove: true, ...(one('--topic') !== null ? { topic: one('--topic') } : {}) }) }
+      catch (e) { fail(`${code(k)} · ${w.label}: ${e.message}`) }
+      if (!DRY) await writeAtomic(REVIEW_JSON(ROOT), JSON.stringify(r.doc, null, 2) + '\n')
+      say(`${code(k)} · ${w.label}: ${r.week ? r.week.topics.map(t => `${t.topic || 'the whole week'}${t.note ? ` (${t.note})` : ''}`).join(', ') : 'nothing flagged'}${DRY ? ' (dry run)' : ''}`, { week: r.week })
+    } else fail('review [list] [--course CODE] | review set <CODE> <week n> [--topic "…"] [--note "…"] | review clear <CODE> <week n> [--topic "…"]')
   } else if (cmd === 'settings') {
     // Two settings of the brain's: whether Claude is it, and which model it runs on (the morning run, the Sync button,
     // the day's re-plan — SPEC §22.7). Opus unless the settings say otherwise.

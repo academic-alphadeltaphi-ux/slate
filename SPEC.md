@@ -2638,47 +2638,58 @@ eight points on the course; with Keep, a placement typed as the share of the bon
 assumed, and the route — kept, cleaned, read at once by `/api/hub` and `/api/course`, the target, Quercus overtaking a
 kept mark after a check, forgetting, the refusals.
 
-### 21.13 A week flagged for review (2026-09-30)
+### 21.13 Topics flagged for review (2026-09-30)
 
-The same brother's last request: flag a week's topic for review with a short note, "shown somewhere I'll see it before
-tests". the student placed it on the week screen. The week screen's rules stand (§20.54): no note text drawn from its pages, no
-to-do copied onto it, nothing that decides where his writing goes. So the flag is one line in the week's head, and what
-he sees before a test is the test itself.
+The same brother's last request: "flag a week's topic for review with a short note, shown somewhere I'll see it before
+tests". the student placed it on the week screen. The first build (release v2026.09.30) flagged the *week* with a note and never
+said which topic; the student read the message again the same night — it is the topics of a week that are flagged, each with
+its note, and a week holds several (the outline's line, the lecture's, the tutorial's). The week screen's rules stand
+(§20.54): no note text drawn from its pages, no to-do copied onto it, nothing that decides where his writing goes. So the
+flags are lines in the week's head, and what he sees before a test is the test itself.
 
-**On the week.** Under the title and topic, *Flag for review* (a bookmark, in gilt). It asks, in the dialog every other
-name is asked in, "what to go over before the test — a few words, or nothing"; the note is one line of at most 120
-characters. Flagged, the line reads: the *For review* flag (a gilt outline, `Flags.jsx` kind `review` — gilt like
-*important*, but an outline, since it is his reminder and not the course's weight), his note, "on Term Test 1" (the tests
-still ahead whose windows hold the week), *Edit* and *Unflag*.
+**On the week.** Under the title and topic, a line per flagged topic — the *For review* flag (a gilt outline,
+`Flags.jsx` kind `review`: gilt like *important*, but an outline, since it is his reminder and not the course's weight),
+the topic, his note, *Edit*, *Remove* — then "Shows on Term Test 1" (the tests still ahead whose windows hold the week)
+and *Flag a topic for review* (*Flag another topic* once there is one). It asks in one dialog (`Dialog.jsx` kind `form`)
+for the topic — filled with the week's own topic, the outline's and the classes' offered as suggestions, any words taken
+— and "what to go over before the test — a few words, or nothing": a topic of at most 80 characters, a note of one line
+of at most 120, twelve topics a week. The same words (in any case) are the same topic: flagging them again changes its
+note and keeps the spelling it was flagged with. An empty topic is the week as a whole.
 
 **Before the test.** A test's coverage window (`src/calendar.js coverageWindow`, `window.weeks`) and the week route share
-one numbering (`terms.mjs weeks`), so a flag is kept under the course and the week's number, and `src/review.js
-flaggedIn` finds the flags a window holds. The test's row (`src/todo.js testRow`) — on To do, Home, the course screen and
-the day, from 14 days out — ends its line with "review Week 3 (IS-LM derivations…)", each note cut to a clause; the
-course screen's Next test card, however far off, puts a gilt cap on the flagged cells of its strip and lists them under
-it, each opening its week. Nothing new is drawn on Home or To do: the line under a test is where the test already speaks.
+one numbering (`terms.mjs weeks`), so flags are kept under the course and the week's number, and `src/review.js
+flaggedIn` finds the flagged weeks a window holds. The test's row (`src/todo.js testRow`) — on To do, Home, the course
+screen and the day, from 14 days out — ends its line with "review Week 3: IS-LM model (the derivations from Thursday),
+Money market", each note cut to a clause (`topicsLine`); the course screen's Next test card, however far off, puts a gilt
+cap on the flagged cells of its strip and lists each topic under it, opening its week. Nothing new is drawn on Home or To
+do: the line under a test is where the test already speaks.
 
-**In the morning** (the student, the same evening: "an instruction in the brain"). A flag is his and the morning never sets or
-clears one; what it does is turn it into work. Once a test whose window holds a flagged week is ten days off or less, the
-week gets one task: `kind: review`, linking the week's page, due two days before that test (the day before, or today,
-once that has passed), "Review Week 2 before Test 1: <his note>", important, crucial within two days, its reason starting
-"Flagged for review". A review task already linking the week's page is that task, so a second morning writes nothing;
-his note changed, the words are edited (never a ticked task's); a task written for a flag he has since removed is
-withdrawn. The light routine reads it from its brief — `flagged` (each flag with its tests and its task), `needs.review`
-(the flags that want a task now), `unflagged` (the tasks to withdraw) — and a flag that needs a task makes a quiet course
-a session of its own, since `buildBrief` no longer returns null while one waits (`scripts/lib/review.mjs reviewBrief`).
-The heavy brain and the team's course agents read `brain.mjs review --course <CODE> --json` and the plan's test windows,
-under the same rule (`brain-prompt.md` step 6). Adding, changing and removing a flag is the week screen's *Flag for
-review*, *Edit* and *Unflag*, or `brain.mjs review set <CODE> <n> --note "…"` / `review clear <CODE> <n>` when he asks his
-Claude; both write through `withFlag`. The `review` scenario walks it with the stand-in Claude on a pinned clock: set, the
-brief, one task before the test, none the second morning, cleared, withdrawn.
+**In the morning** (the student, the same evening: "an instruction in the brain"). Flags are his and the morning never sets or
+clears one; what it does is turn them into work. Once a test whose window holds a flagged week is ten days off or less,
+the week gets one task: `kind: review`, linking the week's page, due two days before that test (the day before, or
+today, once that has passed), "Review Week 2 before Test 1: Research ethics (the Milgram study), Operational
+definitions", important, crucial within two days, its reason starting "Flagged for review". A review task already
+linking the week's page is that task, so a second morning writes nothing; topics or notes changed, its words are edited
+(never a ticked task's); a task written for a week he has since cleared is withdrawn. The light routine reads it from
+its brief — `flagged` (each week with its `topics`, their `line`, its tests and its task), `needs.review` (the weeks that
+want a task now), `unflagged` (the tasks to withdraw) — and a week that needs a task makes a quiet course a session of its
+own, since `buildBrief` no longer returns null while one waits (`scripts/lib/review.mjs reviewBrief`). The heavy brain
+and the team's course agents read `brain.mjs review --course <CODE> --json` (a row per topic) and the plan's test
+windows, under the same rule (`brain-prompt.md` step 6). His Claude flags, changes and clears one when he asks:
+`brain.mjs review set <CODE> <n> --topic "…" --note "…"`, `review clear <CODE> <n> [--topic "…"]`. The `review` scenario
+walks it with the stand-in Claude on a pinned clock: two topics set, the brief's line, one task naming both before the
+test, none the second morning, a topic cleared by its words, the week cleared, the task withdrawn.
 
-**One file, two doors.** `Hub/_review.json` (`scripts/lib/review.mjs`), written by `PUT /api/review { course, n, week,
-note, flag }` under the server's file lock, and by `brain.mjs review` when he asks his Claude — a read-modify-write of a
-few milliseconds each, both by his hand, with no lock across the two processes (left so knowingly: a flag set on the
-screen in the same instant his Claude sets another could lose one); `/api/hub` serves every course's flags as `review` (which is what `rowsFor` reads as
-`hub.review`), `/api/course` the course's, `/api/week` the week's own. The sync never writes it (contract v25). The `marks` suite walks it: the refusals, the note cut to one
-line, the three routes, the row's line with and without a flagged week in its window, unflagging.
+**One file, two doors.** `Hub/_review.json` (`scripts/lib/review.mjs`, version 2: `{ week, topics: [{ id, topic, note,
+at }] }` a week), written by `PUT /api/review { course, n, week, id?, topic, note | remove }` under the server's file
+lock and by `brain.mjs review` — both through `withReview` — a read-modify-write of a few milliseconds each, both by his
+hand, with no lock across the two processes (left so knowingly: a topic flagged on the screen in the same instant his
+Claude flags another could lose one). The file v2026.09.30 wrote, one `{ week, note, at }` a week, reads as that week's
+one topic, the week as a whole, with its note; the next write stores it in the new shape. `/api/hub` serves every
+course's flags as `review` (which is what `rowsFor` reads as `hub.review`), `/api/course` the course's, `/api/week` the
+week's own. The sync never writes it (contract v25). The `marks` suite walks it: the refusals, the old shape read, two
+topics, the same words changing one, an edit by id, the note cut to one line, the three routes, the row's line with and
+without a flagged week in its window, a topic removed, the week cleared.
 
 ## 20.56 The gated page and the open stream (2026-09-18)
 

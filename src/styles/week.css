@@ -4,8 +4,11 @@
    work through and tick. */
 .wk-span { font-family: var(--font-display); font-size: 24px; font-weight: 400; color: var(--muted); letter-spacing: 0; margin-left: 14px; font-variant-numeric: lining-nums; }
 .wk-topic { margin: 8px 0 0; font-family: var(--font-display); font-style: italic; font-size: 18px; font-weight: 400; color: var(--text); letter-spacing: 0; max-width: 64ch; }
-/* his review flag on the week (SPEC §21.13): one line under the topic — the flag, his note, the tests it will show on */
-.wk-review { margin: 10px 0 0; display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; font-size: 13px; color: var(--text); max-width: 72ch; }
+/* the topics he flagged for review (SPEC §21.13): a line each under the week's topic — the flag, the topic, his note — then
+   the tests they will show on and the way to flag another */
+.wk-review { margin: 10px 0 0; display: grid; gap: 4px; max-width: 72ch; }
+.wk-review-row { margin: 0; display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; font-size: 13px; color: var(--text); }
+.wk-review-row b { font-weight: 600; }
 .wk-review .link { font-size: 12.5px; display: inline-flex; align-items: center; gap: 5px; }
 .wk-review-note { font-style: italic; }
 .wk-review-on { color: var(--muted); font-size: 12px; }
