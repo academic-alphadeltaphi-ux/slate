@@ -2065,7 +2065,7 @@ FCS298's *Additional Course Resources* module (1415680) answered 404 all afterno
 one file, the extended comics vocabulary guide, now in General: a module can be announced before it is published, and
 a 404 means not yet. Everything the audit
 (`scripts/audit.mjs`, report in `~/Desktop/Claude OS/Slate audit/`) reconciles is reachable with the token, and after
-this evening's fixes it finds no item unaccounted for. The Quercus skill (`.claude/skills/quercus/SKILL.md`) records all
+this evening's fixes it finds no item unaccounted for. The Quercus skill (`.claude/skills/slate-quercus/SKILL.md`) records all
 of this — the module item types and how each is read, the UTC due stamps, the twin file ids, a module announced before it
 is published, MyMedia's login, and that `get_course_structure` answers empty modules while the token's own call does not —
 and `quercus_sweep.py --modules` prints the walk the MCP stopped giving.

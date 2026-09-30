@@ -41,7 +41,7 @@ the notebook. Open a file with `Read` only when the brief's excerpt truly does n
   one that no longer applies; raise a level as a thing approaches.
 - **Every task has a `link` whenever its thing exists to open**: the button on the student's to-do, the one thing it
   opens. The Quercus URL of the thing, else the slate page it concerns — the brief hands you most, so copy them; look
-  hard for the rest (the `quercus` skill: `node scripts/quercus-sweep.mjs --modules --course <id>` lists every item's
+  hard for the rest (the `slate-quercus` skill: `node scripts/quercus-sweep.mjs --modules --course <id>` lists every item's
   URL); never make one up:
   - done on Quercus — a hand-in, a quiz, a forum post, a WebAssign set: the thing's own URL — the deadline's `link`, the
     `link` of the waiting forum, quiz or assignment page, or the `quercus` of a filed one. The morning ticks the task by

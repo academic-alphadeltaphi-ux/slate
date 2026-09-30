@@ -75,7 +75,9 @@ let iconSvg = path.join(REPO, 'desktop', 'icon.svg')
 if (ED.crest) {
   const crest = fs.readFileSync(path.join(REPO, 'public', ED.crest)).toString('base64')
   iconSvg = path.join(tmp, 'icon-edition.svg')
-  fs.writeFileSync(iconSvg, fs.readFileSync(path.join(REPO, 'desktop', 'icon-adphi.svg'), 'utf8').replace('{{CREST}}', crest))
+  // every {{CREST}}, not the first: the template's comment named it before the <image>, the crest went into the comment, and
+  // every copy's icon was a broken-image placeholder (found 2026-09-29, rendering the icon to look at it)
+  fs.writeFileSync(iconSvg, fs.readFileSync(path.join(REPO, 'desktop', 'icon-adphi.svg'), 'utf8').split('{{CREST}}').join(crest))
 }
 run(path.join(REPO, 'node_modules', '.bin', 'electron'), [path.join(REPO, 'scripts', 'render-icon.cjs'), iconSvg, png1024], { stdio: 'ignore' })
 if (!fs.existsSync(png1024)) throw new Error('icon render produced nothing — is electron installed?')

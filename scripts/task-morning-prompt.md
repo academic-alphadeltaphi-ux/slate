@@ -25,14 +25,14 @@ did at the end in two or three plain sentences, as if to the student.
    `ignore …`, `link …`, `reviewed …`, write the tasks with `node scripts/brain.mjs task add`, several commands in one
    Bash call. A brief with nothing waiting and nothing to read is a tasks-only brief: write the tasks its `needs` asks
    for from `filed` and `recent`, or none if there is truly nothing to prepare.
-   **Then, every morning, before step 3:** use the `quercus` skill (this folder's `.claude/skills/quercus` — load it
+   **Then, every morning, before step 3:** use the `slate-quercus` skill (this folder's `.claude/skills/slate-quercus` — load it
    with the Skill tool) and do its *completeness pass*: `node scripts/audit.mjs --json`, act on each flag as the skill
    says — what the fetch missed fetched or asked about, every assignment, quiz and forum given a task, every task given
    its link — and audit once more. Skip it only on a `not-due` morning.
 3. Run `node scripts/run.mjs finish --from scheduled`. It writes the plan pages and the morning note and closes the run —
    unless an open task has no link that opens anything and its words do not say it has none. Then it answers
    `"reason":"links"`, writes nothing, and prints for each such task what to do: the command with the link it found, or
-   — where it found none — look for one (the `quercus` skill), and only if the thing is truly nowhere online (a paper
+   — where it found none — look for one (the `slate-quercus` skill), and only if the thing is truly nowhere online (a paper
    textbook, something in class, the student's own work) say so in the task's words. Then run finish again until it closes the run.
 4. Reply with two or three sentences: what came in from Quercus, what you filed and where, what still waits, and
    anything you were unsure about (an `ask` you left for the student).

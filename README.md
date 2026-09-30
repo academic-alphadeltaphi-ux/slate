@@ -9,18 +9,24 @@ Open **Claude Code** (the *Code* tab of the Claude desktop app) in any folder an
 
 ```text
 Install Slate for Alpha Delta Phi for me from https://github.com/academic-alphadeltaphi-ux/slate.
-Work out whether this computer is a Mac or a Windows PC, and ask me whether my Claude plan is Pro or Max.
-Check `node --version`: if Node.js is missing or older than 22.12, stop and ask me to install the LTS
-version from nodejs.org (a normal installer), then check again before going on.
-Download the matching zip from https://github.com/academic-alphadeltaphi-ux/slate/releases/latest/download/<name>, where <name> is
-slate-adphi-pro-mac.zip, slate-adphi-max-mac.zip, slate-adphi-pro-windows.zip or slate-adphi-max-windows.zip.
-Unzip it and move the Slate folder that is inside into my home folder (on a PC: %USERPROFILE%) —
-not Documents, the Desktop, Downloads or OneDrive. If a folder named Slate is already there, stop and ask me
-before touching it: it may hold my notes or an earlier copy.
-Don't use git. When the folder is in place, tell me to open it in Claude Code and say "set me up".
+First check whether a folder named Slate is already in my home folder (on a PC: %USERPROFILE%). If it is, stop and
+ask me before touching anything: it may hold my notes or an earlier copy.
+Work out whether this computer is a Mac or a Windows PC (and on a Mac, whether it has an Apple chip: tell me if it
+is Intel, where recording lectures into text won't work), and ask me whether my Claude plan is Pro or Max (not
+sure: it's Pro).
+Check `node --version`: if Node.js is missing or older than 22.12, stop and ask me to install the LTS version from
+nodejs.org (a normal installer). Then tell me to quit and reopen the Claude app, open this same conversation again
+from the list on the left, and say "check again": the app only sees a new install after a restart.
+Download the matching zip into my Downloads folder from
+https://github.com/academic-alphadeltaphi-ux/slate/releases/latest/download/<name>, where <name> is slate-adphi-pro-mac.zip,
+slate-adphi-max-mac.zip, slate-adphi-pro-windows.zip or slate-adphi-max-windows.zip. Unzip it, move the Slate
+folder that is inside into my home folder — not Documents, the Desktop, Downloads or OneDrive — and delete the zip.
+Don't use git. When the folder is in place, move this conversation into it yourself (the change_directory tool —
+I only click Allow), then tell me to reply "set me up". If you can't move it, tell me click by click how to open it.
 ```
 
-Then open that `Slate` folder in Claude Code and say **set me up**: Claude does the rest in one conversation.
+Click **Allow** when it asks to move into the `Slate` folder, then reply **set me up**: Claude does the rest in the same
+conversation.
 
 **Updating:** close the app, open the `Slate` folder in Claude Code and say *update Slate*. It fetches the newest
 release from here and swaps it in, in the same folder: your notes, courses and settings stay as they are.

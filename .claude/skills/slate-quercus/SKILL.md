@@ -1,5 +1,5 @@
 ---
-name: quercus
+name: slate-quercus
 description: Read Quercus (UofT Canvas at q.utoronto.ca) directly and prove the notebook holds everything it posted. Use in EVERY morning check after the briefs are decided (the completeness pass below), whenever a task needs the exact Quercus link of an assignment, quiz, page, file, forum or video, and when the student asks "is everything from Quercus in here?", "what's due", "check quercus", "any announcements", "what did the prof post", or names a course and wants its content. Works with `node scripts/quercus-sweep.mjs` and `node scripts/audit.mjs` (the student's own key, no MCP needed); knows every place a file hides and the gotchas that make the obvious calls return empty.
 allowed-tools:
   - Read
