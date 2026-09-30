@@ -12,6 +12,8 @@ import { SYLLABUS } from '../../scripts/lib/syllabus.mjs'
 import { expandMeetings, nextMeeting, testsFor, addDays, daysTo, inReadingWeek, inTerm } from '../../src/calendar.js'
 import { summarize } from '../../scripts/lib/problems.mjs'
 import { THIS as ED } from '../../src/edition.js'
+import { readMarks, applyMarks } from '../../scripts/lib/marks.mjs'
+import { readReview } from '../../scripts/lib/review.mjs'
 
 export const MEMO_MS = 2000
 const memo = new Map()   // `${key}|${now}` → { at, sig, promise }
@@ -66,7 +68,8 @@ export function register(app, ctx) {
 async function build({ store, ROOT, HttpError, hubJson }, key, now) {
   const hub = await hubJson('_hub.json', null)
   if (!hub) throw new HttpError(404, 'Quercus has not been checked yet — press Check Quercus on Home')
-  const course = (hub.courses || []).find(c => c.key === key)
+  // his own marks and target over Quercus's (SPEC §21.12): the Mark card and the calculator read the same standing as Home
+  const course = applyMarks((hub.courses || []).find(c => c.key === key), (await readMarks(ROOT)).courses[key])
   if (!course) throw new HttpError(404, 'not a course')
   const today = isoOf(now), nowStamp = `${today}T${hm(now)}`
   const [state, queue, plan, problemsAll] = await Promise.all([
@@ -103,6 +106,8 @@ async function build({ store, ROOT, HttpError, hubJson }, key, now) {
     queue: { ready: (queue.ready || []).filter(r => r.courseKey === key), blocked: (queue.blocked || []).filter(r => r.courseKey === key) },
     problems: problemsView(probCourse, cur?.n ?? null, rows),
     announcements: await announcements(store, key, hub),
+    // the weeks he flagged for review (SPEC §21.13), { [n]: { week, note, at } }: the Next test card and the test rows show them
+    review: (await readReview(ROOT)).courses[key] || {},
     links: await links(store, key),
     general: (await store.pages(`${key}/General`)).filter(p => !p.virtual && p.title !== 'Links').map(p => ({ title: p.title, path: p.path, kind: p.kind })),
   }

@@ -2593,6 +2593,93 @@ files). Twice, 10 of 10 steps. The first walk found what the words lacked, the s
 - a Winter course has no classes in the Fall (the brief and the morning note asked `isClassDay`, which knows every
   term, and not the course's own).
 
+### 21.12 Marks of his own, and his own target (2026-09-30)
+
+The first brother to install from GitHub asked, a day in, for what his other trackers still did: marks that never reach
+Quercus (a publisher's online homework worth a fifth of a course, best 10 of 11; a tutorial participation mark), kept
+across a restart and the morning check, shown as his, with Quercus winning if it later posts the same item, and a way
+back to Quercus only; and a target of his own beside A−, A and A+. Smaller, if it fitted: a bonus outside the weights (a
+simulation placement worth up to 8%), and a week's topic flagged for review before a test.
+
+**One file of his, one writer.** `Hub/_marks.json` in the notes (`scripts/lib/marks.mjs`): per course, `marks` in the
+shape of the grade model's `scores` and a `target`. Only the server writes it (`PUT /api/marks`, the calculator's Keep
+and its target field), under the file lock and atomically; the morning's sync reads it and never writes it, and an
+update never reaches it, since the notes live apart from the code. His Claude may add a mark he dictates (contract v25).
+What is kept is cleaned against the course's own grading: a component or item it does not have is left out, a number is
+clamped to 0–100, a list holds at most 60.
+
+**Quercus wins, and says so.** `src/grade.js withMine` fills in his marks where Quercus has none: an item Quercus marked,
+or a `many` component it holds any mark for, stays Quercus's, and his typed one is listed in `overridden` — the
+calculator names it ("Quercus now says 74, so your 70 no longer counts") until he forgets it. The file keeps it until
+then. The merge is applied at every read: the sync writes `quercusScores` beside the merged `scores` and the standing
+over them, and `/api/hub` and `/api/course` apply the file again from `quercusScores` (idempotent), so a kept mark moves
+Home, the Mark card and Ask at once rather than at the next check. The standing's shape is `courseStanding`, one
+function for the sync and the server; it carries `target: { pct, need }` when he has one, and Grades.md says it.
+
+**A try until he keeps it.** The calculator was a what-if and stays one: a typed mark is dashed ("a try") until Keep,
+which writes every mark Quercus has not given, as it stands on the screen. Kept ones wear gilt and say "yours"; Quercus's
+keep the course's pigment. *Clear what I tried* goes back to what is on file; *Back to Quercus only* asks once, then
+forgets them all (the target stays). A `many` component takes an average, as before, or its marks one by one (a list with
+an empty cell to add to), so a drop rule applies to what he typed too; a list of Quercus's opens on its average, as it
+always has. His target is kept as he types it.
+
+**What the request found in the model.** `dropLowestFraction: 0.0909` ("1 of 11") dropped nothing, ever: 11 × 0.0909 =
+0.9999, floored to 0. The floor now takes a thousandth of slack, so a fraction written to four places means what it
+says; the label reads "lowest 1 of 11 dropped". And a bonus with no mark yet was filled at the slider's value, so a
+placement nobody had had put "you finish at 101.6%" under a 95% slider and made every target look nearer: a bonus now
+counts what has been earned of it and is never assumed. (ECO227's WebAssign bonus always has its average, so its numbers
+do not move.)
+
+**The bonus needed no code.** A component with `bonus: 0.08` and one item is already outside the weights and adds up to
+eight points on the course; with Keep, a placement typed as the share of the bonus earned now counts. The review flag is
+§21.13.
+
+`scripts/test-marks.mjs` (the `marks` group) walks it: the drop at 0.0909, the merge, the standing by hand, the bonus not
+assumed, and the route — kept, cleaned, read at once by `/api/hub` and `/api/course`, the target, Quercus overtaking a
+kept mark after a check, forgetting, the refusals.
+
+### 21.13 A week flagged for review (2026-09-30)
+
+The same brother's last request: flag a week's topic for review with a short note, "shown somewhere I'll see it before
+tests". the student placed it on the week screen. The week screen's rules stand (§20.54): no note text drawn from its pages, no
+to-do copied onto it, nothing that decides where his writing goes. So the flag is one line in the week's head, and what
+he sees before a test is the test itself.
+
+**On the week.** Under the title and topic, *Flag for review* (a bookmark, in gilt). It asks, in the dialog every other
+name is asked in, "what to go over before the test — a few words, or nothing"; the note is one line of at most 120
+characters. Flagged, the line reads: the *For review* flag (a gilt outline, `Flags.jsx` kind `review` — gilt like
+*important*, but an outline, since it is his reminder and not the course's weight), his note, "on Term Test 1" (the tests
+still ahead whose windows hold the week), *Edit* and *Unflag*.
+
+**Before the test.** A test's coverage window (`src/calendar.js coverageWindow`, `window.weeks`) and the week route share
+one numbering (`terms.mjs weeks`), so a flag is kept under the course and the week's number, and `src/review.js
+flaggedIn` finds the flags a window holds. The test's row (`src/todo.js testRow`) — on To do, Home, the course screen and
+the day, from 14 days out — ends its line with "review Week 3 (IS-LM derivations…)", each note cut to a clause; the
+course screen's Next test card, however far off, puts a gilt cap on the flagged cells of its strip and lists them under
+it, each opening its week. Nothing new is drawn on Home or To do: the line under a test is where the test already speaks.
+
+**In the morning** (the student, the same evening: "an instruction in the brain"). A flag is his and the morning never sets or
+clears one; what it does is turn it into work. Once a test whose window holds a flagged week is ten days off or less, the
+week gets one task: `kind: review`, linking the week's page, due two days before that test (the day before, or today,
+once that has passed), "Review Week 2 before Test 1: <his note>", important, crucial within two days, its reason starting
+"Flagged for review". A review task already linking the week's page is that task, so a second morning writes nothing;
+his note changed, the words are edited (never a ticked task's); a task written for a flag he has since removed is
+withdrawn. The light routine reads it from its brief — `flagged` (each flag with its tests and its task), `needs.review`
+(the flags that want a task now), `unflagged` (the tasks to withdraw) — and a flag that needs a task makes a quiet course
+a session of its own, since `buildBrief` no longer returns null while one waits (`scripts/lib/review.mjs reviewBrief`).
+The heavy brain and the team's course agents read `brain.mjs review --course <CODE> --json` and the plan's test windows,
+under the same rule (`brain-prompt.md` step 6). Adding, changing and removing a flag is the week screen's *Flag for
+review*, *Edit* and *Unflag*, or `brain.mjs review set <CODE> <n> --note "…"` / `review clear <CODE> <n>` when he asks his
+Claude; both write through `withFlag`. The `review` scenario walks it with the stand-in Claude on a pinned clock: set, the
+brief, one task before the test, none the second morning, cleared, withdrawn.
+
+**One file, two doors.** `Hub/_review.json` (`scripts/lib/review.mjs`), written by `PUT /api/review { course, n, week,
+note, flag }` under the server's file lock, and by `brain.mjs review` when he asks his Claude — a read-modify-write of a
+few milliseconds each, both by his hand, with no lock across the two processes (left so knowingly: a flag set on the
+screen in the same instant his Claude sets another could lose one); `/api/hub` serves every course's flags as `review` (which is what `rowsFor` reads as
+`hub.review`), `/api/course` the course's, `/api/week` the week's own. The sync never writes it (contract v25). The `marks` suite walks it: the refusals, the note cut to one
+line, the three routes, the row's line with and without a flagged week in its window, unflagging.
+
 ## 20.56 The gated page and the open stream (2026-09-18)
 
 §20.53 recorded that MyMedia "sends anyone without a UTORid session to its login page, so a video's page holds the

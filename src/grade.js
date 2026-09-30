@@ -20,9 +20,11 @@ export function componentScore(comp, scheme, scores) {
     // `dropLowestFraction` (ECO206's checkpoints: "lowest 20% dropped") was declared in terms.mjs and printed by the
     // simulator, and never applied — the standing understated the course by the dropped quizzes (review of 2026-09-18).
     // floor(n · fraction) of the marks written so far are dropped: never more than the rule drops of the full set.
+    // The 1e-3 is for a fraction written to four places: "1 of 11 dropped" as 0.0909 gives 11 × 0.0909 = 0.9999, which
+    // floored to 0 and dropped nothing, ever (a brother's courses.json, 2026-09-30).
     const all = Array.isArray(sc.all) ? sc.all.filter(x => typeof x === 'number') : null
     if (all && all.length) {
-      const drop = comp.dropLowestFraction ? Math.floor(all.length * comp.dropLowestFraction) : 0
+      const drop = comp.dropLowestFraction ? Math.floor(all.length * comp.dropLowestFraction + 1e-3) : 0
       const kept = [...all].sort((a, b) => b - a).slice(0, all.length - drop)
       return { value: mean(kept), known: 1, total: 1 }
     }
@@ -44,7 +46,9 @@ export function schemeGrade(grading, scheme, scores, fill = null) {
   let sum = 0, weight = 0, bonus = 0, written = 0   // written: weight actually graded so far, item by item
   for (const comp of grading.components) {
     const w = scheme.weights[comp.key]
-    if (comp.bonus) { const s = componentScore(comp, scheme, scores); const v = s.value ?? (fill != null ? fill : null); if (v != null) bonus += comp.bonus * v; continue }
+    // A bonus counts what has been earned of it, and is never assumed: filled at `fill`, a placement bonus nobody had yet
+    // put "you finish at 101.6%" under a 95% slider and made every target look nearer than it is (2026-09-30).
+    if (comp.bonus) { const v = componentScore(comp, scheme, scores).value; if (v != null) bonus += comp.bonus * v; continue }
     if (w == null) continue
     const s = componentScore(comp, scheme, scores)
     written += (w * Math.min(s.known, s.total)) / s.total
@@ -88,6 +92,53 @@ export function neededFor(grading, scores, target) {
   let lo = 0, hi = 100
   for (let i = 0; i < 40; i++) { const mid = (lo + hi) / 2; if (standing(grading, scores, mid).best.grade >= target) hi = mid; else lo = mid }
   return hi
+}
+
+// The grades every screen offers, and the hub's standing of a course: the one shape the morning's sync writes and the
+// server recomputes on read, so the Home figure, Ask and the email say the same thing. `target` is the student's own
+// (Hub/_marks.json): what he needs on the rest for it rides beside the three letters.
+export const TARGETS = [['A-', 80], ['A', 85], ['A+', 90]]
+export function courseStanding(grading, scores, target = null) {
+  const st = standing(grading, scores)
+  if (st.best?.grade == null) return null
+  return { grade: st.best.grade, letter: st.letter, scheme: st.best.name, weightKnown: st.best.weightKnown,
+    need: Object.fromEntries(TARGETS.map(([l, t]) => [l, neededFor(grading, scores, t)])),
+    ...(target != null ? { target: { pct: target, need: neededFor(grading, scores, target) } } : {}) }
+}
+
+// Marks he entered himself (Hub/_marks.json, SPEC §21.12): what never reaches Quercus — a publisher's homework, a
+// participation mark kept on paper, a bonus. `mine` has the shape of `scores`. Quercus wins wherever it has a mark: an
+// item it marked, a `many` component it holds any mark for. The typed one then counts for nothing and is listed in
+// `overridden`, so the screen can say so; it stays on file until he forgets it.
+// → { scores (Quercus's with his filled in), from: { [comp]: { [item | 'avg']: 'mine' } }, overridden: [..] }
+export const markOf = v => (typeof v === 'number' && Number.isFinite(v) ? Math.max(0, Math.min(100, v)) : null)
+export function manyOf(m) {
+  const all = Array.isArray(m?.all) ? m.all.map(markOf).filter(x => x != null) : []
+  if (all.length) return { avg: mean(all), all }
+  const avg = markOf(m?.avg)
+  return avg == null ? null : { avg }
+}
+export function withMine(grading, quercus, mine) {
+  const scores = JSON.parse(JSON.stringify(quercus || {})), from = {}, overridden = []
+  for (const comp of grading?.components || []) {
+    const m = mine?.[comp.key], q = quercus?.[comp.key] || {}
+    if (!m || typeof m !== 'object') continue
+    if (comp.many) {
+      const typed = manyOf(m)
+      if (!typed) continue
+      const qv = q.avg ?? (Array.isArray(q.all) && q.all.length ? mean(q.all) : null)
+      if (qv != null) { overridden.push({ comp: comp.key, item: 'avg', label: comp.label, mine: typed.avg, quercus: qv }); continue }
+      scores[comp.key] = typed; from[comp.key] = { avg: 'mine' }
+      continue
+    }
+    for (const it of comp.items || []) {
+      const v = markOf(m[it.key]); if (v == null) continue
+      if (q[it.key] != null) { if (Math.abs(q[it.key] - v) > 0.05) overridden.push({ comp: comp.key, item: it.key, label: it.label, mine: v, quercus: q[it.key] }); continue }
+      scores[comp.key] ||= {}; scores[comp.key][it.key] = v
+      from[comp.key] ||= {}; from[comp.key][it.key] = 'mine'
+    }
+  }
+  return { scores, from, overridden }
 }
 
 // How much of the course has been written, in weight, under the best scheme.

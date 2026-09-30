@@ -23,6 +23,9 @@ const USAGE = `node scripts/brain.mjs <command> [--root <notes root>] [--json]
   check [--course CODE] [--all]                   what code sees in each open task (link on disk, class, level against the date,
                                                   minutes against the words, duplicates) and documents without for: — flags to decide on
   class <CODE> <YYYY-MM-DD> <Lecture|Tutorial|…> (--cancel "why" | --topic "what it is about" | --clear) --reason "…"
+  review [list] [--course CODE]                   the weeks he flagged for review, with his note (SPEC §21.13)
+  review set <CODE> <week n> [--note "…"] | review clear <CODE> <week n>
+                                                  his flags, set or cleared when he asks — never by the morning on its own
   ask "<question for the student>" [--course CODE] [--page page.md]
   answered <question id> --reason "…"
   day brief [--date YYYY-MM-DD] [--from HH:MM] [--steer "…"]   everything the day is made of, as JSON: the hours, what the student put on it, every row
@@ -39,7 +42,8 @@ import fs from 'node:fs/promises'
 import { guardFlags } from './lib/argv.mjs'
 import { notesRoot } from './lib/root.mjs'
 import { writeAtomic } from './lib/problems.mjs'
-import { COURSES, todayIso } from './lib/terms.mjs'
+import { COURSES, todayIso, weeks } from './lib/terms.mjs'
+import { REVIEW_JSON, readReview, withFlag } from './lib/review.mjs'
 import * as B from './lib/brain.mjs'
 import * as D from './lib/day.mjs'
 
@@ -122,6 +126,28 @@ try {
     say([`${date} · ${D.statusLine(v)}${v.draft?.steer ? ` · ${v.draft.steer}` : ''}`, ...D.dayLines(v).map(l => '  ' + l)].join('\n'), { day: v })
   } else if (cmd === 'day' && sub !== 'set') {
     fail('day brief | day set | day show')
+  } else if (cmd === 'review') {
+    // The weeks he flagged for review (SPEC §21.13), in Hub/_review.json — his, like his marks: the morning reads them and
+    // writes a task before the test, and sets or clears one only when he asks for it. Not a decision of the brain's, so
+    // not in its log; the week screen's Flag for review writes the same file through the same shape (withFlag).
+    const doc = await readReview(ROOT)
+    const keyOf = c => Object.keys(COURSES).find(k => k === c || COURSES[k].code.toLowerCase() === String(c || '').toLowerCase()) || null
+    if (!sub || sub === 'list') {
+      const only = one('--course') ? keyOf(one('--course')) : null
+      if (one('--course') && !only) fail(`review --course: ${one('--course')} is not one of ${Object.values(COURSES).map(c => c.code).join(', ')}`)
+      const rows = Object.entries(doc.courses).filter(([k]) => !only || k === only).flatMap(([k, f]) => Object.entries(f).map(([n, x]) => ({ course: code(k), courseKey: k, week: Number(n), label: x.week, note: x.note || null, at: x.at || null })))
+      say(rows.length ? rows.map(r => `${r.course} · ${r.label}${r.note ? ` — ${r.note}` : ''}`).join('\n') : 'No week is flagged for review.', { flags: rows })
+    } else if (sub === 'set' || sub === 'clear') {
+      const k = keyOf(rest[0]), n = Number(rest[1])
+      if (!k) fail(`review ${sub} <CODE> <week n>: ${rest[0] || 'no course given'} is not one of ${Object.values(COURSES).map(c => c.code).join(', ')}`)
+      const all = weeks(COURSES[k].term), w = all.find(x => x.n === n)
+      if (!w) fail(`review ${sub}: ${code(k)} has weeks 1–${all.length}`)
+      if (sub === 'clear' && !doc.courses[k]?.[n]) fail(`${code(k)} · ${w.label} is not flagged`)
+      const next = withFlag(doc, k, n, sub === 'set' ? { week: w.label, note: one('--note') || '' } : null)
+      if (!DRY) await writeAtomic(REVIEW_JSON(ROOT), JSON.stringify(next, null, 2) + '\n')
+      const f = next.courses[k]?.[n] || null
+      say(`${code(k)} · ${w.label} ${f ? `flagged for review${f.note ? ` — ${f.note}` : ''}` : 'unflagged'}${DRY ? ' (dry run)' : ''}`, { flag: f })
+    } else fail('review [list] [--course CODE] | review set <CODE> <week n> [--note "…"] | review clear <CODE> <week n>')
   } else if (cmd === 'settings') {
     // Two settings of the brain's: whether Claude is it, and which model it runs on (the morning run, the Sync button,
     // the day's re-plan — SPEC §22.7). Opus unless the settings say otherwise.

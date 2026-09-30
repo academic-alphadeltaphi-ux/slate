@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { api } from '../api.js'
 import { Icon } from './Icons.jsx'
-import { Flags } from './Flags.jsx'
+import { Flags, Flag } from './Flags.jsx'
 import { THIS as ED } from '../edition.js'
 import { kindIcon } from '../kinds.js'
 import GradeSim from './GradeSim.jsx'
@@ -10,7 +10,8 @@ import TaskSheet, { taskItem } from './TaskSheet.jsx'
 import { rowsFor, practiceRows } from '../todo.js'
 import More from './More.jsx'
 import { Ring, Meter, Track, Stack, Timeline, LoadStrip, testFlag as flagOf } from './Viz.jsx'
-import { standing, componentScore } from '../grade.js'
+import { standing, componentScore, neededFor } from '../grade.js'
+import { flaggedIn } from '../review.js'
 import { addDays, daysTo, localParts } from '../plan.js'
 import { parseProblemsBlock, findProblemsBlock, withScore, labelText, pairSets } from '../problems.js'
 import { useMyTasks, AddTask, toggleMyTask, removeMyTask } from './MyTasks.jsx'
@@ -32,7 +33,7 @@ import '../styles/course.css'
 // draws its facts its own way — a ring, rows by date, meters, a feed, a countdown, a timeline, a stacked bar, a grid of
 // counts. Everything rarer is behind one More.
 // props: { courseKey, initialTerm, onOpen(path), onOpenSection(path), onOpenWeek(path, tab), onHome(), onTake() }
-const HUB_FILES = new Set(['Hub/_hub.json', 'Hub/_study-queue.json', 'Hub/_plan.json', 'Hub/_problems.json'])
+const HUB_FILES = new Set(['Hub/_hub.json', 'Hub/_marks.json', 'Hub/_review.json', 'Hub/_study-queue.json', 'Hub/_plan.json', 'Hub/_problems.json'])
 const fmtDay = iso => (iso ? new Date(iso.slice(0, 10) + 'T12:00:00').toLocaleDateString('en-CA', { weekday: 'short', month: 'short', day: 'numeric' }) : '')
 const fmtShort = iso => (iso ? new Date(iso.slice(0, 10) + 'T12:00:00').toLocaleDateString('en-CA', { month: 'short', day: 'numeric' }) : '')
 const fmt = iso => (iso ? new Date(iso).toLocaleString('en-CA', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '')
@@ -107,7 +108,7 @@ export default function CourseScreen({ courseKey, initialTerm, onOpen, onOpenSec
   const rows = useMemo(() => {
     if (!d) return []
     const ctx = { titles, links: d.links.items, general: d.general, courseUrl: d.course.url }
-    return rowsFor({ plan, hub: { deadlines: d.deadlines }, tests: d.tests, today: d.today, now: d.now?.slice(11, 16) || null, courseKey, testHorizon: TEST_HORIZON, ctxFor: () => ctx, mine: mine.tasks, courses: [d.course] })
+    return rowsFor({ plan, hub: { deadlines: d.deadlines, review: { [courseKey]: d.review } }, tests: d.tests, today: d.today, now: d.now?.slice(11, 16) || null, courseKey, testHorizon: TEST_HORIZON, ctxFor: () => ctx, mine: mine.tasks, courses: [d.course] })
       .map(r => (r.color ? r : { ...r, color: d.course.color }))
   }, [d, plan, titles, courseKey, mine.tasks])
   // What is worth doing when there is time: the week's problem sets and guides, last week to next (SPEC §20.33).
@@ -189,7 +190,7 @@ export default function CourseScreen({ courseKey, initialTerm, onOpen, onOpenSec
           <ul className="list">{d.tests.slice(1).map(x => (
             <li key={x.date}><span className="grow">{x.title}{x.detail && <small>{x.detail}</small>}</span><span className="when">{fmtDay(x.date)}</span></li>))}</ul></section>}
       </More>
-      {calc && c.grading && <Calculator c={c} onClose={() => setCalc(false)} />}
+      {calc && c.grading && <Calculator c={c} onClose={() => setCalc(false)} onSaved={load} />}
       {sheet && <TaskSheet item={sheet} onClose={() => setSheet(null)} onOpen={onOpen} onToggle={sheet.onToggle} onDelete={sheet.onDelete} />}
     </div>
   )
@@ -388,6 +389,7 @@ function Practice({ d, rows, onPick, go, onOpenWeek }) {
 // The next test as a countdown, then the weeks it covers and how ready you are.
 function NextTest({ d, onOpen, onOpenWeek }) {
   const t = d.tests[0], r = d.readiness
+  const flagged = flaggedIn({ [d.key]: d.review }, d.key, t?.window)
   if (!t) return <section className="card cx-test"><h2>Next test</h2><p className="blank">No test dates known yet.</p></section>
   return (
     <section className="card cx-test">
@@ -399,9 +401,13 @@ function NextTest({ d, onOpen, onOpenWeek }) {
         <div className="cd-ready">
           <div className="cx-test-cover">Covers {r.window?.label || `weeks ${r.from}–${r.to}`}{r.window?.assumed ? ' — a best guess' : ''}</div>
           <div className="cd-strip">{r.weeks.map(w => (
-            <button key={w.n} className={'cd-cell ' + w.state + (w.current ? ' current' : '')} onClick={() => onOpenWeek?.(w.page.replace(/\.md$/, ''))}
-              title={`${w.label} · ${w.state === 'future' ? 'not yet' : w.state === 'done' ? (ED.sheets ? `${plural(w.sheets, 'study sheet')}` : 'you have worked on it') : w.state === 'partial' ? (ED.sheets ? 'material, no study sheet' : 'material, nothing written yet') : 'nothing arrived'}`} />))}</div>
+            <button key={w.n} className={'cd-cell ' + w.state + (w.current ? ' current' : '') + (d.review?.[w.n] ? ' flagged' : '')} onClick={() => onOpenWeek?.(w.page.replace(/\.md$/, ''))}
+              title={`${w.label}${d.review?.[w.n] ? ' · flagged for review' : ''} · ${w.state === 'future' ? 'not yet' : w.state === 'done' ? (ED.sheets ? `${plural(w.sheets, 'study sheet')}` : 'you have worked on it') : w.state === 'partial' ? (ED.sheets ? 'material, no study sheet' : 'material, nothing written yet') : 'nothing arrived'}`} />))}</div>
           <div className="cd-strip-labels"><span>Week {r.from}</span><span>Week {r.to}</span></div>
+          {/* the weeks of this window he flagged for review, with his line for each (SPEC §21.13) */}
+          {flagged.length > 0 && (
+            <ul className="cx-review">{flagged.map(f => (
+              <li key={f.n}><Flag kind="review" small text={`Week ${f.n}`} /><button className="link" title={f.week} onClick={() => { const pg = r.weeks.find(w => w.n === f.n)?.page; if (pg) onOpenWeek?.(pg.replace(/\.md$/, '')) }}>{f.note || f.week}</button></li>))}</ul>)}
           <CoverageBars test={{ coverage: r.counts, window: r.window }} compact />
         </div>)}
     </section>)
@@ -444,6 +450,9 @@ function Mark({ c, today, onOpen, open, onToggle }) {
   })
   const bonus = g.components.filter(x => x.bonus)
   const st = standing(g, scores)
+  // his own marks and target (SPEC §21.12), from the route: which cells are his, and his target's need on the rest
+  const mine = Object.entries(c.fromMe || {}).reduce((n, [k, m]) => n + (m.avg ? c.myMarks?.[k]?.all?.length || 1 : Object.keys(m).length), 0)
+  const tg = c.target != null && st.best?.grade != null ? { pct: c.target, need: neededFor(g, scores, c.target) } : null
   return (
     <section className="card cx-mark">
       <h2><span className="grow">Your mark</span><button className="link" onClick={() => onOpen('Hub/Today/Grades.md')}>Every course</button></h2>
@@ -454,17 +463,20 @@ function Mark({ c, today, onOpen, open, onToggle }) {
         <span>{Math.round(st.best?.weightKnown || 0)}% of the course marked</span>
       </div>
       <Stack parts={parts} />
-      {(g.schemes.length > 1 || bonus.length > 0) && (
+      {(g.schemes.length > 1 || bonus.length > 0 || mine > 0 || tg || c.overridden?.length > 0) && (
         <p className="cx-mark-note">{[
           g.schemes.length > 1 && `Counted two ways — ${g.schemes.map(s => s.name).join(' or ')} — and the better one is used.`,
           ...bonus.map(b => `${b.label} adds up to ${Math.round(b.bonus * 100)}% on top.`),
+          mine > 0 && `Counts ${mine === 1 ? 'a mark' : `${mine} marks`} you entered yourself.`,
+          c.overridden?.length > 0 && `Quercus has since marked ${c.overridden.length === 1 ? 'one' : c.overridden.length} of yours; its mark counts.`,
+          tg && (tg.need === Infinity ? `Your ${tg.pct}% is out of reach.` : tg.need === 0 ? `Your ${tg.pct}% is locked in.` : `For your ${tg.pct}%: ${tg.need.toFixed(0)}% on the rest.`),
         ].filter(Boolean).join(' ')}</p>)}
       <button className="btn small cx-mark-go" onClick={onToggle}>{open ? 'Close the calculator' : 'What do I need for an A?'}</button>
     </section>)
 }
 
 // The calculator over the page, rather than a card nobody scrolled to.
-function Calculator({ c, onClose }) {
+function Calculator({ c, onClose, onSaved }) {
   useEffect(() => {
     const h = e => { if (e.key === 'Escape') { e.preventDefault(); onClose() } }
     window.addEventListener('keydown', h, true); return () => window.removeEventListener('keydown', h, true)
@@ -473,8 +485,8 @@ function Calculator({ c, onClose }) {
     <div className="cs-scrim" onClick={onClose}>
       <div className="cs cx-calc" style={{ '--c': c.color }} onClick={e => e.stopPropagation()} role="dialog" aria-label="Work out your mark">
         <button className="cs-x" onClick={onClose} title="Close"><Icon.x width="14" height="14" /></button>
-        <div className="cs-head"><span className="tag">{c.code}</span><h2>Work out your mark</h2><p>Type a mark into any row to see where it leaves you.</p></div>
-        <div className="cs-body"><GradeSim course={c} /></div>
+        <div className="cs-head"><span className="tag">{c.code}</span><h2>Work out your mark</h2><p>Type a mark into any row to see where it leaves you. Keep the ones Quercus never gets, and they count from then on.</p></div>
+        <div className="cs-body"><GradeSim course={c} onSaved={onSaved} /></div>
       </div>
     </div>)
 }

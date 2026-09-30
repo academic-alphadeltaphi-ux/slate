@@ -9,6 +9,7 @@ import { resolveTask, resolveItem, linkAction } from './resolve.js'
 import { taskNature, weekdayOf, shortIso, relDay, daysTo, addDays, textbookName, localParts, mentions, taskWords } from './plan.js'
 import { MY_TASKS } from './mytasks.js'
 import { pairSets, attachRows, setSays } from './problems.js'
+import { flaggedIn, reviewText } from './review.js'
 
 export const plainTask = t => String(t || '').replace(/\[\[([^\]|]+)(?:\|([^\]]*))?\]\]/g, (_, a, b) => (b || a).split('/').pop())
 const stripOptional = s => String(s).replace(/^\(optional\)\s*/i, '')
@@ -152,17 +153,19 @@ export function dueRow(d, ctx, today, color = null) {
 }
 
 // A test, once it is close enough to change this week (To do's horizon; the course screen counts every one of them down).
-export function testRow(t, ctx, today) {
+// `review`: every course's weeks flagged for review (hub.review, SPEC §21.13) — the ones in its window ride on its line.
+export function testRow(t, ctx, today, review = null) {
   const deadline = deadlineOf(t.date, today)
   const action = resolveItem(t, ctx)
+  const flagged = flaggedIn(review, t.courseKey, t.window)
   return {
     id: 'test|' + t.courseKey + t.date, type: 'sit', done: false, canTick: false,
     optional: false, notOpen: false, inClass: true, nature: 'graded',
     priority: priorityOf({ graded: true, daysLeft: deadline.daysLeft }),
     title: t.title, kindLabel: 'Test',
     course: t.course, courseKey: t.courseKey, color: t.color,
-    by: t.date, deadline, when: `${dayLabel(t.date)}${t.window?.label ? ` · covers ${t.window.label}` : ''}`,
-    action, note: null, source: null,
+    by: t.date, deadline, when: `${dayLabel(t.date)}${t.window?.label ? ` · covers ${t.window.label}` : ''}${flagged.length ? ` · review ${reviewText(flagged)}` : ''}`,
+    review: flagged, action, note: null, source: null,
   }
 }
 
@@ -284,7 +287,7 @@ export function rowsFor({ plan, hub, tests = null, ctxFor: ctxOf = () => ({}), t
     if (!t.date || (courseKey && t.courseKey !== courseKey)) continue
     const n = daysTo(t.date, today)
     if (n < 0 || (testHorizon != null && n > testHorizon)) continue
-    out.push(testRow(t, ctxFor(t.courseKey), today))
+    out.push(testRow(t, ctxFor(t.courseKey), today, hub?.review))
   }
   return out.sort((a, b) => a.by.localeCompare(b.by) || a.priority.rank - b.priority.rank || String(a.title).localeCompare(String(b.title)))
 }

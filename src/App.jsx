@@ -162,7 +162,7 @@ function Shell() {
       const p = ev.kind === 'md' ? ev.path : ev.path.replace(/\.blocks\.json$/, '.md')
       if (p === pageRef.current) setExternal(ev)
       if (ev.kind === 'md') loadPages(sectionRef.current)
-    } else { loadTree(); loadPages(sectionRef.current); if (ev.path === '_slate.json') loadRootMeta(); if (ev.path === 'Hub/_hub.json') loadCourses() }
+    } else { loadTree(); loadPages(sectionRef.current); if (ev.path === '_slate.json') loadRootMeta(); if (ev.path === 'Hub/_hub.json' || ev.path === 'Hub/_marks.json') loadCourses() }
   }), [])
 
   const allTitles = useMemo(() => { const out = []; const walk = l => l.forEach(p => { out.push(p.title); walk(p.children) }); walk(pages); return out }, [pages])

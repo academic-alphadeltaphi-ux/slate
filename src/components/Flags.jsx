@@ -13,6 +13,8 @@ const FLAGS = {
   required: { icon: 'check', label: 'Required', why: 'the course asks for it, but does not mark it' },
   optional: { icon: 'minus', label: 'Optional', why: 'you may skip it' },
   locked: { icon: 'lock', label: 'Not open yet', why: 'it appears here when it opens' },
+  // a week he flagged (SPEC §21.13): gilt like important, but an outline — it is his reminder, not the course's weight
+  review: { icon: 'bookmark', label: 'For review', why: 'you flagged this week; it shows on the tests that cover it' },
 }
 export function Flag({ kind, text = null, why = null, small = false }) {
   const f = FLAGS[kind]

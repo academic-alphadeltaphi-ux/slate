@@ -12,7 +12,8 @@ import os from 'node:os'
 import { COURSES, TERMS, weeks, weekFor, short, todayIso, localStamp } from './lib/terms.mjs'
 import { notesRoot } from './lib/root.mjs'
 import { SHEETS_DIR, isScratchDir } from './lib/sessions.mjs'
-import { standing, neededFor, scoresFromAssignments } from '../src/grade.js'
+import { scoresFromAssignments } from '../src/grade.js'
+import { readMarks, applyMarks } from './lib/marks.mjs'
 import { newId } from '../server/format.js'
 import { webassignDeadlines, webassignScores } from './lib/problems.mjs'
 import { guardFlags } from './lib/argv.mjs'
@@ -661,17 +662,16 @@ for (const [course, info] of Object.entries(COURSES)) {
   hub.courses.push(entry)
   await checkpoint()
 }
-// Where he stands under each course's own rules (src/grade.js), from the marks Quercus returned.
-// `match` regexes do not survive JSON, so the Home screen gets the model without them.
+// Where he stands under each course's own rules (src/grade.js), from the marks Quercus returned and the ones he entered
+// himself (Hub/_marks.json, SPEC §21.12 — read here, never written). `match` regexes do not survive JSON, so the Home
+// screen gets the model without them.
+const MARKS = await readMarks(ROOT)
 for (const c of hub.courses) {
   const info = COURSES[c.key]; if (!info?.grading) continue
   const scores = scoresFromAssignments(info.grading, c._graded || [])
   if (!scores.webassign && info.grading.components.some(x => x.key === 'webassign')) { const wa = await webassignScores(c.key, ROOT); if (wa?.avg != null) scores.webassign = { avg: wa.avg } }
   c.grading = { components: info.grading.components.map(({ match, ...rest }) => rest), schemes: info.grading.schemes }
-  c.scores = scores
-  const st = standing(info.grading, scores)
-  c.standing = st.best.grade == null ? null : { grade: st.best.grade, letter: st.letter, scheme: st.best.name, weightKnown: st.best.weightKnown,
-    need: Object.fromEntries([['A-', 80], ['A', 85], ['A+', 90]].map(([l, t]) => [l, neededFor(info.grading, scores, t)])) }
+  Object.assign(c, applyMarks({ ...c, quercusScores: scores }, MARKS.courses[c.key]))
   delete c._graded
 }
 // Current grades from the enrollment totals.
@@ -791,6 +791,8 @@ async function addVideo(course, nb, rawTitle, url, opts = {}) {
 
 // ---- Hub pages ---------------------------------------------------------------------------------
 const dl = d => `${d.confirmed === false ? short(new Date(d.due)) : fmtDate(d.due)} (${d.daysLeft === 0 ? 'today' : d.daysLeft === 1 ? 'tomorrow' : `in ${d.daysLeft} days`})`
+// his own target (SPEC §21.12), beside the A-: Infinity is out of reach, 0 is already his
+const targetLine = t => (!t ? '' : !Number.isFinite(t.need) ? ` · your ${t.pct}% is out of reach` : t.need <= 0 ? ` · your ${t.pct}% is locked in` : ` · need ${t.need.toFixed(0)} on the rest for your ${t.pct}%`)
 const courseLine = c => `| ${c.code} | ${c.name} | ${c.meets} | ${c.week || '—'} | ${c.grade ? `${c.grade.score}%${c.grade.letter ? ' ' + c.grade.letter : ''}` : 'no grade yet'} | ${c.nextDeadline ? `${c.nextDeadline.title}, ${dl(c.nextDeadline)}` : '—'} |`
 const overview = `---
 kind: "summary"
@@ -815,7 +817,7 @@ ${hub.tests.length ? hub.tests.slice(0, 6).map(t => `- **${t.course}** ${t.title
 
 ## Standing
 
-${hub.courses.map(c => `- **${c.code}** — ${c.standing ? `${c.standing.grade.toFixed(1)}% (${c.standing.letter}) with ${c.standing.weightKnown}% of the course written · ${c.standing.scheme}` + (Number.isFinite(c.standing.need['A-']) ? ` · ${c.standing.need['A-'] <= 0 ? 'A- is locked in' : `need ${c.standing.need['A-'].toFixed(0)} on the rest for A-`}` : ' · A- no longer reachable') : 'nothing graded yet'}`).join('\n')}
+${hub.courses.map(c => `- **${c.code}** — ${c.standing ? `${c.standing.grade.toFixed(1)}% (${c.standing.letter}) with ${c.standing.weightKnown}% of the course written · ${c.standing.scheme}` + (Number.isFinite(c.standing.need['A-']) ? ` · ${c.standing.need['A-'] <= 0 ? 'A- is locked in' : `need ${c.standing.need['A-'].toFixed(0)} on the rest for A-`}` : ' · A- no longer reachable') + targetLine(c.standing.target) + (Object.keys(c.fromMe || {}).length ? ' · counts marks you entered' : '') : 'nothing graded yet'}`).join('\n')}
 
 ## New since the last sync
 

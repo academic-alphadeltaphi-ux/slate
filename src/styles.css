@@ -557,7 +557,34 @@ button:disabled { opacity: .35; cursor: default; }
 .sim-cell input::-webkit-outer-spin-button, .sim-cell input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 .sim-cell input:focus { outline: none; border-color: var(--c, var(--accent)); }
 .sim-cell.known input { border-color: color-mix(in srgb, var(--c, var(--accent)) 45%, transparent); background: color-mix(in srgb, var(--c, var(--accent)) 6%, var(--bg)); }
-.sim-reset { font-size: 12px; justify-self: start; }
+/* his own marks (SPEC §21.12): Quercus's are tinted in the course's pigment, his kept ones wear gilt and say "yours", a try
+   is dashed until he keeps it */
+.sim-cell.mine input { border-color: color-mix(in srgb, var(--gilt) 70%, transparent); background: color-mix(in srgb, var(--gilt) 9%, var(--bg)); }
+.sim-cell.trying input { border-style: dashed; border-color: color-mix(in srgb, var(--text) 55%, transparent); }
+.sim-cell-by { font-family: var(--font-display); font-variant-caps: small-caps; text-transform: lowercase; font-size: 12px; letter-spacing: .08em; color: color-mix(in srgb, var(--gilt) 80%, var(--text)); }
+.sim-comp-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding-top: 6px; font-size: 12px; color: var(--muted); }
+.sim-comp-foot b { font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
+.sim-comp-foot .link, .sim-foot .link { font-size: 12px; }
+.sim-need.sim-own { cursor: text; }
+.sim-need.sim-own > b { display: flex; align-items: baseline; gap: 1px; }
+.sim-need.sim-own input { width: 100%; min-width: 0; max-width: 52px; padding: 0; border: 0; border-bottom: 1px dashed var(--edge-2); background: transparent; color: inherit; font: inherit; font-size: 11.5px; font-weight: 600; -moz-appearance: textfield; }
+.sim-need.sim-own input::-webkit-outer-spin-button, .sim-need.sim-own input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.sim-need.sim-own input:focus { outline: none; border-bottom-color: var(--c, var(--accent)); }
+.sim-need.sim-own input::placeholder { color: var(--muted); font-weight: 500; }
+.sim-over { border: 1px solid color-mix(in srgb, var(--gilt) 45%, transparent); background: color-mix(in srgb, var(--gilt) 6%, transparent); border-radius: var(--radius-sm); padding: 9px 12px; font-size: 12.5px; display: grid; gap: 4px; }
+.sim-over p { margin: 0; }
+.sim-over .link { justify-self: start; font-size: 12px; }
+.sim-foot { display: flex; align-items: center; gap: 8px 16px; flex-wrap: wrap; font-size: 12px; }
+.sim-foot:empty { display: none; }
+.sim-ask { display: inline-flex; align-items: baseline; gap: 8px; flex-wrap: wrap; color: var(--text); }
+.sim-ask .link.danger { color: var(--danger); }
+.sim-key { margin-left: auto; display: inline-flex; align-items: center; gap: 5px; color: var(--muted); font-size: 11.5px; }
+.sim-key i { width: 10px; height: 10px; border-radius: 2px; border: 1px solid; display: inline-block; margin-left: 6px; }
+.sim-key i:first-child { margin-left: 0; }
+.sim-key .k-known { border-color: color-mix(in srgb, var(--c, var(--accent)) 45%, transparent); background: color-mix(in srgb, var(--c, var(--accent)) 12%, var(--bg)); }
+.sim-key .k-mine { border-color: color-mix(in srgb, var(--gilt) 70%, transparent); background: color-mix(in srgb, var(--gilt) 14%, var(--bg)); }
+.sim-key .k-trying { border-style: dashed; border-color: color-mix(in srgb, var(--text) 55%, transparent); }
+.sim-err { color: var(--danger); }
 
 /* ---- clip: the rectangle being dragged; everything outside it dims, like a screenshot tool ---- */
 .clip-box { position: absolute; z-index: 4700; border: 1.5px solid var(--gilt); background: color-mix(in srgb, var(--gilt) 6%, transparent); box-shadow: 0 0 0 100000px rgba(10,10,12,.22); pointer-events: none; }

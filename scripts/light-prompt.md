@@ -76,7 +76,15 @@ for a tutorial, work to hand in, a quiz inside its window, the weekly participat
 concrete thing, attached to its class (a class marked `cancelled` gets none; a `topic` on a class is what it is about);
 add a `due` task for every deadline in the brief within the fortnight that has
 no open task yet. A deadline already past and not handed in gets one task too, its words ending "(late)", level
-crucial: the student decides whether to hand it in late. A brief that brings a course outline (a syllabus, a page of
+crucial: the student decides whether to hand it in late. The brief's `flagged` are weeks the student flagged for review
+on the week screen, each with his `note`, the `tests` that cover it and the `task` already written for it. They are his:
+never flag or unflag a week. A flag in `needs.review` (a test covers it within ten days, no task yet) gets one task:
+`kind` "review", `link` the flag's `page`, `due` two days before the nearest such test (the day before, or today, when
+that has passed), `what` "Review Week N before <test>: <his note>" (no note: the week's topic; shorten the note if the
+line would pass 160 characters), `level` important (crucial when the test is two days off or less), and a `reason`
+that starts "Flagged for review". A flag with its task already: leave it, unless his note changed since — then
+`task edit` its words, never a ticked one. Each task in `unflagged` was written for a flag he has since removed:
+withdraw it, reason "unflagged". A brief that brings a course outline (a syllabus, a page of
 test dates or weights) with tests the course's `tests` do not list: file it, then
 `node scripts/brain.mjs ask "The <CODE> outline is up: open the Slate folder in Claude Code and say add the <CODE> outline" --course <CODE>`
 — the course file is changed in that conversation, never here. A class with genuinely nothing to prepare gets no task, but the DONE line then says why in three or four

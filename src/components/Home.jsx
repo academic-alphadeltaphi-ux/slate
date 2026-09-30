@@ -31,7 +31,7 @@ const stripHead = md => String(md || '').replace(/^---[\s\S]*?---\n?/, '').repla
 // them the way every other screen watches its own (SPEC §8). Without this Home was the one screen that never noticed —
 // a window opened before 07:10 kept yesterday's morning note, yesterday's hub and a stale question count until it was
 // reloaded or Sync was pressed. The plan and your own tasks already watch Hub/_plan.json and My tasks.md themselves.
-const WATCHED = { 'Hub/_hub.json': 'hub', 'Hub/Today/Morning note.md': 'note', 'Hub/_study-queue.json': 'queue', 'Hub/_brain.json': 'brain' }
+const WATCHED = { 'Hub/_hub.json': 'hub', 'Hub/_marks.json': 'hub', 'Hub/_review.json': 'hub', 'Hub/Today/Morning note.md': 'note', 'Hub/_study-queue.json': 'queue', 'Hub/_brain.json': 'brain' }
 // Something to open, and somewhere worth going: not a room you sit in, not a thing that has not opened yet.
 const doable = r => !!r.action && !r.inClass && !r.notOpen
 // A row you tick yourself: a class's task, a week's own work (SPEC §20.35), or one of your own.

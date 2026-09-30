@@ -73,6 +73,7 @@ button.tag { border: 0; cursor: pointer; }
 .flag-missed { color: var(--on-c); background: var(--danger); border-color: var(--danger); }
 .flag-crucial { color: var(--danger); background: color-mix(in srgb, var(--danger) 12%, transparent); border-color: var(--danger); }
 .flag-important { color: var(--on-c); background: var(--gilt); border-color: var(--gilt); }
+.flag-review { color: color-mix(in srgb, var(--gilt) 80%, var(--text)); background: transparent; border-color: var(--gilt); }
 .flag-graded { color: var(--on-accent); background: var(--accent); border-color: var(--accent); }
 .flag-required { color: var(--text); background: transparent; border-color: color-mix(in srgb, var(--text) 62%, transparent); }
 .flag-optional { color: var(--muted); background: transparent; border: 1px dashed var(--muted-2); }

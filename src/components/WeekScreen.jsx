@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { api } from '../api.js'
 import { Icon } from './Icons.jsx'
-import { Flags } from './Flags.jsx'
+import { Flags, Flag } from './Flags.jsx'
 import { Track, testFlag } from './Viz.jsx'
 import MdLite from './MdLite.jsx'
 import { setProblemRow } from '../tick.js'
@@ -113,7 +113,7 @@ export default function WeekScreen({ path, initialTab = null, onOpen, onOpenTitl
   }
   useEffect(() => {
     let t = null
-    const off = api.events(ev => { const p = ev.path || ''; if (p.startsWith(key + '/') || p === 'Hub/_problems.json') { clearTimeout(t); t = setTimeout(load, 600) } })
+    const off = api.events(ev => { const p = ev.path || ''; if (p.startsWith(key + '/') || p === 'Hub/_problems.json' || p === 'Hub/_review.json') { clearTimeout(t); t = setTimeout(load, 600) } })
     return () => { off(); clearTimeout(t) }
   }, [path])
   // Esc goes up to the course, as it goes from a course to Home — unless a field or a dialog has the keyboard.
@@ -222,6 +222,18 @@ export default function WeekScreen({ path, initialTab = null, onOpen, onOpenTitl
     try { onOpen(await startNewNote(api, wk)) }
     catch (e) { setNote(`Could not start a new note: ${e.message}`) }
   }
+  // A week flagged for review (SPEC §21.13): a flag and a line of what to go over, asked in the dialog every other name is
+  // asked in. It rides on the tests whose weeks include this one — their rows on To do and Home, the course's Next test.
+  const flagWeek = async on => {
+    const w = d.week
+    let note = ''
+    if (on) {
+      note = await dialog.prompt({ title: `Flag ${shortWeek(w.label)} for review`, label: 'What to go over before the test — a few words, or nothing', value: d.review?.note || '', placeholder: 'e.g. the derivations from the second lecture', confirmLabel: d.review ? 'Save' : 'Flag it' })
+      if (note == null) return
+    }
+    try { await api.flagWeek(key, w.n, w.label, on, note); await load(); api.hub().then(setHub).catch(() => { }) }
+    catch (e) { setNote(`Could not flag the week: ${e.message}`) }
+  }
   // Sending a page to the trash from the shelf it stands on. Nothing is deleted outright — /api/trash is the same
   // move the file tree uses, so it can be put back.
   const removePage = async it => {
@@ -256,6 +268,8 @@ export default function WeekScreen({ path, initialTab = null, onOpen, onOpenTitl
     ...(tab === ALL && others.length ? [{ id: 'others', title: 'Loose in this week', icon: 'file', path: null, items: others, folder: null }] : []),
   ]
   const anything = count(panels[ALL]) > 0 || others.length > 0 || written
+  // the tests still ahead whose weeks include this one: where the flag will be seen
+  const reaches = (ctx.tests || []).filter(t => t.date >= today && t.window?.weeks?.includes(w.n))
   return (
     <div className="home week" style={{ '--c': c.color }}>
       <div className="home-head">
@@ -267,6 +281,11 @@ export default function WeekScreen({ path, initialTab = null, onOpen, onOpenTitl
           <h1 className="home-title">{shortWeek(w.label)}<span className="wk-span">{w.span}</span></h1>
           {/* What the outline calls this week — for an online course, which module it is (SPEC §20.52). */}
           {w.topic && <p className="wk-topic">{w.topic}</p>}
+          {w.n && (d.review
+            ? <p className="wk-review"><Flag kind="review" small />{d.review.note && <span className="wk-review-note">{d.review.note}</span>}
+                {reaches.length > 0 && <span className="wk-review-on">on {reaches.map(t => t.title).join(', ')}</span>}
+                <button className="link" onClick={() => flagWeek(true)}>Edit</button><button className="link" onClick={() => flagWeek(false)}>Unflag</button></p>
+            : <p className="wk-review"><button className="link" onClick={() => flagWeek(true)} title="A flag and a line of what to go over, shown on the tests that cover this week">{I('bookmark', { width: 13, height: 13 })}Flag for review</button></p>)}
         </div>
         <div className="home-actions">
           <button className="btn" disabled={!d.prev} title="The week before" onClick={() => onOpenWeek(d.prev)}>‹ Previous</button>

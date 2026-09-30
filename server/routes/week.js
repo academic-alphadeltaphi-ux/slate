@@ -18,6 +18,7 @@ import { inReadingWeek, syllabusWeekN, expandMeetings } from '../../src/calendar
 import { summarize } from '../../scripts/lib/problems.mjs'
 import { pairSets, attachRows } from '../../src/problems.js'
 import { weekRow } from './course.js'
+import { readReview } from '../../scripts/lib/review.mjs'
 import { enabled } from '../edition.js'
 import { WIN } from '../../scripts/lib/platform.mjs'
 
@@ -254,6 +255,8 @@ async function weekView({ store, ROOT, hubJson, HttpError }, key, term, label, n
     key, term, today, course,
     week: { n: w.n, label: w.label, span: w.span, monday: w.monday, term, dir, page: `${dir}.md`, topic: row.topic || null, current: !!cur && cur.n === w.n, elapsed: !!w.monday && w.monday <= today, readingWeek: w.monday ? inReadingWeek(w.monday) : false },
     intro: page?.md || '',
+    // his flag on this week, if he set one (SPEC §21.13): { week, note, at } | null
+    review: w.n ? (await readReview(ROOT)).courses[key]?.[w.n] || null : null,
     // Every week of the term, so the screen can carry its own way to any other one (SPEC §20.24) — the same list the
     // grid is built from, already in memory, rather than a second request.
     weeks: list.map(x => ({ n: x.n, label: x.label, span: x.span, dir: `${key}/${x.dir}`, current: !!cur && cur.n === x.n, elapsed: !!x.monday && x.monday <= today })),

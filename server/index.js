@@ -12,6 +12,8 @@ import * as git from './git.js'
 import { CLAUDE_MD, CONTRACT_VERSION } from './claude-md.js'
 import { EDITION, ED, enabled, BUDGET, CADENCE_DAYS, RUNNER } from './edition.js'
 import { childPath, WIN } from '../scripts/lib/platform.mjs'
+import { readMarks, applyMarks } from '../scripts/lib/marks.mjs'
+import { readReview } from '../scripts/lib/review.mjs'
 
 const PORT = Number(process.env.SLATE_PORT || 5174)
 const app = express()
@@ -53,7 +55,7 @@ const ctx = { store, ROOT, HttpError, wrap, q, git, watch, search, PORT, repo, e
 // Which edition this install is (SPEC §21): server/edition.js reads it once at boot from the notes root's settings.
 // The kit the brothers install says "adphi", which leaves Ask unregistered — the route is never mounted, so the
 // feature is not merely hidden on the screen.
-const ALL_ROUTES = ['search', 'plan', 'problems', 'course', 'week', 'library', 'calendar', 'ask', 'hwr', 'export', 'history', 'dictate', 'brain', 'day']
+const ALL_ROUTES = ['search', 'plan', 'problems', 'course', 'marks', 'review', 'week', 'library', 'calendar', 'ask', 'hwr', 'export', 'history', 'dictate', 'brain', 'day']
 const ROUTES = ALL_ROUTES.filter(n => (n !== 'ask' || enabled('ask')) && (n !== 'day' || enabled('work')))
 async function registerRoutes() {
   const loaded = new Set()
@@ -118,9 +120,15 @@ async function lastMorning() {
   } catch { return null }
 }
 // The academic hub, written by scripts/quercus-sync.mjs; the Home screen reads it, the button runs it.
+// His own marks and target (Hub/_marks.json, SPEC §21.12) are applied on the way out, so a mark kept in the calculator
+// moves the Home figure now, not at the next check.
 app.get('/api/hub', wrap(async (req, res) => {
-  try { res.json({ ...JSON.parse(await fs.readFile(path.join(ROOT, 'Hub', '_hub.json'), 'utf8')), edition: EDITION, cadenceDays: CADENCE_DAYS, runner: RUNNER, lastRun: await lastMorning() }) }
-  catch { res.status(404).json({ error: 'Quercus has not been checked yet — press Check Quercus on Home', edition: EDITION, cadenceDays: CADENCE_DAYS }) }
+  try {
+    const hub = JSON.parse(await fs.readFile(path.join(ROOT, 'Hub', '_hub.json'), 'utf8')), marks = await readMarks(ROOT)
+    hub.courses = (hub.courses || []).map(c => applyMarks(c, marks.courses[c.key]))
+    // and the weeks he flagged for review (SPEC §21.13), which the test rows of src/todo.js read as `hub.review`
+    res.json({ ...hub, review: (await readReview(ROOT)).courses, edition: EDITION, cadenceDays: CADENCE_DAYS, runner: RUNNER, lastRun: await lastMorning() })
+  } catch { res.status(404).json({ error: 'Quercus has not been checked yet — press Check Quercus on Home', edition: EDITION, cadenceDays: CADENCE_DAYS }) }
 }))
 // Sync now = what the morning task does: a headless Claude session follows scripts/sync-prompt.md
 // (the deterministic script, then the quercus skill's sweep, then a morning note). It takes a few

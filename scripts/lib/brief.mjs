@@ -12,7 +12,8 @@ import { SYLLABUS } from './syllabus.mjs'
 import { readBrain, inboxItems, weekNOf } from './brain.mjs'
 import { readJson } from './problems.mjs'
 import { bucketFor, FOLDER, pageWeek, fileWeek, isAdmin } from './filing.mjs'
-import { meetingId } from '../../src/calendar.js'
+import { meetingId, testsFor } from '../../src/calendar.js'
+import { readReview, reviewBrief } from './review.mjs'
 import { namesIt } from '../../src/resolve.js'
 
 const MONTHS = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, sept: 9, oct: 10, nov: 11, dec: 12 }
@@ -260,17 +261,23 @@ export async function buildBrief(root, courseKey, { today = todayIso(), horizon 
   // Nothing waiting is not nothing to do: a class in the next few days with no task yet, or a deadline with none, still
   // needs the tasks pass — a short session with an empty inbox. A course with neither is skipped, which is what keeps a
   // quiet morning cheap.
+  // The weeks he flagged for review (SPEC §21.13): a flag whose test is near and has no task yet is something to decide
+  // too, and a task written for a flag he has since removed is one to withdraw — so a quiet course still gets its session.
+  const flagged = await reviewBrief({ flags: (await readReview(root)).courses[courseKey] || {}, weeks: wks, tests: testsFor(courseKey, hub, today),
+    tasks: Object.values(brain.tasks || {}).filter(t => t?.courseKey === courseKey), pageOf: weekPage })
   const soon = addDays(today, 6)
   const attachedTo = (date, kind) => tasks.some(t => t.class?.date === date && t.class?.kind === kind)
   const classNeeds = classes.filter(c => c.date <= soon && !c.cancelled && !attachedTo(c.date, c.kind))
   const dueNeeds = dl.filter(d => !d.submitted && d.due.slice(0, 10) <= soon && !tasks.some(t => t.due && d.due.startsWith(t.due)))
-  if (!items.length && !classNeeds.length && !dueNeeds.length) return null
+  if (!items.length && !classNeeds.length && !dueNeeds.length && !flagged.needs.length && !flagged.orphans.length) return null
   const near = wks.filter(w => addDays(w.monday, 27) >= today && w.monday <= addDays(today, 42))
   return {
-    why: items.length ? 'inbox' : 'tasks', needs: { classes: classNeeds.map(c => `${c.kind} ${c.date}`), deadlines: dueNeeds.map(d => d.title) },
+    why: items.length ? 'inbox' : 'tasks', needs: { classes: classNeeds.map(c => `${c.kind} ${c.date}`), deadlines: dueNeeds.map(d => d.title), ...(flagged.needs.length ? { review: flagged.needs } : {}), ...(flagged.orphans.length ? { unflagged: flagged.orphans.map(t => t.id) } : {}) },
     today, course: { key: courseKey, code: info.code, name: info.name, term: info.term, meets: info.meets || null, professor: info.professor || null, tutorialLag: info.tutorialLag || null, folders: ['Lectures', 'Readings', 'Problems', 'Videos', 'Assignments', 'Recordings', 'Notes'] },
     weeks: await Promise.all(near.map(async w => ({ n: w.n, dir: w.dir, span: w.span, page: await weekPage(w), ...(topics[w.n]?.topic ? { topic: topics[w.n].topic } : {}) }))),
     classes, deadlines: dl, tests, tasks, questions, waiting, reviews, recent, filed,
+    // his flags, with the tests that cover each week and the task already written for it; the tasks for flags he removed
+    ...(flagged.review.length ? { flagged: flagged.review } : {}), ...(flagged.orphans.length ? { unflagged: flagged.orphans } : {}),
   }
 }
 // Every course with something waiting, in the order of terms.mjs.
