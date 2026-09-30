@@ -10,7 +10,8 @@ Open **Claude Code** (the *Code* tab of the Claude desktop app) in any folder an
 ```text
 Install Slate for Alpha Delta Phi for me from https://github.com/academic-alphadeltaphi-ux/slate.
 First check whether a folder named Slate is already in my home folder (on a PC: %USERPROFILE%). If it is, stop and
-ask me before touching anything: it may hold my notes or an earlier copy.
+ask me before touching anything: it may hold my notes or an earlier copy. If I say it is an earlier copy, ask me to
+close its app, rename the folder to "Slate (old)" — never delete it — and carry on: the setup carries it over.
 Work out whether this computer is a Mac or a Windows PC (and on a Mac, whether it has an Apple chip: tell me if it
 is Intel, where recording lectures into text won't work), and ask me whether my Claude plan is Pro or Max (not
 sure: it's Pro).
@@ -30,6 +31,11 @@ conversation.
 
 **Updating:** close the app, open the `Slate` folder in Claude Code and say *update Slate*. It fetches the newest
 release from here and swaps it in, in the same folder: your notes, courses and settings stay as they are.
+
+**Had Slate before these releases (a zip)?** That copy can't update itself. Close its app and send the message above
+all the same. When you reply *set me up*, Claude finds the old copy and asks whether to carry it over: your notes,
+courses and Quercus key stay as they are, nothing is fetched twice, and the old copy's morning check is switched off.
+Say yes. It takes a few minutes instead of a whole setup, and from then on *update Slate* works.
 
 ### Or by hand
 

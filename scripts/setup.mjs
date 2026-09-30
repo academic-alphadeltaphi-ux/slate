@@ -9,6 +9,7 @@
 //   node scripts/setup.mjs status [--json]           what is done, what is next, what to say and what to run
 //   node scripts/setup.mjs machine | deps | notes [--root <path>] | token <key> | courses fetch | courses write |
 //                          claude | first-run | speech | app | schedule [--at HH:MM] [--review-at HH:MM] | finish | doctor
+//   node scripts/setup.mjs adopt "<earlier Slate folder>" [--undo]   carry over a copy installed before the releases (§21.14)
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
@@ -22,7 +23,7 @@ import { quercusAuth, storeToken, probeToken, DEFAULT_API } from './lib/quercus-
 import { hasDevTools } from '../server/devtools.js'
 import { WIN, LOCAL_APP, desktopDir, documentsDir, findClaude as findClaudeBin, findUv, npmSpawn, spawnable, powershell, machineInfo, childPath, nodeOk, NODE_MIN, uvPythons } from './lib/platform.mjs'
 
-guardFlags(['--root', '--at', '--review-at', '--json', '--force', '--finish', '--check'], 'node scripts/setup.mjs status|machine|deps|notes|token|courses|claude|first-run|speech|app|schedule|finish|doctor [--root <path>] [--at HH:MM] [--json]')
+guardFlags(['--root', '--at', '--review-at', '--json', '--force', '--finish', '--check', '--undo'], 'node scripts/setup.mjs status|machine|deps|notes|token|courses|claude|first-run|speech|app|schedule|finish|doctor|adopt [--root <path>] [--at HH:MM] [--json]')
 const args = process.argv.slice(2), JSON_OUT = args.includes('--json'), opt = (k, d) => (args.includes(k) ? args[args.indexOf(k) + 1] : d)
 const words = args.filter((a, i) => !a.startsWith('--') && !['--root', '--at', '--review-at'].includes(args[i - 1]))
 const [cmd, sub] = words
@@ -106,6 +107,9 @@ function statusReport() {
   // Setup belongs in a conversation opened on this folder: only there does CLAUDE.md load, do this folder's permissions
   // apply, and do the scheduled tasks it creates run here. The one-message install ends in another folder; say so first.
   if (STEPS.some(s => !state.done[s])) lines.push(`This conversation must be one opened on ${REPO} (Claude Code's working folder). If yours is any other folder, move there yourself: the Claude app's change_directory tool with ${REPO} (they click Allow; the move happens when your turn ends), then ask them to reply "set me up". Only without that tool, tell them click by click how to open the folder in Claude Code.`)
+  // An earlier copy set up on this computer (SPEC §21.14): offered before the first step that would choose notes.
+  const found = !state.adopted && !state.done.notes ? earlierCopies() : []
+  for (const e of found) lines.push(`Before any step: an earlier copy of ${short} is set up on this ${WIN ? 'PC' : 'Mac'}, in ${e.folder} (its notes: ${e.notes}). Ask them: "You already have Slate in ${e.folder}. Shall I carry it over into this new copy? Your notes, courses and Quercus key stay as they are, nothing is fetched again, and the old copy's morning check is switched off so the two never run at once." If yes — the earlier ${ED.app} closed first — run: node scripts/setup.mjs adopt "${e.folder}", tell them what it carried over, and run status again. If they would rather start over, go on with the steps below.`)
   lines.push('Done: ' + (STEPS.filter(s => state.done[s]).map(s => `${s}${state.done[s].note ? ` (${state.done[s].note})` : ''}`).join(', ') || 'nothing yet'))
   if (!next) lines.push('Everything is done. If something looks wrong, `node scripts/setup.mjs doctor` checks the install.')
   else {
@@ -116,7 +120,7 @@ function statusReport() {
     if (s.then) lines.push(`  Then: ${s.then}`)
     lines.push('  When the step is done, run `node scripts/setup.mjs status` again.')
   }
-  out(lines.join('\n'), { done: Object.keys(state.done), next, steps: STEPS })
+  out(lines.join('\n'), { done: Object.keys(state.done), next, steps: STEPS, earlier: found.map(e => ({ folder: e.folder, notes: e.notes })) })
 }
 
 // ---- the steps ------------------------------------------------------------------------------------------------------
@@ -372,6 +376,149 @@ function finish() {
     '- If anything looks wrong — a file in the wrong week, a class it misread — open this folder in Claude Code and say so.',
     `- To update the app later: close it, open this folder in Claude Code and say "update Slate" — node scripts/update.mjs swaps in the newest release here and keeps the notes, courses and settings.`].join('\n'), { ok: true, missing })
 }
+// ---- an earlier copy, carried over (SPEC §21.14) -----------------------------------------------------------------------
+// A copy installed before the releases (a zip by hand) has no update.mjs, may run its morning on the command line tool, and
+// may keep its notes in its own folder: the old guide put the kit in Documents and the notes defaulted to Documents/Slate.
+// The new copy is installed beside it, and `adopt` takes over what is not bound to a folder — the notes, the course file,
+// the Quercus key, the first run — switches the earlier morning check off, and when the notes are the earlier folder
+// itself, moves that folder's code out so only the notes are left there. Nothing of the notes moves. What is bound to a
+// folder (deps, speech, app, schedule, finish) stays for the steps, which are quick. --undo puts the earlier copy back.
+const readJson = p => { try { return JSON.parse(fs.readFileSync(p, 'utf8')) } catch { return null } }
+const expand = p => (p && p.startsWith('~') ? path.join(HOME, p.slice(1)) : p)
+function earlier(dir) {
+  if (!dir) return null
+  const folder = path.resolve(expand(String(dir)))
+  try { if (!fs.statSync(folder).isDirectory()) return null } catch { return null }
+  const kit = readJson(path.join(folder, 'kit.json')), cfg = readJson(path.join(folder, 'slate.config.json'))
+  if (!kit?.edition && !cfg?.root) return null
+  let notes = cfg?.root ? path.resolve(expand(cfg.root)) : null
+  // a folder renamed after setup ("Slate (old)"): its config names a path that is gone, or is now the new copy — no Hub
+  // there either way — and the notes were this folder itself
+  if ((!notes || !fs.existsSync(path.join(notes, 'Hub'))) && fs.existsSync(path.join(folder, 'Hub'))) notes = folder
+  return { folder, kit, notes: notes && fs.existsSync(path.join(notes, 'Hub')) ? notes : null, state: readJson(path.join(folder, 'setup-state.json')) }
+}
+// Where an earlier copy says it lives — its morning check (a Claude-app task, a launchd agent, a Task Scheduler task) —
+// and where the guides put it. Only copies that were set up (a notes folder with a Hub) count.
+const TASK_IDS_ALL = [...new Set(['adphi', 'adphi-max', ED.key].flatMap(k => [`slate-${k}-morning`, `slate-${k}-review`]))]
+function earlierCopies() {
+  const seen = new Set([real(REPO)]), found = []
+  const add = p => { const e = earlier(p); if (!e?.notes || seen.has(real(e.folder))) return; seen.add(real(e.folder)); found.push(e) }
+  const unxml = s => s && s.replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&')
+  for (const id of TASK_IDS_ALL) { try { add(/Work in (.+?)\.\s*$/m.exec(fs.readFileSync(taskFile(id), 'utf8'))?.[1]) } catch { } }
+  if (WIN) { try { const b = fs.readFileSync(path.join(LOCAL_APP, ED.app.replace(/\s+/g, ''), 'tasks', 'morning.xml')); add(unxml(/<WorkingDirectory>([^<]+)</.exec(b[0] === 0xff && b[1] === 0xfe ? b.toString('utf16le') : b.toString('utf8'))?.[1])) } catch { } }
+  else { try { add(unxml(/<key>WorkingDirectory<\/key>\s*<string>([^<]+)</.exec(fs.readFileSync(path.join(HOME, 'Library', 'LaunchAgents', `${ED.bundleId}.morning.plist`), 'utf8'))?.[1])) } catch { } }
+  for (const p of [path.join(documentsDir(), 'Slate'), path.join(HOME, 'Documents', 'Slate'), path.join(HOME, 'Slate'), path.join(HOME, 'Slate (old)'), path.join(desktopDir(), 'Slate'), path.join(HOME, 'Desktop', 'Slate')]) add(p)
+  return found
+}
+// What an installed copy's folder holds besides notes: the files it shipped with (its kit.json names them, and this
+// copy's names the same tree) and what setup made there. The notes' own contract file is theirs, never the kit's.
+function codeNames(e) {
+  const names = new Set(['kit.json', 'courses.json', 'slate.config.json', 'setup-state.json', 'Setup progress.md', 'setup-downloads', 'node_modules', 'dist', '.claude', '.gitignore', 'Read me first.html'])
+  for (const k of [e.kit, readJson(path.join(REPO, 'kit.json'))]) for (const rel of Object.keys(k?.files || {})) names.add(rel.split('/')[0])
+  return names
+}
+// A rename where it can (instant, even for node_modules); a copy and a removal across disks.
+function moveEntry(from, to) {
+  fs.mkdirSync(path.dirname(to), { recursive: true })
+  try { fs.renameSync(from, to) } catch (e) { if (e.code !== 'EXDEV') throw e; fs.cpSync(from, to, { recursive: true, verbatimSymlinks: true }); fs.rmSync(from, { recursive: true, force: true }) }
+}
+async function appOpenOn(e) {
+  for (let p = ED.port || 5178, n = 0; n < 20; p++, n++) {
+    try { const r = await fetch(`http://127.0.0.1:${p}/api/health`, { signal: AbortSignal.timeout(800) }); if (!r.ok) continue; const h = await r.json(); if ((h.repo && real(h.repo) === real(e.folder)) || (h.root && real(h.root) === real(e.notes))) return true } catch { }
+  }
+  return false
+}
+function checkRunningIn(notes) {
+  try { const l = readJson(path.join(notes, 'Hub', '_runs.lock')); if (!l?.pid) return false; process.kill(l.pid, 0); return true } catch (err) { return err.code === 'EPERM' }
+}
+async function adopt() {
+  if (args.includes('--undo')) return adoptUndo()
+  const e = earlier(sub)
+  if (!e) { const f = earlierCopies(); fail(`${sub ? `${sub} is not a Slate folder that was set up (no kit.json or slate.config.json in it).` : 'Name the earlier Slate folder.'} ${f.length ? `Found: ${f.map(x => `"${x.folder}"`).join(', ')}.` : 'Ask them where it is — the folder they opened in Claude Code to set it up.'} Then: node scripts/setup.mjs adopt "<that folder>"`, { reason: 'not-slate' }) }
+  if (clash(e.folder)) fail(`${e.folder} ${clash(e.folder)} this folder: the earlier copy is a different folder, beside this one.`, { reason: 'same' })
+  if (state.adopted) fail(`This copy already carried over ${state.adopted.from}. To carry over another: node scripts/setup.mjs adopt --undo first.`, { reason: 'adopted' })
+  if (!e.notes) fail(`The copy in ${e.folder} never got as far as a notes folder, so there is nothing to carry over: set this one up from the start (node scripts/setup.mjs status).`, { reason: 'no-notes' })
+  if (clash(e.notes)) fail(`The earlier notes (${e.notes}) ${clash(e.notes)} this folder, which is the app itself. Make a support report.`, { reason: 'notes-here' })
+  if (state.done.notes && root() && real(root()) !== real(e.notes) && !args.includes('--force')) fail(`This copy already has its own notes, in ${root()}. Carrying over would point it at ${e.notes} instead. Ask them; if that is what they want: node scripts/setup.mjs adopt "${e.folder}" --force`, { reason: 'own-notes' })
+  if (await appOpenOn(e)) fail(`The earlier ${ED.app} is open. Ask them to close it (${WIN ? 'right-click the crest in the taskbar → Close window' : 'the crest in the Dock → Quit'}), then run this again.`, { reason: 'app-open' })
+  if (checkRunningIn(e.notes)) fail('A Quercus check is running in the earlier copy right now. Try again when it has finished (a few minutes).', { reason: 'check-running' })
+
+  // 1. Notes and code apart: when the notes are the earlier folder itself (or hold it, or sit in it), its code moves out
+  // into this copy's setup-downloads, and the notes stay exactly where they are. First, so a move that fails leaves the
+  // earlier copy exactly as it was.
+  let moved = null
+  if (real(e.notes) === real(e.folder) || within(e.folder, e.notes) || within(e.notes, e.folder)) {
+    const code = codeNames(e), to = path.join(REPO, 'setup-downloads', `earlier-copy-${new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)}`), names = []
+    try {
+      for (const name of fs.readdirSync(e.folder)) {
+        const from = path.join(e.folder, name)
+        if (!code.has(name) || within(from, e.notes)) continue
+        if (name === 'CLAUDE.md' && /<!-- slate:contract v\d+/.test(fs.readFileSync(from, 'utf8'))) continue
+        moveEntry(from, path.join(to, name)); names.push(name)
+      }
+    } catch (err) {
+      for (const name of names) { try { moveEntry(path.join(to, name), path.join(e.folder, name)) } catch { } }
+      fail(`The earlier copy's code could not be moved out of ${e.folder} (${err.code || err.message}) — usually a file still open in it. Everything was put back. Ask them to close the earlier ${ED.app} and any window showing that folder, then run this again.`, { reason: 'move' })
+    }
+    moved = { from: e.folder, to, names }
+  }
+  // 2. The earlier morning check off, so the two never write into the same notes: its launchd agents or Task Scheduler
+  // tasks carry the labels this edition uses, and a Claude-app task can only be deleted by the app — it is named.
+  const rm = spawnSync(process.execPath, [path.join(REPO, 'scripts', 'schedule.mjs'), 'remove', '--json'], { cwd: REPO, env: ENV, encoding: 'utf8', windowsHide: true })
+  const appTasks = TASK_IDS_ALL.filter(id => { try { return !fs.readFileSync(taskFile(id), 'utf8').includes(REPO) } catch { return false } })
+  // 3. This copy points at the notes. Their settings keep the cadence they were set up with (as an update does, SPEC §21.11);
+  // the edition, the model and the runner are this copy's.
+  fs.writeFileSync(CONFIG, JSON.stringify({ root: !WIN && e.notes.startsWith(HOME) ? '~' + e.notes.slice(HOME.length) : e.notes }, null, 2) + '\n')
+  const sf = path.join(e.notes, 'Hub', '_settings.json'), before = readJson(sf)
+  fs.writeFileSync(sf, JSON.stringify({ ...(before || {}), brain: true, edition: ED.key, budget: ED.budget, cadenceDays: before?.cadenceDays || ED.cadenceDays, model: ED.model || 'sonnet', runner: RUNNER }, null, 2) + '\n')
+  const at = new Date().toISOString(), carried = note => ({ at, note, carried: true })
+  state.done.notes = carried(`${e.notes.replace(HOME, '~')} (carried over)`)
+  // 4. The key: every copy keeps it in the same place (the keychain item, or the DPAPI file under %LOCALAPPDATA%\Slate).
+  const auth = quercusAuth(), probe = auth ? await probeToken(auth.token, auth.api) : null
+  if (auth && (probe?.ok || probe?.status === 0)) state.done.token = carried(probe?.ok ? `carried over, for ${probe.name || 'the account'}` : 'carried over (not checked: offline)')
+  // 5. The first run: the notes' own record of a finished check, or the earlier setup's.
+  const ran = (readJson(path.join(e.notes, 'Hub', '_runs.json'))?.runs || []).some(r => r.endedAt) || !!e.state?.done?.['first-run']
+  if (ran) state.done['first-run'] = carried('carried over: nothing is fetched twice')
+  if (RUNNER !== 'app' && e.state?.done?.claude) state.done.claude = carried('carried over')
+  state.adopted = { from: e.folder, at, notes: e.notes, moved, settingsBefore: before, edition: e.kit?.edition || null, os: e.kit?.os || null, builtAt: e.kit?.builtAt || null, tag: e.kit?.tag || null }
+  state.notes.push(`${at.slice(0, 10)}: carried over from ${e.folder}`)
+  save()
+  // 6. The course file: the earlier courses.json (else the copy the notes keep), rendered by this copy's code.
+  const src = [path.join(moved ? moved.to : e.folder, 'courses.json'), path.join(e.notes, 'Hub', '_courses.json')].find(p => fs.existsSync(p))
+  let courses = null
+  if (src) {
+    fs.copyFileSync(src, COURSES_JSON)
+    const w = spawnSync(process.execPath, [path.join(REPO, 'scripts', 'setup.mjs'), 'courses', 'write'], { cwd: REPO, env: ENV, encoding: 'utf8', windowsHide: true, maxBuffer: 16 << 20 })
+    Object.assign(state, readJson(STATE) || {})   // the child wrote the courses step
+    if (w.status === 0 && state.done.courses) { state.done.courses.carried = true; save(); courses = 'ok' }
+    else courses = String(w.stderr || w.stdout || '').trim().split('\n').slice(-6).join('\n')
+  }
+  const next = STEPS.find(s => !state.done[s]) || null
+  out([`Carried over from ${e.folder}:`,
+    `- the notes stay where they are: ${e.notes}${moved ? ` — they shared that folder with the earlier copy's code, which is now in ${path.relative(REPO, moved.to)} (${moved.names.length} item(s)), so only the notes are left there` : ''};`,
+    `- the Quercus key: ${state.done.token ? 'found, it works' : auth ? `found but Quercus refused it (${probe?.status}) — the token step asks for a new one` : 'not found on this computer — the token step asks for it (two minutes)'};`,
+    `- the course file: ${courses === 'ok' ? 'rendered from their courses.json' : src ? `courses.json is copied here but did not render:\n${courses}\n  Fix courses.json (\`node scripts/courses.mjs check courses.json\`), then \`node scripts/setup.mjs courses write\`` : 'no courses.json in the earlier copy — the courses step writes one'};`,
+    `- the first run: ${ran ? 'done already — nothing is fetched twice' : 'not done in the earlier copy — the first-run step does it'};`,
+    `- the earlier morning check: ${rm.status === 0 ? `switched off (its ${WIN ? 'Task Scheduler tasks' : 'launchd agents'}, if it had any)` : `could not be switched off: ${String(rm.stderr || rm.stdout).trim().split('\n').pop()}`}${appTasks.length ? `; its task(s) in the Claude app — ${appTasks.join(', ')} — still point at the earlier folder: delete them now with the delete_scheduled_task tool (or Routines in the sidebar); the schedule step makes this copy's own` : ''}.`,
+    `Next: node scripts/setup.mjs status — ${next ? `it goes on from ${next}` : 'everything is done'}. Their earlier ${ED.app} no longer opens; the app step builds this one in its place. Once it opens on their courses, the earlier folder ${moved ? `(${e.folder}) is their notes: it stays` : `(${e.folder}) can be deleted — never before, and never the notes (${e.notes})`}.`,
+  ].join('\n'), { ok: true, from: e.folder, notes: e.notes, moved: moved ? { to: moved.to, count: moved.names.length } : null, token: !!state.done.token, courses, firstRun: ran, retired: rm.status === 0, appTasks, next })
+}
+function adoptUndo() {
+  const a = state.adopted
+  if (!a) fail('Nothing was carried over into this copy, so there is nothing to undo.', { reason: 'nothing' })
+  const back = [], left = []
+  for (const name of a.moved?.names || []) {
+    const from = path.join(a.moved.to, name), to = path.join(a.moved.from, name)
+    if (!fs.existsSync(from) || fs.existsSync(to)) { left.push(name); continue }
+    moveEntry(from, to); back.push(name)
+  }
+  if (a.settingsBefore) fs.writeFileSync(path.join(a.notes, 'Hub', '_settings.json'), JSON.stringify(a.settingsBefore, null, 2) + '\n')
+  for (const s of Object.keys(state.done)) if (state.done[s]?.carried) delete state.done[s]
+  fs.rmSync(CONFIG, { force: true })
+  state.notes.push(`${new Date().toISOString().slice(0, 10)}: the carry-over from ${a.from} undone`)
+  delete state.adopted; save()
+  out(`The earlier copy in ${a.from} has ${a.moved ? `its code back (${back.length} item(s)${left.length ? `; left in ${a.moved.to}: ${left.join(', ')}` : ''})` : 'everything it had'}, and its notes their earlier settings. Its morning check stays off and its app may be this copy's: in ${a.from}, \`node scripts/setup.mjs app\` and \`node scripts/setup.mjs schedule\` put them back.`, { ok: true, back: back.length, left })
+}
 // The app's server, started the way the app starts it, on a free port of its own; ok once /api/health answers for this folder.
 async function serverBoots() {
   const port = 5390 + Math.floor(Math.random() * 90)
@@ -431,4 +578,5 @@ else if (cmd === 'app') app()
 else if (cmd === 'schedule') schedule()
 else if (cmd === 'finish') finish()
 else if (cmd === 'doctor') await doctor()
-else { console.error('usage: node scripts/setup.mjs status|machine|deps|notes|token|courses fetch|courses write|claude|first-run|speech|app|schedule|finish|doctor'); process.exit(2) }
+else if (cmd === 'adopt') await adopt()
+else { console.error('usage: node scripts/setup.mjs status|machine|deps|notes|token|courses fetch|courses write|claude|first-run|speech|app|schedule|finish|doctor|adopt "<earlier folder>" [--undo]'); process.exit(2) }

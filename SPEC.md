@@ -2691,6 +2691,55 @@ week's own. The sync never writes it (contract v25). The `marks` suite walks it:
 topics, the same words changing one, an edit by id, the note cut to one line, the three routes, the row's line with and
 without a flagged week in its window, a topic removed, the week cleared.
 
+### 21.14 An earlier copy, carried over (2026-09-30)
+
+**The problem.** The copies sent before the releases cannot reach them. a brother's (2026-09-23, Max, a PC) has no
+`update.mjs` and no repository in its `kit.json`, runs its morning on the command line tool through Task Scheduler — the
+road §21.11 closed — and, if he followed its guide, keeps his notes inside its own folder: that guide put the kit in
+Documents and the notes defaulted to `Documents\Slate`, the same folder (§21.10). Updating that copy in place would mean
+fetching `update.mjs` by hand into code it does not match, swapping every file under notes that share the folder, and
+changing the runner under a live Task Scheduler task. Setting up again from zero repeats the three expensive steps — the
+Quercus key, the timetable and every outline, and the first run — and leaves the old task running into the same notes.
+
+**The road.** The new copy is installed the way any brother installs it (the README's one message), beside the old one,
+and `node scripts/setup.mjs adopt "<old folder>"` takes over what is not bound to a folder:
+- **the notes stay where they are.** The new copy's `slate.config.json` names them. When they are the old folder itself
+  (or sit in it, or hold it), the old folder's code — the top-level names its `kit.json` shipped, and this copy's, and
+  what setup made there, `node_modules` included — moves into this copy's `setup-downloads/earlier-copy-<when>/`, so only
+  the notes are left there. Renames, so a large folder moves at once; the notes' own `CLAUDE.md` (the contract marker) is
+  theirs and stays. The move comes first, and one that fails puts back what it moved and stops.
+- **the old morning check is switched off**, so two copies never write into the same notes: its launchd agents or Task
+  Scheduler tasks carry the labels this edition uses and `schedule.mjs remove` deletes them; a Claude-app task can only
+  be deleted by the app, so each that names another folder is listed for their Claude to delete.
+- **the key** is where every copy keeps it (the keychain item, the DPAPI file under `%LOCALAPPDATA%\Slate`); it is
+  probed, and a key Quercus refuses leaves the token step to ask for a new one.
+- **the course file**: the old `courses.json` (else the copy the notes keep, `Hub/_courses.json`) is copied in and
+  `courses write` renders it with this copy's code. The schema has not changed since 2026-09-17.
+- **the first run** counts as done when the notes' `Hub/_runs.json` holds a finished run (or the old setup said so).
+- **the settings** keep the cadence they were set up with, as an update does (§21.11); the edition, the model and the
+  runner become this copy's (`runner: 'app'` — the morning moves from the command line to the Claude app).
+
+The steps bound to a folder — machine, deps, speech, app, schedule, finish — are left for `setup.mjs status`, which goes
+on from the first; they take minutes. The app step writes the new app over the old one (the same program folder and
+shortcut on a PC, the same bundle on a Mac). `adopt --undo` moves the code back, restores the notes' settings and makes
+this copy forget the notes; the old copy's schedule and app are then its own setup's `schedule` and `app` steps.
+
+**Found, not asked for.** `setup.mjs status`, until a notes folder is chosen, looks for a copy that was set up: where
+its morning check says it lives (a Claude-app task's "Work in …", the Task Scheduler task's `WorkingDirectory`, the
+launchd agent's) and where the guides put it (`Documents\Slate`, the home folder's `Slate` or `Slate (old)`, the
+Desktop's). It tells their Claude to ask — "Shall I carry it over?" — before the first step. So the brother sends the
+same one message as anyone, says *set me up*, and says yes.
+
+**What the old notes bring.** The `adopt` scenario walks it on all four copies with this kit laid out as the old guide
+left it (notes in the kit folder, a morning on the system scheduler, an app task naming it): the offer in status, a
+folder that is not a copy refused, the carry-over, the notes counted before and after, the course file rendered, the
+old check off and its app task named, `--undo` and a second carry-over, the schedule step, and a morning that fetches
+nothing. `--earlier <zip>` makes the earlier copy a real one, set up by its own `setup.mjs` with its own defaults. Run
+on a brother's two zips of 2026-09-23 (the Windows one, and the Mac one on a PC): his own setup put the notes in its folder,
+exactly as feared; the carry-over passes; and the first morning afterwards fetched 8 files and 3 pages the 2026-09-23
+fetch had never found, none of them already in the notes, then asked for links to the to-dos that copy wrote before
+every task needed one (§21.11) — which the morning session gives.
+
 ## 20.56 The gated page and the open stream (2026-09-18)
 
 §20.53 recorded that MyMedia "sends anyone without a UTORid session to its login page, so a video's page holds the
