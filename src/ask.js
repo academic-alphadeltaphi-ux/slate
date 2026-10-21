@@ -6,7 +6,9 @@ import { identityText } from './problems.js'
 
 // A preset is a fixed question in scripts/ask-presets/<name>.md (the server fills {{block}}, {{problem}}, {{page}}).
 // `title` is the bold first line of the saved note; `auto` saves the answer on the page as soon as it finishes.
-export const PRESETS = { solution: { label: 'Write the solution under my attempt', title: 'Solution', auto: true } }
+// `check` (SPEC §20.71) carries a picture — the exercise and his attempt, clipped together — and is put on the page beside
+// the work only when he asks.
+export const PRESETS = { solution: { label: 'Write the solution under my attempt', title: 'Solution', auto: true }, check: { label: 'Check my work', title: 'Check my work', auto: false } }
 export const SUGGESTIONS = ['Explain this page', 'Why would this be on the test?', 'Quiz me on this page']
 const KEY = 'slate.ask.threads', MAX_PAGES = 24, MAX_BYTES = 1.5e6
 
@@ -44,14 +46,15 @@ export const patch = (page, fn) => { const t = thread(page); fn(t); t.at = Date.
 // openAsk({ page, question }). The rail opens; the panel for that page sends the pending request when it mounts or
 // when the page is already in front (30 s grace, then it is dropped rather than fired on a page the student left).
 let pending = null
-export function openAsk({ page, preset, block, problem, question, quote, image } = {}) {
+export function openAsk({ page, preset, block, problem, question, quote, image, place } = {}) {
   state.open = true
   // A passage selected on the page (SPEC §20.28): the rail opens with it as the subject, so the next question is
   // about those words rather than about the whole page. Nothing is sent until the student says what he wants to know.
   if (page && quote) { const t = thread(page); t.quote = quote; t.image = null; t.at = Date.now() }
   // A region clipped off the page: the picture is the subject, and the page's whole context still goes with it.
-  if (page && image) { const t = thread(page); t.image = image; t.quote = null; t.at = Date.now() }
-  if (page && (preset || question)) pending = { page, preset: preset || null, block: block || null, problem: problem || null, question: question || null, at: Date.now() }
+  if (page && image && !preset) { const t = thread(page); t.image = image; t.quote = null; t.at = Date.now() }
+  // A preset with a picture (Check my work) sends at once, the picture with it; `place` is where its note goes if kept.
+  if (page && (preset || question)) pending = { page, preset: preset || null, block: block || null, problem: problem || null, question: question || null, image: preset ? image || null : null, place: place || null, at: Date.now() }
   emit()
 }
 export const clearQuote = page => { const t = state.threads.get(page); if (t?.quote || t?.image) { t.quote = null; t.image = null; emit() } }
@@ -93,7 +96,8 @@ export function sourcesPhrase(items = []) {
 }
 // ≈ words the model read: tokens × 0.75 when the CLI reported usage, else the context's characters ÷ 6.
 export const wordsRead = turn => { const u = turn.usage; const n = u ? Math.round(((u.input || 0) + (u.cacheRead || 0) + (u.cacheWrite || 0)) * 0.75) : Math.round((turn.chars || 0) / 6); return n >= 1000 ? `${Math.round(n / 100) / 10}k` : String(n) }
-export const footLine = turn => `Claude${turn.ms ? ` · ${Math.max(1, Math.round(turn.ms / 1000))} s` : ''}${turn.usage || turn.chars ? ` · ≈ ${wordsRead(turn)} words read` : ''}${turn.sources?.length ? ` · from ${sourcesPhrase(turn.sources)}` : ''}`
+const modelName = m => (/fable/i.test(m || '') ? 'Fable' : /opus/i.test(m || '') ? 'Opus' : /sonnet/i.test(m || '') ? 'Sonnet' : /haiku/i.test(m || '') ? 'Haiku' : '')
+export const footLine = turn => `Claude${modelName(turn.model) ? ` ${modelName(turn.model)}` : ''}${turn.ms ? ` · ${Math.max(1, Math.round(turn.ms / 1000))} s` : ''}${turn.usage || turn.chars ? ` · ≈ ${wordsRead(turn)} words read` : ''}${turn.sources?.length ? ` · from ${sourcesPhrase(turn.sources)}` : ''}`
 
 // What lands on the page: one block, Obsidian renders it, untouched it stays byte-for-byte what Claude wrote. A
 // solution's first line is `### Solution · <label>` — what src/problems.js counts as solved (SPEC §20.2).

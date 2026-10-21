@@ -22,7 +22,8 @@
 //   budget        'heavy': one long Claude pass reads everything (scripts/brain-prompt.md). 'light': the fetch proposes,
 //                 Sonnet decides one course at a time in short sessions with a turn cap (scripts/run.mjs) — the shape
 //                 that fits a Claude Pro plan, measured in SPEC §21
-//   cadenceDays   how often the scheduled morning runs; Home counts "days behind" from it
+//   cadenceDays   how often the scheduled morning runs; Home counts "days behind" from it. 1 on every plan: a light
+//                 morning is small next to a Pro or Max allowance, and it wins over whatever an older install's settings say
 //   port          each edition's own, so two copies on one Mac never open a window onto each other
 //   appDir        where the built app is put: 'Applications' for the student, 'Desktop' for the brothers — setup ends with the
 //                 app on their Desktop and they double-click it there (2026-09-23)

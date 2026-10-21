@@ -14,7 +14,7 @@ import { parsePage, newId } from '../../server/format.js'
 import { rowsFor } from '../../src/todo.js'
 import { parseMyTasks, MY_TASKS } from '../../src/mytasks.js'
 import { expandMeetings, addDays, weekdayOf, shortIso } from '../../src/calendar.js'
-import { packDay, busyFor, freeIntervals, candidateOf, windowFor, withDefaults, toMin, hm, span, DEFAULT_PREFS } from '../../src/dayplan.js'
+import { packDay, busyFor, freeIntervals, candidateOf, windowFor, withDefaults, toMin, hm, span, DEFAULT_PREFS, calibrationInForce } from '../../src/dayplan.js'
 import { wallsOf, snapStart, pushDown, overlaps } from '../../src/today.js'
 
 export const DAY_JSON = root => path.join(root, 'Hub', '_day.json')
@@ -327,7 +327,7 @@ export function briefDay(g, { from = g.now, runSteer = null } = {}) {
       removed: c.excluded === 'not today' || undefined, onDay: onDay.get(c.rowId) || undefined, reason: c.row.reason || null, link: c.row.action?.url || c.row.action?.path || null,
     })),
     tests: (g.tests || []).filter(t => horizon(t) != null && horizon(t) >= 0 && horizon(t) <= p.testHorizon).map(t => ({ course: t.course, title: t.title, date: t.date, daysLeft: Math.round(horizon(t)) })),
-    log: { doneToday: g.doneMinutes, calibration: g.calibration },
+    log: { doneToday: g.doneMinutes, calibration: calibrationInForce(g.calibration) },
     packer: { planned: packed.numbers.planned, blocks: packed.blocks.filter(b => !b.pinned && !b.done).map(b => ({ row: b.rowId, start: clock(b.start), end: clock(b.end), title: b.title, why: b.why })), waiting: packed.unplaced.map(u => ({ row: u.rowId, title: u.title, why: u.why })) },
   }
 }

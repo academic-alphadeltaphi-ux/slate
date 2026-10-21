@@ -1,9 +1,12 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { Icon } from './Icons.jsx'
 import { INK_COLORS, INK_SIZES, ERASER_SIZES } from '../ink.js'
 import { SPEECH } from '../transcribe.js'
+import { THIS } from '../edition.js'
 
-export const ZOOM_STEPS = [0.5, 0.67, 0.8, 0.9, 1, 1.1, 1.25, 1.5, 1.75, 2, 2.5, 3]
+// the student's own copy zooms further both ways, 25–500 % (2026-09-30); the brothers' copies keep 50–300 %.
+export const ZOOM_STEPS = THIS.key === 'full' ? [0.25, 0.33, 0.5, 0.67, 0.8, 0.9, 1, 1.1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5] : [0.5, 0.67, 0.8, 0.9, 1, 1.1, 1.25, 1.5, 1.75, 2, 2.5, 3]
+export const ZOOM_MIN = ZOOM_STEPS[0], ZOOM_MAX = ZOOM_STEPS[ZOOM_STEPS.length - 1]
 export const stepZoom = (z, dir) => {
   const i = ZOOM_STEPS.findIndex(s => s >= z - 0.001)
   const j = dir > 0 ? Math.min(ZOOM_STEPS.length - 1, (i < 0 ? ZOOM_STEPS.length - 1 : i) + 1) : Math.max(0, (i < 0 ? 0 : i) - 1)
@@ -22,12 +25,28 @@ const DICT_SAY = {
 }
 const ls = { get: (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d } catch { return d } }, set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)) } catch { } } }
 
+// What the input device reports, shown in the pill. The canvas writes it at every pen movement, hover included, so it
+// lives outside React state: only this label re-renders, and only when its text changes (it re-rendered the whole page).
+export const createPenStore = () => {
+  let label = null
+  const subs = new Set()
+  return {
+    get: () => label,
+    set: v => { if (v === label) return; label = v; for (const f of subs) f() },
+    subscribe: f => { subs.add(f); return () => subs.delete(f) },
+  }
+}
+function PenInfo({ store }) {
+  const label = useSyncExternalStore(store.subscribe, store.get)
+  return label && <span className="tools-info" title="What the browser receives from your input device">{label}</span>
+}
+
 // The floating tool pill (SPEC §20.28). It sat centred over the top of the page and covered the first two lines of
 // every note, with no way to move it — so it moves now: drag the grip, and where you put it is remembered. It also
 // carries the two things the page is really switched between — freeform canvas or document — and the microphone,
 // because dictating is a way of writing, not a setting.
 // props: { …, doc, setDoc, dictation: { on, supported, error, toggle } }
-export default function Tools({ tool, setTool, zoom, setZoom, canUndo, canRedo, onUndo, onRedo, penInfo, doc = false, setDoc, dictation }) {
+export default function Tools({ tool, setTool, zoom, setZoom, canUndo, canRedo, onUndo, onRedo, penStore, doc = false, setDoc, dictation }) {
   const set = patch => setTool(t => ({ ...t, ...patch }))
   const pick = mode => set({ mode: tool.mode === mode && mode !== 'select' ? 'select' : mode })
   const drawing = tool.mode !== 'select'
@@ -113,7 +132,7 @@ export default function Tools({ tool, setTool, zoom, setZoom, canUndo, canRedo, 
           <T cls="tb icon" title="Zoom out (⌘−)" onClick={() => setZoom(z => stepZoom(z, -1))}><Icon.minus /></T>
           <T cls="tb zoom" title="Reset zoom (⌘0)" onClick={() => setZoom(1)}>{Math.round(zoom * 100)}%</T>
           <T cls="tb icon" title="Zoom in (⌘+)" onClick={() => setZoom(z => stepZoom(z, 1))}><Icon.plus /></T>
-          {penInfo && <span className="tools-info" title="What the browser receives from your input device">{penInfo.type === 'pen' ? `pen · ${penInfo.pressure.toFixed(2)}${penInfo.tilt ? ` · ${penInfo.tilt}` : ''}` : `${penInfo.type} · no pressure`}</span>}
+          {penStore && <PenInfo store={penStore} />}
         </>)}
       </div>
 

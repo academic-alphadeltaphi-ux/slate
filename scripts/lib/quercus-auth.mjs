@@ -46,7 +46,7 @@ export function quercusAuth() {
   const d = desktopToken(); if (d) return { ...d, from: 'claude-desktop' }
   return null
 }
-export const NO_TOKEN = 'No Quercus access key is stored on this computer. Setup stores one (`node scripts/setup.mjs token`): q.utoronto.ca → Account → Settings → + New Access Token, expiry left blank.'
+export const NO_TOKEN = 'No Quercus access key is stored on this computer. Setup stores one (`node scripts/setup.mjs token`): q.utoronto.ca → Account → Settings → + New Access Token, Expires set to the latest date it allows.'
 export function requireQuercusAuth() { const a = quercusAuth(); if (!a) throw new Error(NO_TOKEN); return a }
 // A quick check that a key works: → { ok, name, id } or { ok: false, status }.
 export async function probeToken(token, api = DEFAULT_API) {

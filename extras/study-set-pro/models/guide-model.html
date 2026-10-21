@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ECO102 — Monetary Policy Master Study Guide</title>
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['\\(','\\)']],
+    displayMath: [['\\[','\\]']],
+    processEscapes: true
+  },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@400;700&display=swap');
+
+  :root {
+    --orange: #E67E22; --orange-bg: #FFF8F0; --orange-border: #F5CBA7;
+    --green: #27AE60;  --green-bg:  #F0FFF4; --green-border:  #A9DFBF;
+    --blue: #2E86C1;   --blue-bg:   #EBF5FB; --blue-border:   #AED6F1;
+    --purple: #8E44AD; --purple-bg: #F5EEF8; --purple-border: #D2B4DE;
+    --red: #E74C3C;    --red-bg:    #FDEDEC; --red-border:    #F5B7B1;
+    --yellow: #F39C12; --yellow-bg: #FEF9E7; --yellow-border: #F9E79F;
+    --teal: #16A085;   --teal-bg:   #E8F8F5; --teal-border:   #A3E4D7;
+    --gray: #566573;   --gray-bg:   #F2F3F4; --gray-border:   #D5D8DC;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    font-size: 16px; line-height: 1.7; color: #2C3E50;
+    max-width: 920px; margin: 0 auto; padding: 40px 30px; background: #FAFBFC;
+  }
+  h1 {
+    font-family: 'Merriweather', serif; font-size: 2.3em; color: #1A5276;
+    border-bottom: 4px solid var(--blue); padding-bottom: 15px; margin-bottom: 10px;
+  }
+  .subtitle { font-size: 1.1em; color: var(--gray); margin-bottom: 30px; }
+  h2 {
+    font-family: 'Merriweather', serif; font-size: 1.75em; color: #1A5276;
+    margin-top: 55px; margin-bottom: 15px; padding-bottom: 8px;
+    border-bottom: 3px solid var(--blue);
+  }
+  h3 {
+    font-size: 1.35em; color: #1A5276; margin-top: 35px; margin-bottom: 12px;
+    padding-left: 12px; border-left: 4px solid var(--orange);
+  }
+  h4 { font-size: 1.12em; color: var(--purple); margin-top: 25px; margin-bottom: 10px; font-weight: 700; }
+  p { margin-bottom: 14px; }
+  ul, ol { margin-bottom: 14px; padding-left: 28px; }
+  li { margin-bottom: 6px; }
+
+  .toc {
+    background: var(--blue-bg); border: 2px solid var(--blue-border);
+    border-radius: 10px; padding: 25px 30px; margin: 30px 0;
+  }
+  .toc h3 { border-left: none; padding-left: 0; color: var(--blue); margin-top: 0; }
+  .toc ol { padding-left: 22px; }
+  .toc li { margin-bottom: 5px; }
+  .toc a { color: var(--blue); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  .toc ol ol { margin-top: 4px; padding-left: 24px; }
+
+  .definition-box, .theorem-box, .example-box, .intuition-box,
+  .warning-box, .practice-box, .solution-box, .summary-box, .formula-box {
+    border-radius: 8px; padding: 20px 24px; margin: 20px 0;
+  }
+  .definition-box { background: var(--orange-bg); border: 2px solid var(--orange-border); border-left: 6px solid var(--orange); }
+  .definition-box .box-title { font-weight: 700; color: var(--orange); font-size: 1.05em; margin-bottom: 8px; }
+
+  .theorem-box, .formula-box { background: var(--blue-bg); border: 2px solid var(--blue-border); border-left: 6px solid var(--blue); }
+  .theorem-box .box-title, .formula-box .box-title { font-weight: 700; color: var(--blue); font-size: 1.05em; margin-bottom: 8px; }
+
+  .example-box { background: var(--green-bg); border: 2px solid var(--green-border); border-left: 6px solid var(--green); }
+  .example-box .box-title { font-weight: 700; color: var(--green); font-size: 1.05em; margin-bottom: 8px; }
+
+  .intuition-box { background: var(--purple-bg); border: 2px solid var(--purple-border); border-left: 6px solid var(--purple); }
+  .intuition-box .box-title { font-weight: 700; color: var(--purple); font-size: 1.05em; margin-bottom: 8px; }
+
+  .warning-box { background: var(--red-bg); border: 2px solid var(--red-border); border-left: 6px solid var(--red); }
+  .warning-box .box-title { font-weight: 700; color: var(--red); font-size: 1.05em; margin-bottom: 8px; }
+
+  .practice-box { background: var(--yellow-bg); border: 2px solid var(--yellow-border); border-left: 6px solid var(--yellow); }
+  .practice-box .box-title { font-weight: 700; color: #B9770E; font-size: 1.05em; margin-bottom: 8px; }
+
+  .solution-box { background: var(--gray-bg); border: 2px dashed var(--gray-border); }
+  .solution-box .box-title { font-weight: 700; color: var(--gray); font-size: 1.05em; margin-bottom: 8px; }
+
+  .summary-box { background: var(--teal-bg); border: 2px solid var(--teal-border); border-left: 6px solid var(--teal); }
+  .summary-box .box-title { font-weight: 700; color: var(--teal); font-size: 1.05em; margin-bottom: 8px; }
+
+  table { border-collapse: collapse; width: 100%; margin: 16px 0; }
+  th, td { border: 1px solid var(--gray-border); padding: 10px 14px; text-align: left; }
+  th { background: var(--blue-bg); font-weight: 600; color: #1A5276; }
+  tr:nth-child(even) { background: #F8F9FA; }
+
+  .lecture-banner {
+    background: linear-gradient(135deg, #1A5276, #2E86C1);
+    color: white; padding: 28px 32px; border-radius: 12px;
+    margin: 50px 0 30px 0;
+  }
+  .lecture-banner h2 {
+    color: white; border: none; margin: 0; padding: 0; font-size: 2em;
+  }
+  .lecture-banner .tag { font-size: 0.95em; opacity: 0.9; margin-top: 6px; }
+
+  strong.hl { color: var(--blue); }
+  code { background: #F4F6F7; padding: 2px 6px; border-radius: 4px; font-size: 0.95em; }
+  hr { border: none; border-top: 2px dashed var(--gray-border); margin: 40px 0; }
+
+  .solution-toggle {
+      cursor: pointer;
+      color: #0056b3;
+      text-decoration: underline;
+      font-weight: bold;
+      display: inline-block;
+      margin-top: 1rem;
+  }
+
+  .solution-content {
+      display: none;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px dashed var(--practice-border);
+  }
+
+  @media print {
+    body { max-width: 100%; padding: 20px; font-size: 13.5px; }
+    .definition-box, .theorem-box, .example-box, .intuition-box, .warning-box,
+    .practice-box, .solution-box, .summary-box, .formula-box, .lecture-banner { break-inside: avoid; }
+    .solution-content { display: block !important; }
+    .solution-toggle { display: none; }
+  }
+</style>
+<script>
+  function toggleSolution(id) {
+      const el = document.getElementById(id);
+      if (el.style.display === "block") {
+          el.style.display = "none";
+      } else {
+          el.style.display = "block";
+      }
+  }
+</script>
+</head>
+<body>
+
+<h1>ECO102 — Monetary Policy Master Study Guide</h1>
+<p class="subtitle">Covers Chapter 22 &amp; Lecture 10 · Complete Edition</p>
+
+<div class="toc">
+<h3>Table of Contents</h3>
+<ol>
+  <li><a href="#prereq">0. Prerequisites: Nominal vs. Real</a></li>
+  <li><a href="#topic1">1. Money and the Money Supply</a>
+    <ol>
+      <li><a href="#t1-def">Definition and Functions of Money</a></li>
+      <li><a href="#t1-measure">Measuring the Money Supply &amp; Liquidity</a></li>
+    </ol>
+  </li>
+  <li><a href="#topic2">2. The Quantity Theory of Money</a>
+    <ol>
+      <li><a href="#t2-vel">Velocity of Money</a></li>
+      <li><a href="#t2-eq">The Equation of Exchange</a></li>
+      <li><a href="#t2-lr">Long-Run Inflation &amp; The Classical Dichotomy</a></li>
+      <li><a href="#t2-prac">Cumulative Problem Set: Quantity Theory</a></li>
+    </ol>
+  </li>
+  <li><a href="#topic3">3. Bank of Canada &amp; Monetary Policy Goals</a>
+    <ol>
+      <li><a href="#t3-mandate">The Dual-Mandate &amp; Inflation Targeting</a></li>
+      <li><a href="#t3-zero">Why Not Target 0% Inflation?</a></li>
+      <li><a href="#t3-prac">Cumulative Problem Set: Policy Goals</a></li>
+    </ol>
+  </li>
+  <li><a href="#topic4">4. How the Bank Sets Interest Rates (The Mechanics)</a>
+    <ol>
+      <li><a href="#t4-reserves">The Overnight Market &amp; Bank Reserves</a></li>
+      <li><a href="#t4-band">The Operating Band: Bank Rate vs. Deposit Rate</a></li>
+      <li><a href="#t4-corra">Calculating the Effective Overnight Rate</a></li>
+      <li><a href="#t4-prac">Cumulative Problem Set: Interest Rates</a></li>
+    </ol>
+  </li>
+  <li><a href="#topic5">5. Bond Pricing and Yields</a>
+    <ol>
+      <li><a href="#t5-def">Bond Terminology</a></li>
+      <li><a href="#t5-yield">Pricing Formula and Yields</a></li>
+      <li><a href="#t5-inverse">The Inverse Relationship</a></li>
+      <li><a href="#t5-prac">Cumulative Problem Set: Bonds</a></li>
+    </ol>
+  </li>
+  <li><a href="#topic6">6. The Transmission Mechanism &amp; Taylor Rule</a>
+    <ol>
+      <li><a href="#t6-trans">Ripple Effects: From Overnight Rate to Aggregate Expenditure</a></li>
+      <li><a href="#t6-taylor">The Policy Rule-of-Thumb</a></li>
+      <li><a href="#t6-prac">Cumulative Problem Set: Transmission &amp; Rules</a></li>
+    </ol>
+  </li>
+  <li><a href="#topic7">7. Unconventional Monetary Policy</a>
+    <ol>
+      <li><a href="#t7-zlb">The Zero Lower Bound Context</a></li>
+      <li><a href="#t7-fg">Forward Guidance</a></li>
+      <li><a href="#t7-qe">Quantitative Easing (QE)</a></li>
+      <li><a href="#t7-lolr">Lender of Last Resort &amp; Moral Hazard</a></li>
+      <li><a href="#t7-prac">Cumulative Problem Set: Unconventional Policy</a></li>
+    </ol>
+  </li>
+  <li><a href="#mock">8. Full Mock Midterm: Monetary Policy</a></li>
+  <li><a href="#cheat">9. One-Page Master Cheat Sheet</a></li>
+</ol>
+</div>
+
+<!-- ============================================================ -->
+<!-- PREREQUISITES                                                -->
+<!-- ============================================================ -->
+<h2 id="prereq">0. Prerequisites: Nominal vs. Real</h2>
+
+<div class="intuition-box">
+  <div class="box-title">🔮 Conceptual Framing</div>
+  <p>Before analyzing the Bank of Canada's actions, you must distinguish strictly between nominal and real variables. Monetary policy operates on nominal variables in the short run to influence real economic activity, but in the long run, nominal variables only affect nominal outcomes.</p>
+</div>
+
+<ul>
+  <li><strong>Nominal vs. Real GDP:</strong> Nominal GDP (\(P \times Y\)) measures the total value of output using current prices. Real GDP (\(Y\)) measures output using constant base-year prices.</li>
+  <li><strong>Inflation (\(\pi\)):</strong> The percentage change in the overall price level (\(P\)) over time.</li>
+</ul>
+
+<div class="formula-box">
+  <div class="box-title">Fisher Equation</div>
+  <p>Relates nominal interest rates (\(i\)), real interest rates (\(r\)), and inflation (\(\pi\)). The standard linear approximation used in ECO102 is:</p>
+  \[ i \;\approx\; r + \pi \quad \implies \quad r \;\approx\; i - \pi \]
+  <p>The central bank sets the nominal rate (\(i\)), but it is the real rate (\(r\)) that ultimately determines borrowing and spending decisions in the economy.</p>
+</div>
+
+<!-- ============================================================ -->
+<!-- TOPIC 1                                                      -->
+<!-- ============================================================ -->
+<div class="lecture-banner" id="topic1">
+  <h2>1. Money and the Money Supply</h2>
+  <div class="tag">Lecture 10 · What money is and how we measure it</div>
+</div>
+
+<h3 id="t1-def">1.1 Definition and Functions of Money</h3>
+
+<p>In economics, "money" is not synonymous with wealth or income. It is a highly specific term referring to the stock of assets that can be immediately used to execute a transaction.</p>
+
+<div class="definition-box">
+  <div class="box-title">Definition — Functions of Money</div>
+  <p>To be classified as money, an asset must reliably perform three functions:</p>
+  <ol>
+    <li><strong>Medium of Exchange:</strong> It is generally accepted by buyers and sellers in trade for goods and services. It eliminates the "double coincidence of wants" required in a barter economy.</li>
+    <li><strong>Unit of Account:</strong> It provides a standardized metric for quoting prices and tracking debts.</li>
+    <li><strong>Store of Value:</strong> It retains purchasing power over time. If you hold it, it should still buy roughly the same amount of goods later.</li>
+  </ol>
+</div>
+
+<p>Modern economies operate on <strong>Fiat Money</strong>. This is money that has no intrinsic value (unlike gold or cowrie shells) and cannot be freely exchanged for a precious metal. Its value is derived entirely by government decree and the collective belief that others will accept it (social consensus).</p>
+
+<div class="warning-box">
+  <div class="box-title">⚠️ Cryptocurrencies vs. Fiat</div>
+  <p>Why aren't cryptocurrencies like Bitcoin considered money in a strict macroeconomic sense? They fail the three functions:</p>
+  <ul>
+    <li><strong>Medium of exchange:</strong> Very few vendors accept them directly for daily goods.</li>
+    <li><strong>Unit of account:</strong> Prices in stores are not quoted in BTC.</li>
+    <li><strong>Store of value:</strong> High volatility means purchasing power fluctuates wildly day-to-day.</li>
+  </ul>
+</div>
+
+<h3 id="t1-measure">1.2 Measuring the Money Supply &amp; Liquidity</h3>
+
+<p>Not all money is equally accessible. Central banks and economists categorize the money supply based on <strong>liquidity</strong> — the ease with which an asset can be converted into the economy's medium of exchange without loss of value.</p>
+
+<ul>
+  <li><strong>The Monetary Base:</strong> The most liquid form of money. It is under the <em>direct</em> control of the central bank. It consists of physical currency in circulation PLUS bank reserves (the checking accounts that commercial banks hold at the central bank).</li>
+  <li><strong>Broad Money:</strong> Includes the monetary base plus less liquid assets like commercial checking accounts, savings accounts, and time deposits. The central bank only <em>indirectly</em> influences broad money by manipulating the cost of bank reserves.</li>
+</ul>
+
+<div class="practice-box">
+  <div class="box-title">📝 Practice 1.1 — Fiat Money Concept Check</div>
+  <p>Which of the following reasons explain why people willingly accept Canadian dollars during trade? (Select the best two)</p>
+  <p>A) Government law requires everyone to use Canadian dollars<br>
+  B) The government accepts Canadian dollars to pay taxes<br>
+  C) The Canadian government is unlikely to dissolve in the future<br>
+  D) People believe everyone else will accept Canadian dollars<br>
+  E) Canadian dollars can be converted into a fixed amount of gold</p>
+  
+  <div class="solution-toggle" onclick="toggleSolution('sol1-1')">Show Solution</div>
+  <div id="sol1-1" class="solution-content">
+      <strong>Answers: B and D.</strong>
+      <p><em>Reasoning:</em> Fiat money has no intrinsic value and is not backed by commodities like gold (E is false). It holds value because the state requires it for taxes (creating a baseline demand, B) and because of collective network effects—you accept it because you know the grocery store will accept it (D). Government law alone (A) is insufficient if hyperinflation occurs and people lose faith in the currency.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TOPIC 2                                                      -->
+<!-- ============================================================ -->
+<div class="lecture-banner" id="topic2">
+  <h2>2. The Quantity Theory of Money</h2>
+  <div class="tag">Lecture 10 · Connecting money supply to output and inflation</div>
+</div>
+
+<h3 id="t2-vel">2.1 The Velocity of Money</h3>
+
+<div class="intuition-box">
+  <div class="box-title">🔮 Intuition — The Velocity of Money</div>
+  <p>Imagine an economy with only a single $10 bill. If I use it to buy an apple from you, and you use it to buy bread from the baker, and the baker uses it to buy flour, that single $10 bill has facilitated $30 worth of transactions. The rate at which money changes hands is called the <strong>Velocity of Money</strong>.</p>
+</div>
+
+<div class="formula-box">
+  <div class="box-title">Definition — Velocity Formula</div>
+  <p>Velocity (\(V\)) is defined mathematically as the ratio of nominal GDP to the money supply (\(M\)).</p>
+  \[ V \equiv \frac{P \times Y}{M} \]
+  <p>Where:</p>
+  <ul>
+    <li>\(P \times Y\) = Nominal GDP (Price level \(\times\) Real Output)</li>
+    <li>\(M\) = Total Money Supply</li>
+  </ul>
+</div>
+
+<h3 id="t2-eq">2.2 The Equation of Exchange</h3>
+
+<p>Rearranging the velocity definition yields the foundational equation for monetary macroeconomics:</p>
+
+<div class="theorem-box">
+  <div class="box-title">Theorem — The Equation of Exchange</div>
+  \[ M \times V \;=\; P \times Y \]
+  <p>This is an accounting identity. It states that the total amount of money circulating (\(M \times V\)) must equal the total nominal value of all goods and services produced (\(P \times Y\)).</p>
+</div>
+
+<h3 id="t2-lr">2.3 Long-Run Inflation &amp; The Classical Dichotomy</h3>
+
+<p>What happens if the central bank suddenly doubles the money supply?</p>
+<ul>
+  <li><strong>Short-run:</strong> Spending rises since nominal incomes rise. Because prices are "sticky" (slow to adjust), real output (\(Y\)) might temporarily increase.</li>
+  <li><strong>Long-run:</strong> Over time, since the productive capacity of the economy (\(\bar{Y}\)) has not changed, firms will simply double their prices.</li>
+</ul>
+
+<div class="definition-box">
+  <div class="box-title">Definition — The Classical Dichotomy</div>
+  <p>The principle that in the long run, nominal variables (like the money supply) do not affect real variables (like real GDP or unemployment). Real variables are determined by technology, labor, and capital. If the government added a zero to every dollar, the economy cannot produce any more real goods—only prices change.</p>
+</div>
+
+<p>We can express the Equation of Exchange in terms of percentage growth rates. Using the mathematical rule that the percentage change of a product is approximately the sum of the percentage changes:</p>
+\[ \text{Growth}(M) + \text{Growth}(V) \;\approx\; \text{Growth}(P) + \text{Growth}(Y) \]
+\[ g_M + g_V \;\approx\; \pi + g_Y \]
+
+<div class="theorem-box">
+  <div class="box-title">The Quantity Theory of Money</div>
+  <p>The Quantity Theory makes two critical long-run assumptions based on the Classical Dichotomy:</p>
+  <ol>
+    <li><strong>Velocity depends on technology and is constant:</strong> \(g_V \approx 0\).</li>
+    <li><strong>Real GDP grows at a constant potential rate:</strong> \(g_Y = \bar{g}_y\).</li>
+  </ol>
+  <p>Substituting these into the growth rate equation yields the fundamental determinant of long-run inflation:</p>
+  \[ g_M \;\approx\; \pi + \bar{g}_y \quad \implies \quad \pi \;=\; g_M - \bar{g}_y \]
+  <p><strong>Conclusion:</strong> "Inflation is always and everywhere a monetary phenomenon." In the long run, inflation depends entirely on the growth in the money supply relative to the growth of real output.</p>
+</div>
+
+<h3 id="t2-prac">2.4 Cumulative Problem Set: Quantity Theory</h3>
+
+<div class="practice-box">
+  <div class="box-title">📝 Practice 2.1 — Basic Velocity Calculation</div>
+  <p>The money supply in Matango is currently 26,350. If nominal GDP is equal to 368,900, what is the velocity of money?</p>
+  
+  <div class="solution-toggle" onclick="toggleSolution('sol2-1')">Show Solution</div>
+  <div id="sol2-1" class="solution-content">
+      <p>Use the definition of velocity: \( V = \dfrac{P \times Y}{M} \)</p>
+      <p>Nominal GDP is \( P \times Y = 368,900 \). The money supply is \( M = 26,350 \).</p>
+      \[ V = \frac{368,900}{26,350} = \mathbf{14} \]
+  </div>
+</div>
+
+<div class="practice-box">
+  <div class="box-title">📝 Practice 2.2 — Shock to Velocity (Prices)</div>
+  <p>Suppose a new technology is created which greatly increases the speed that economic transactions take place, such that the velocity of money increases by 50%. If the money supply and real GDP both stay constant, what happens to the price level?</p>
+  
+  <div class="solution-toggle" onclick="toggleSolution('sol2-2')">Show Solution</div>
+  <div id="sol2-2" class="solution-content">
+      <p>Start with the Equation of Exchange: \( M \times V = P \times Y \).</p>
+      <p>If \( V \) increases by a factor of 1.5, the left side of the equation becomes \( M \times (1.5 \times V) \).</p>
+      <p>Since \( M \) and \( Y \) are held constant, the right side must balance this by increasing \( P \) by the same factor.</p>
+      \[ M \times (1.5 V) = (1.5 P) \times Y \]
+      <p><strong>Answer:</strong> The price level increases by <strong>50%</strong>.</p>
+  </div>
+</div>
+
+<div class="practice-box">
+  <div class="box-title">📝 Practice 2.3 — Policy Response to Velocity Shock</div>
+  <p>Continuing from Practice 2.2, what should the central bank of Matango do to prevent the price level from changing? (Recall the initial money supply was 26,350 and old velocity was 14).</p>
+  
+  <div class="solution-toggle" onclick="toggleSolution('sol2-3')">Show Solution</div>
+  <div id="sol2-3" class="solution-content">
+      <p>The new velocity is \( 14 \times 1.5 = 21 \).</p>
+      <p>To keep the price level constant, the nominal GDP (\( P \times Y \)) must remain at its original value of 368,900.</p>
+      <p>We need a new money supply (\( M_{\text{new}} \)) such that: \( M_{\text{new}} \times 21 = 368,900 \).</p>
+      \[ M_{\text{new}} = \frac{368,900}{21} = \mathbf{17,566.67} \]
+      <p><strong>Answer:</strong> The central bank must <strong>reduce the money supply by 1/3</strong> (from 26,350 to 17,566.67).</p>
+  </div>
+</div>
+
+<div class="practice-box">
+  <div class="box-title">📝 Practice 2.4 — Simultaneous Shocks (Exam-Level)</div>
+  <p>Suppose velocity increases by 50% (as above), but this new technology spurs real GDP to increase by 100%. If the money supply stays constant, what exactly happens to the price level?</p>
+
+  <div class="solution-toggle" onclick="toggleSolution('sol2-4')">Show Solution</div>
+  <div id="sol2-4" class="solution-content">
+      <p>Set up the initial and final states using the Equation of Exchange.</p>
+      <p>Initial: \( M_0 \times V_0 = P_0 \times Y_0 \)</p>
+      <p>Final: \( M_1 \times V_1 = P_1 \times Y_1 \)</p>
+      <p>We are given:</p>
+      <ul>
+        <li>\( M_1 = M_0 \) (money supply is constant)</li>
+        <li>\( V_1 = 1.5 \times V_0 \) (velocity increases 50%)</li>
+        <li>\( Y_1 = 2 \times Y_0 \) (real GDP increases 100%, i.e., doubles)</li>
+      </ul>
+      <p>Substitute into the final state equation:</p>
+      \[ M_0 \times (1.5 \times V_0) = P_1 \times (2 \times Y_0) \]
+      \[ 1.5 \times (M_0 \times V_0) = 2 \times P_1 \times Y_0 \]
+      <p>Substitute the initial state (\( P_0 \times Y_0 \)) for (\( M_0 \times V_0 \)):</p>
+      \[ 1.5 \times (P_0 \times Y_0) = 2 \times P_1 \times Y_0 \]
+      <p>Cancel \( Y_0 \) from both sides:</p>
+      \[ 1.5 \times P_0 = 2 \times P_1 \quad \implies \quad P_1 = \frac{1.5}{2} \times P_0 = 0.75 \times P_0 \]
+      <p>The new price level is 75% of the old price level.</p>
+      <p><strong>Answer:</strong> The price level <strong>falls by 25%</strong>.</p>
+  </div>
+</div>
+
+<div class="practice-box">
+  <div class="box-title">📝 Practice 2.5 — Quantity Theory Predictions</div>
+  <p>According to the quantity theory of money, which of the following is true?</p>
+  <p>A) changes in the growth rate of money will 1-for-1 change inflation.<br>
+  B) the growth rate of output depends on the growth rate of money.<br>
+  C) when the inflation rate increases, the growth rate of output must fall.<br>
+  D) velocity is constant over the long run.</p>
+  
+  <div class="solution-toggle" onclick="toggleSolution('sol2-5')">Show Solution</div>
+  <div id="sol2-5" class="solution-content">
+      <strong>Answer: D.</strong>
+      <p><em>Reasoning:</em> The core assumption of the Quantity Theory of Money that allows us to link money growth directly to inflation is that velocity (\(V\)) is determined by technological/institutional factors and is constant over the long run. (A) is slightly inaccurate because inflation also depends on real GDP growth (\(\pi = g_M - g_Y\)). (B) violates the Classical Dichotomy. (C) is a short-run Phillips curve phenomenon, not a long-run Quantity Theory prediction.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TOPIC 3                                                      -->
+<!-- ============================================================ -->
+<div class="lecture-banner" id="topic3">
+  <h2>3. Bank of Canada &amp; Monetary Policy Goals</h2>
+  <div class="tag">Chapter 22 · Mandates, price stability, and inflation targeting</div>
+</div>
+
+<h3 id="t3-mandate">3.1 The Dual-Mandate &amp; Inflation Targeting</h3>
+
+<p>Since 1991, the Bank of Canada (BoC) has focused heavily on keeping inflation low, stable, and predictable. When inflation is low and stable, it doesn't distort people's economic choices, minimizing its costs. In 2021, the BoC renewed this target but explicitly embraced a <strong>dual-mandate</strong>.</p>
+
+<div class="definition-box">
+  <div class="box-title">Definition — The Bank of Canada's Goals</div>
+  <ol>
+    <li><strong>Price Stability (Primary):</strong> Keeping inflation within a 1% to 3% control range, with a strict target at the <strong>2% mid-point</strong>.</li>
+    <li><strong>Maximum Sustainable Employment:</strong> Utilizing the flexibility of the 1% to 3% range to actively seek the maximum sustainable level of employment when conditions warrant.</li>
+  </ol>
+</div>
+
+<div class="intuition-box">
+  <div class="box-title">🔮 Intuition — The Interdependence Principle</div>
+  <p>Why don't these two goals conflict constantly? Because inflation and unemployment are interdependent. When unemployment is below its lowest sustainable level, the economy is overheating (positive output gap). Capacity constraints cause firms to raise prices faster, pushing inflation above the 2% target.</p>
+  <p>Therefore, by targeting 2% inflation and raising rates when it exceeds that, the BoC is simultaneously cooling the economy back to its maximum sustainable employment level. There is no long-run trade-off between price stability and employment stability.</p>
+</div>
+
+<p><strong>The Role of Expectations:</strong> By publicly announcing a 2% target, the BoC tries to anchor <strong>inflation expectations (\(\pi^e\))</strong>. If people and price-setters believe inflation will be 2%, they build 2% into wage contracts and price hikes. This creates a virtuous cycle that ensures inflation actually remains at 2%.</p>
+
+<h3 id="t3-zero">3.2 Why Not Target 0% Inflation?</h3>
+
+<p>If the goal is price stability, why doesn't the Bank aim for 0% inflation? Macroeconomists identify four critical reasons why a 0% target is dangerous:</p>
+
+<ol>
+  <li><strong>Inflation greases the wheels of the labour market.</strong>
+      <br>Employers hate cutting <em>nominal</em> wages because it ruins morale. During a recession, firms need to reduce real costs to avoid mass layoffs. If inflation is 2%, a firm can give a 0% nominal raise, which effectively cuts real wages by 2% quietly. If inflation were 0%, they would be forced to execute painful nominal wage cuts or simply fire workers. Thus, 0% inflation leads to higher unemployment during recessions.</li>
+  <li><strong>The Zero Lower Bound (ZLB) constraint.</strong>
+      <br>Central banks cannot push nominal interest rates (\(i_f\)) much below zero. Recall the Fisher equation: \(r = i - \pi\). To stimulate an economy in a deep recession, the bank needs a negative real interest rate (\(r\)).
+      <ul>
+          <li>If \(\pi = 2\%\) and \(i\) is cut to \(0\%\), \(r = -2\%\).</li>
+          <li>If \(\pi = 0\%\) and \(i\) is cut to \(0\%\), \(r = 0\%\). The bank loses critical ammunition to fight recessions.</li>
+      </ul>
+  </li>
+  <li><strong>The Risk of Deflation.</strong>
+      <br>Central banks aren't perfectly precise; they often undershoot their targets. If the target is 0%, a slight miss means deflation (\(\pi < 0\)). Deflation causes people to delay spending (why buy today if it's cheaper tomorrow?). This drop in aggregate expenditure reduces output, causing prices to fall further—a vicious cycle that crushes the economy.</li>
+  <li><strong>Measured inflation may be overstated.</strong>
+      <br>Official measures of inflation fail to perfectly account for quality improvements and the introduction of new products (substitution and quality biases). Therefore, a measured inflation rate of 0% might actually mean the economy is experiencing a true inflation rate of -1% (mild deflation).</li>
+</ol>
+
+<h3 id="t3-prac">3.3 Cumulative Problem Set: Policy Goals</h3>
+
+<div class="practice-box">
+  <div class="box-title">📝 Practice 3.1 — Policy Undershooting</div>
+  <p>Why do central banks tend to undershoot their inflation target?</p>
+  <p>A) Inflation target is set too high<br>
+  B) Monetary policy is not effective at increasing inflation<br>
+  C) Desire to avoid increasing inflation expectations<br>
+  D) Official measures of inflation are biased upward<br>
+  E) Below-target inflation guarantees maximum employment</p>
+  
+  <div class="solution-toggle" onclick="toggleSolution('sol3-1')">Show Solution</div>
+  <div id="sol3-1" class="solution-content">
+      <strong>Answer: C.</strong>
+      <p><em>Reasoning:</em> Central banks rely heavily on managing inflation expectations. If inflation creeps above the target, there is a risk that the public will expect higher inflation permanently, leading to a self-fulfilling cycle of price hikes. To avoid unanchoring expectations on the upside, central banks often treat the target more like a ceiling, resulting in a tendency to undershoot.</p>
+  </div>
+</div>
+
+<div class="practice-box">
+  <div class="box-title">📝 Practice 3.2 — Short Answer: The ZLB</div>
+  <p>Explain how a 3% inflation target would give a central bank more power to fight a severe recession than a 1% inflation target.</p>
+  
+  <div class="solution-toggle" onclick="toggleSolution('sol3-2')">Show Solution</div>
+  <div id="sol3-2" class="solution-content">
+      <p>During a severe recession, the central bank wants to stimulate investment and consumption by lowering the real interest rate (\(r\)). However, they can only directly control the nominal interest rate (\(i\)), which cannot drop below the Zero Lower Bound (\(i \ge 0\)).</p>
+      <p>Because \(r \approx i - \pi\), the lowest possible real rate achievable is \(r = 0 - \pi = -\pi\).</p>
+      <p>With a 1% inflation target, the lowest real rate the bank can achieve is -1%. With a 3% inflation target, the bank can push the real rate down to -3%, providing significantly more economic stimulus without violating the zero lower bound.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TOPIC 4                                                      -->
+<!-- ============================================================ -->
+<div class="lecture-banner" id="topic4">
+  <h2>4. How the Bank Sets Interest Rates</h2>
+  <div class="tag">Lecture 10 &amp; Chapter 22 · The mechanics of the overnight market</div>
+</div>
+
+<h3 id="t4-reserves">4.1 The Overnight Market &amp; Bank Reserves</h3>
+
+<div class="intuition-box">
+  <div class="box-title">🔮 Intuition — The Plumbing of the Banking System</div>
+  <p>When you buy a coffee with your debit card, money doesn't physically move; it is electronically transferred from your bank (e.g., TD) to the coffee shop's bank (e.g., Scotiabank). To settle these billions of dollars in daily transactions, commercial banks must hold highly liquid cash accounts at the Bank of Canada. These are called <strong>bank reserves</strong>.</p>
+  <p>At the end of each day, some banks have a deficit of reserves (they sent out more money than they received) and some have a surplus. Banks with deficits borrow from banks with surpluses. This borrowing happens for exactly one night. The interest rate charged on these interbank loans is the <strong>overnight rate</strong>.</p>
+</div>
+
+<p>The overnight rate is the fundamental baseline interest rate in the economy. The Bank of Canada (BoC) does not simply "declare" what this rate will be; it manipulates the supply and demand for reserves to force the market to trade at the BoC's desired <strong>target overnight rate (\(i_f\))</strong>.</p>
+
+<h3 id="t4-band">4.2 The Operating Band: Bank Rate vs. Deposit Rate</h3>
+
+<p>To control the overnight rate, the BoC sets up an <strong>operating band</strong> using two standing facilities. These act as an absolute ceiling and an absolute floor for the interest rate.</p>
+
+<div class="definition-box">
+  <div class="box-title">Definition — The Operating Band</div>
+  <ul>
+    <li><strong>Bank Rate (The Ceiling):</strong> The rate the BoC charges commercial banks to borrow reserves directly from the central bank. No rational bank will borrow from another commercial bank at a rate higher than the Bank Rate, because they can just go to the BoC.</li>
+    <li><strong>Deposit Rate (The Floor):</strong> The interest rate the BoC pays to commercial banks for storing excess reserves overnight. No rational bank will lend to another commercial bank at a rate lower than the Deposit Rate, because they can just leave the money at the BoC and earn risk-free interest.</li>
+  </ul>
+</div>
+
+<div class="warning-box">
+  <div class="box-title">⚠️ Critical Lecture Update: Floor System</div>
+  <p>Historically (and in older textbooks), the BoC targeted the <em>midpoint</em> of the operating band. For example, if the band was 2.50% to 3.00%, the target was 2.75%.</p>
+  <p><strong>However, as per your lecture notes:</strong> "Nowadays, BoC tries to keep the overnight rate (\(i_f\)) = the deposit rate." By flooding the system with excess reserves, the supply curve shifts so far to the right that the market clears exactly at the floor. Always rely on this contemporary framework if asked conceptually.</p>
+</div>
+
+<p>To hit its target, the BoC shifts the supply or demand of overnight funds using these specific tools:</p>
+<ol>
+  <li><strong>Changing standing offers:</strong> Mechanically raising or lowering the Bank Rate and Deposit Rate.</li>
+  <li><strong>Injecting or withdrawing federal funds:</strong> The BoC acts as the federal government's banker. It can shift federal tax receipts into or out of the commercial banking system, altering the supply of reserves.</li>
+  <li><strong>Repos (Overnight Repurchase Agreements):</strong> The BoC temporarily buys bonds from banks with cash, injecting reserves to push the rate down.</li>
+  <li><strong>Reverse Repos:</strong> The BoC temporarily sells bonds to banks, draining cash out of the system to push the rate up.</li>
+  <li><strong>Open Market Operations:</strong> Outright permanent purchases or sales of government bonds (more common for Quantitative Easing, covered later).</li>
+</ol>
+
+<h3 id="t4-corra">4.3 Calculating the Effective Overnight Rate</h3>
+
+<p>While the BoC sets a <em>target</em>, the actual rate at which banks lend to each other is a market rate called the <strong>Effective Overnight Rate</strong> (often tracked as CORRA in Canada). It is the weighted average of all overnight transactions between commercial banks.</p>
+
+<div class="formula-box">
+  <div class="box-title">Formula — Effective Overnight Rate</div>
+  \[ \text{Effective Rate} = \frac{\sum (\text{Loan Amount} \times \text{Interest Rate})}{\text{Total Borrowed}} \]
+  <p>Note: You only include transactions <em>between commercial banks</em>. Do not include internal cash usage or reserves sitting idly at the central bank.</p>
+</div>
+
+<h3 id="t4-prac">4.4 Cumulative Problem Set: Interest Rates</h3>
+
+<div class="practice-box">
+  <div class="box-title">📝 Practice 4.1 — Calculating the Effective Overnight Rate</div>
+  <p>TD Bank has $8.6 million of payments to settle at the end of the day. They use $1.2 million of their own cash and borrow the remaining amount from the overnight market. From Scotiabank, TD borrows $4.4 million at an interest rate of 2.87%. From RBC, TD borrows $3.0 million at an interest rate of 2.65%.</p>
+  <p>(a) Calculate the effective overnight rate for these transactions.</p>
+  <p>(b) Suppose RBC had an additional $1.4 million in reserves stored in their account at the Bank of Canada, and the deposit rate is 2.5%. What is the new effective overnight rate?</p>
+
+  <div class="solution-toggle" onclick="toggleSolution('sol4-1')">Show Solution</div>
+  <div id="sol4-1" class="solution-content">
+      <p><strong>Part (a):</strong></p>
+      <p>Identify the relevant transactions. We only care about interbank borrowing. We ignore the $8.6M total payments and the $1.2M of internal cash.</p>
+      <p>Total borrowed = 4.4 + 3.0 = 7.4 million.</p>
+      \[ \text{Effective Rate} = \frac{(4.4 \times 0.0287) + (3.0 \times 0.0265)}{4.4 + 3.0} \]
+      \[ \text{Effective Rate} = \frac{0.12628 + 0.0795}{7.4} = \frac{0.20578}{7.4} \approx 0.0278 \text{ or } \mathbf{2.78\%} \]
+      <p>Notice the rate is closer to 2.87% than 2.65% because a larger sum (4.4M vs 3.0M) was borrowed at the higher rate.</p>
+      
+      <p><strong>Part (b):</strong></p>
+      <p><strong>No change (2.78%).</strong> The effective overnight rate only measures active loans *between commercial banks*. Reserves sitting idly at the Bank of Canada earning the deposit rate are not part of the interbank lending market. There is no new transaction to average in.</p>
+  </div>
+</div>
+
+<div class="practice-box">
+  <div class="box-title">📝 Practice 4.2 — Bank Decision Making (The Landry Loan)</div>
+  <p>Lysandre wants a $1,000 loan for a business project that will reliably pay out $1,100 next year. The bank has no excess reserves but can borrow from a local competitor at an 11% rate.</p>
+  <p>(a) What is Lysandre’s maximum willingness to pay in interest?</p>
+  <p>(b) Will the bank make the loan to Lysandre at his maximum rate?</p>
+  <p>(c) The Bank of Canada’s Bank Rate drops to 9.5%. Will the commercial bank make the loan now?</p>
+  <p>(d) Suppose the bank actually has plenty of excess reserves. The Deposit Rate at the BoC is 10.5%. Will the bank make the loan to Lysandre?</p>
+  
+  <div class="solution-toggle" onclick="toggleSolution('sol4-2')">Show Solution</div>
+  <div id="sol4-2" class="solution-content">
+      <p><strong>Part (a):</strong> Expected yield = \(\frac{1100 - 1000}{1000} = \mathbf{10\%}\). Anything higher than 10% interest causes Lysandre to lose money, so 10% is his absolute maximum.</p>
+      <p><strong>Part (b):</strong> <strong>No.</strong> The bank's cost of funds (11%) is greater than the 10% return they would earn from loaning to Lysandre. They would lose 1% on the spread.</p>
+      <p><strong>Part (c):</strong> <strong>Yes.</strong> The bank can now borrow directly from the BoC at the ceiling rate (Bank Rate) of 9.5%. They borrow at 9.5% and lend to Lysandre at 10%, pocketing a 0.5% profit spread.</p>
+      <p><strong>Part (d):</strong> <strong>No.</strong> Even with cash on hand, the bank faces an opportunity cost. They can park the cash risk-free at the BoC and earn 10.5%. Loaning it to Lysandre only yields 10% and carries default risk. They will choose the deposit rate.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TOPIC 5                                                      -->
+<!-- ============================================================ -->
+<div class="lecture-banner" id="topic5">
+  <h2>5. Bond Pricing and Yields</h2>
+  <div class="tag">Lecture 10 · The math of fixed-income assets</div>
+</div>
+
+<h3 id="t5-def">5.1 Bond Terminology</h3>
+
+<p>A bond is simply a legal promise to repay a debt—an IOU issued by governments or corporations to raise capital.</p>
+
+<div class="definition-box">
+  <div class="box-title">Definition — Anatomy of a Bond</div>
+  <ul>
+    <li><strong>Principal (Face Value):</strong> The amount originally lent, which will be repaid at maturity.</li>
+    <li><strong>Coupon Rate:</strong> The promised interest rate, fixed when the bond is first issued.</li>
+    <li><strong>Coupon Payment:</strong> The actual dollar amount paid periodically. <br>\(\text{Coupon Payment} = \text{Coupon Rate} \times \text{Principal}\).</li>
+    <li><strong>Term to Maturity:</strong> The lifespan of the bond. (e.g., a 1-year bond repays the principal plus the final coupon payment exactly one year from today).</li>
+  </ul>
+</div>
+
+<div class="warning-box">
+  <div class="box-title">⚠️ The Crucial Difference: Coupon Rate vs. Yield</div>
+  <p>The <strong>Coupon Rate</strong> is stamped on the physical paper bond. It never changes. It determines the cash payouts.</p>
+  <p>The <strong>Yield</strong> is the actual rate of return an investor earns. Because you can buy a bond on the secondary market for a price that is <em>different</em> from the Principal, the yield will differ from the coupon rate. The yield fluctuates every second the market is open.</p>
+</div>
+
+<h3 id="t5-yield">5.2 Pricing Formula and Yields</h3>
+
+<div class="formula-box">
+  <div class="box-title">1-Year Bond Pricing Formula</div>
+  <p>For a bond maturing in exactly one year, the relationship between its market price (\(P_{Bond}\)), the yield (\(y\)), the Principal, and the Coupon Rate (\(c\)) is:</p>
+  \[ P_{Bond} \times (1 + y) = \text{Principal} \times (1 + c) \]
+  <p>To isolate the Yield:</p>
+  \[ y = \frac{(\text{Principal} + \text{Coupon Payment}) - P_{Bond}}{P_{Bond}} \]
+</div>
+
+<div class="example-box">
+  <div class="box-title">Example — Calculating Yields</div>
+  <p>Consider a 1-year bond with a Principal of $100 and a Coupon Rate of 5%. The payout in exactly one year will be: $100 + ($100 × 0.05) = <strong>$105</strong>.</p>
+  <ul>
+    <li>If you buy the bond for exactly $100: <br>Yield = \(\frac{105 - 100}{100} = 5.00\%\). (Yield = Coupon Rate)</li>
+    <li>If you buy the bond for a discount at $96: <br>Yield = \(\frac{105 - 96}{96} = 9.375\%\). (Yield > Coupon Rate)</li>
+    <li>If you buy the bond for a premium at $103: <br>Yield = \(\frac{105 - 103}{103} = 1.94\%\). (Yield < Coupon Rate)</li>
+  </ul>
+</div>
+
+<h3 id="t5-inverse">5.3 The Inverse Relationship</h3>
+
+<div class="theorem-box">
+  <div class="box-title">Theorem — Bond Prices and Yields Move Inversely</div>
+  <p>As the market interest rate (yield) rises, the price of existing bonds must fall. As the market interest rate falls, the price of existing bonds must rise.</p>
+</div>
+
+<div class="intuition-box">
+  <div class="box-title">🔮 Intuition — Why Prices and Yields are Inversely Related (Arbitrage)</div>
+  <p>Suppose you hold a bond that pays a fixed 3% coupon. Suddenly, the Bank of Canada raises interest rates, and newly issued bonds are now paying a 5% coupon.</p>
+  <p>If you try to sell your 3% bond for its full face value, nobody will buy it. Why buy a bond paying $3 a year when they can buy a new one paying $5 a year? To find a buyer, you <strong>must discount the price of your bond</strong>. You must lower the price until the buyer's actual rate of return (yield) matches the new 5% market standard. Thus, higher market interest rates force existing bond prices down.</p>
+</div>
+
+<h3 id="t5-prac">5.4 Cumulative Problem Set: Bonds</h3>
+
+<div class="practice-box">
+  <div class="box-title">📝 Practice 5.1 — Evaluating Bond Expensiveness</div>
+  <p>You are considering purchasing one of two bonds, one from Watts’ Fine Goods or one from Rabiteman Inc. Both bonds have a principal of $500 and a term-to-maturity of one year. The bond from Watts pays a 2% coupon rate while the bond from Rabiteman pays a 17.3% coupon rate.</p>
+  <p>Given this information, is the Rabiteman bond more expensive, less expensive, or the same price as the Watts bond? By how much?</p>
+
+  <div class="solution-toggle" onclick="toggleSolution('sol5-1')">Show Solution</div>
+  <div id="sol5-1" class="solution-content">
+      <p>Since both bonds face the exact same market interest rate (assuming equal risk), they must offer the same yield to investors. However, their payouts differ drastically.</p>
+      <p>Watts payout = \( 500 + (500 \times 0.02) = 510 \).</p>
+      <p>Rabiteman payout = \( 500 + (500 \times 0.173) = 586.50 \).</p>
+      <p>Because the Rabiteman bond pays out significantly more cash at the end of the year, investors will bid its price up today compared to the Watts bond. Therefore, the <strong>Rabiteman bond is more expensive.</strong></p>
+      <p>By how much? The price is strictly proportional to the future payout (since \(P = \text{Payout} / (1+y)\)). The ratio of payouts is \(586.50 / 510 = 1.15\). Therefore, its price is exactly <strong>15% higher</strong> than the Watts bond.</p>
+  </div>
+</div>
+
+<div class="practice-box">
+  <div class="box-title">📝 Practice 5.2 — Pricing a Bond from Market Yield</div>
+  <p>Yangus purchases a newly-issued, two-year government bond with a principal amount of $10,000 and a coupon rate of 6% paid annually. One year before the bond matures (and after receiving the coupon payment for the first year), Yangus sells the bond in the bond market. What price will Yangus receive for his bond if the current market interest rate is 5%? (Round to the nearest dollar).</p>
+  
+  <div class="solution-toggle" onclick="toggleSolution('sol5-2')">Show Solution</div>
+  <div id="sol5-2" class="solution-content">
+      <p><strong>Step 1: Determine the remaining payout.</strong> Because Yangus holds the bond until there is exactly one year left, whoever buys it is effectively buying a 1-year bond. At maturity, the bond will pay the principal plus the final coupon payment.</p>
+      <p>Final Payout = \( 10,000 + (10,000 \times 0.06) = \mathbf{10,600} \).</p>
+      <p><strong>Step 2: Apply the pricing formula.</strong> The buyer demands a 5% yield (market interest rate).</p>
+      \[ P_{Bond} = \frac{\text{Final Payout}}{1 + \text{Yield}} \]
+      \[ P_{Bond} = \frac{10,600}{1 + 0.05} = \frac{10,600}{1.05} \approx 10,095.238 \]
+      <p><strong>Answer:</strong> Yangus will sell the bond for approximately <strong>$10,095</strong>. Because the bond's coupon (6%) is higher than the new market rate (5%), it trades at a premium (above its $10,000 face value).</p>
+  </div>
+</div>
+
+<div class="practice-box">
+  <div class="box-title">📝 Practice 5.3 — Short Answer: Policy Shifts</div>
+  <p>When the Bank of Canada lowers its target interest rate from 6% to 5%, what happens to the price of existing bonds? Does this only apply to bonds with a coupon rate less than 5%?</p>
+
+  <div class="solution-toggle" onclick="toggleSolution('sol5-3')">Show Solution</div>
+  <div id="sol5-3" class="solution-content">
+      <p>When the Bank of Canada lowers interest rates, the yield demanded by the market falls. Due to the inverse relationship between yields and bond prices, the price of <strong>all existing bonds will increase</strong>.</p>
+      <p>This applies universally, regardless of the coupon rate. A 4% coupon bond becomes more attractive (price rises), and an 8% coupon bond becomes even more attractive (price rises). The entire bond market reprices upward.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TOPIC 6                                                      -->
+<!-- ============================================================ -->
+<div class="lecture-banner" id="topic6">
+  <h2>6. The Transmission Mechanism &amp; Taylor Rule</h2>
+  <div class="tag">Chapter 22 · How policy rates steer the macroeconomy</div>
+</div>
+
+<h3 id="t6-trans">6.1 Ripple Effects: From Overnight Rate to Aggregate Expenditure</h3>
+
+<p>When the Bank of Canada lowers the overnight rate, the effect cascades through the entire economy via the <strong>transmission mechanism</strong>.</p>
+
+<div class="intuition-box">
+  <div class="box-title">🔮 The Transmission Chain</div>
+  <ol>
+    <li><strong>Interbank cost falls:</strong> The cost of funds for major commercial banks drops.</li>
+    <li><strong>Retail rates fall:</strong> Applying the Cost-Benefit Principle, banks lower the rates they charge consumers (mortgages, auto loans, credit cards) and businesses (corporate loans) to capture more lending volume.</li>
+    <li><strong>Consumption &amp; Investment rise:</strong> Following the Opportunity Cost Principle, it is now cheaper for consumers to borrow and less rewarding to save. \(C\) and \(I\) increase.</li>
+    <li><strong>Exchange Rate depreciates (NX rises):</strong> Lower Canadian interest rates make Canadian financial assets less attractive to global investors. Foreigners sell CAD, causing the Canadian Dollar to <strong>depreciate</strong>. A weaker CAD makes Canadian exports cheaper abroad and foreign imports more expensive at home. Therefore, Net Exports (\(NX\)) increase.</li>
+    <li><strong>Aggregate Expenditure &amp; GDP rise:</strong> With \(C\), \(I\), and \(NX\) all rising, aggregate demand shifts outward, boosting real GDP and eventually pushing up inflation.</li>
+  </ol>
+</div>
+
+<h3 id="t6-taylor">6.2 The Policy Rule-of-Thumb (The Taylor Rule)</h3>
+
+<p>How does the Bank of Canada decide exactly what the overnight rate should be? They look at the current state of the economy and apply a systematic guideline, often referred to as the <strong>Policy Rule-of-Thumb</strong> (or the Taylor Rule).</p>
+
+<div class="definition-box">
+  <div class="box-title">Definition — Neutral Real Interest Rate</div>
+  <p>The <strong>neutral real interest rate (\(r^*\))</strong> is the real interest rate that prevails when the economy is in "Goldilocks" mode—producing exactly at its potential output (output gap = 0) with stable inflation. It neither stimulates nor slows down the economy.</p>
+</div>
+
+<div class="formula-box">
+  <div class="box-title">Formula — The Policy Rule-of-Thumb</div>
+  <p>The Bank evaluates nominal rates by stripping out inflation to focus on the real rate. The formula used to target the nominal overnight rate is:</p>
+  \[ \text{Overnight Rate} - \text{Inflation} = \text{Neutral Real Rate} + \frac{1}{2}(\text{Inflation Gap}) + \text{Output Gap} \]
+  <p>Where:</p>
+  <ul>
+    <li><strong>Inflation Gap</strong> = \(\text{Actual Inflation} - \text{Target Inflation (2\%)}\).</li>
+    <li><strong>Output Gap</strong> = The percentage difference between actual output and potential output. (Positive means overheating, negative means recession).</li>
+  </ul>
+  <p>Rearranging to solve for the nominal Overnight Rate gives:</p>
+  \[ \text{Overnight Rate} = \text{Neutral Real Rate} + \text{Inflation} + \frac{1}{2}(\text{Inflation} - 2\%) + \text{Output Gap} \]
+</div>
+
+<div class="example-box">
+  <div class="box-title">Example — Applying the Rule</div>
+  <p>Assume the neutral real interest rate is 1%. Actual inflation is currently 1.5%, and the output gap is +0.5% (meaning output is 0.5% above potential). What should the nominal overnight rate be?</p>
+  <p><strong>Step 1: Calculate the desired Real Rate</strong></p>
+  \[ \text{Real Rate} = 1\% + \frac{1}{2}(1.5\% - 2.0\%) + 0.5\% \]
+  \[ \text{Real Rate} = 1\% + \frac{1}{2}(-0.5\%) + 0.5\% = 1\% - 0.25\% + 0.5\% = \mathbf{1.25\%} \]
+  <p><strong>Step 2: Convert to Nominal Rate (Fisher Equation)</strong></p>
+  \[ \text{Nominal Rate} = \text{Real Rate} + \text{Inflation} \]
+  \[ \text{Nominal Rate} = 1.25\% + 1.5\% = \mathbf{2.75\%} \]
+</div>
+
+<p><strong>Rules vs. Discretion:</strong> The rule provides a predictable baseline, but central bank decisions are <em>systematic, not automatic</em>. The Governing Council uses discretion to deviate from the rule when faced with unusual shocks (e.g., forecasting a looming recession, financial instability, or global pandemics) to "get ahead of the curve."</p>
+
+<h3 id="t6-prac">6.3 Cumulative Problem Set: Transmission &amp; Rules</h3>
+
+<div class="practice-box">
+  <div class="box-title">📝 Practice 6.1 — Exchange Rate Dynamics</div>
+  <p>Trace the exact sequence of events that leads from an increase in the Bank of Canada's overnight rate to a change in the quantity of goods demanded by foreigners.</p>
+
+  <div class="solution-toggle" onclick="toggleSolution('sol6-1')">Show Solution</div>
+  <div id="sol6-1" class="solution-content">
+      <p>1. The BoC raises the overnight rate.</p>
+      <p>2. Canadian commercial banks raise their interest rates, increasing the return on Canadian financial assets (like savings accounts and bonds).</p>
+      <p>3. Global investors seek the highest risk-adjusted returns, so they shift capital into Canada to capture these higher yields.</p>
+      <p>4. To invest in Canada, they must buy Canadian Dollars. This increases the global demand for CAD.</p>
+      <p>5. The Canadian Dollar <strong>appreciates</strong> in value relative to foreign currencies.</p>
+      <p>6. Because the CAD is now stronger, it takes more foreign currency to buy the same Canadian-priced good. Consequently, Canadian exports become more expensive to foreigners, and the quantity of goods demanded by foreigners <strong>decreases</strong> (Net Exports fall).</p>
+  </div>
+</div>
+
+<div class="practice-box">
+  <div class="box-title">📝 Practice 6.2 — Rule of Thumb Calculation</div>
+  <p>The economy enters a severe recession. The output gap falls to -3.0%. Inflation drops to 0.5%. Assuming the neutral real interest rate is historically estimated at 1.0%, what overnight rate does the policy rule-of-thumb prescribe?</p>
+
+  <div class="solution-toggle" onclick="toggleSolution('sol6-2')">Show Solution</div>
+  <div id="sol6-2" class="solution-content">
+      <p>Apply the formula:</p>
+      \[ \text{Desired Real Rate} = \text{Neutral Rate} + \frac{1}{2}(\text{Inflation} - 2\%) + \text{Output Gap} \]
+      \[ \text{Desired Real Rate} = 1.0\% + \frac{1}{2}(0.5\% - 2.0\%) + (-3.0\%) \]
+      \[ \text{Desired Real Rate} = 1.0\% - 0.75\% - 3.0\% = \mathbf{-2.75\%} \]
+      <p>Now, convert to nominal to find the prescribed overnight rate:</p>
+      \[ \text{Nominal Rate} = \text{Desired Real Rate} + \text{Inflation} \]
+      \[ \text{Nominal Rate} = -2.75\% + 0.5\% = \mathbf{-2.25\%} \]
+      <p><strong>Note on reality:</strong> The formula tells the BoC to set a negative nominal interest rate (-2.25%). Because of the Zero Lower Bound, the BoC cannot physically lower the rate this far. This forces them to hit 0% and pivot to <em>Unconventional Monetary Policy</em> (like QE), which leads directly into the next topic.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TOPIC 7                                                      -->
+<!-- ============================================================ -->
+<div class="lecture-banner" id="topic7">
+  <h2>7. Unconventional Monetary Policy</h2>
+  <div class="tag">Chapter 22 &amp; Lecture 10 · What the Bank does when standard tools break</div>
+</div>
+
+<h3 id="t7-zlb">7.1 The Zero Lower Bound Context</h3>
+
+<p>In standard economic times, the Bank of Canada stimulates a slumping economy by lowering the short-term nominal overnight rate. However, during severe crises (like the 2008 Financial Crisis or the 2020 COVID-19 pandemic), the required rate cuts can push the overnight rate to zero.</p>
+
+<div class="intuition-box">
+  <div class="box-title">🔮 Intuition — The Zero Lower Bound (ZLB)</div>
+  <p>The central bank faces a hard physical constraint: it cannot effectively set a deeply negative nominal interest rate. If they charged a -3% interest rate on deposits, savers would simply withdraw their money as physical cash and hide it under a mattress (earning 0% instead of losing 3%). When the overnight rate hits 0% but the economy remains below potential, the Bank must deploy <em>unconventional tools</em> to stimulate spending.</p>
+</div>
+
+<p>When the short-term rate is jammed at zero, the Bank shifts its focus to pushing down <strong>longer-term interest rates</strong> (like 5-year auto loans or 25-year home mortgages).</p>
+
+<h3 id="t7-fg">7.2 Forward Guidance</h3>
+
+<p>The simplest unconventional tool is communication.</p>
+
+<div class="definition-box">
+  <div class="box-title">Definition — Forward Guidance</div>
+  <p><strong>Forward Guidance</strong> is the strategy of explicitly committing to keeping short-term interest rates low for a prolonged period in the future. By shaping market expectations, the Bank influences long-term interest rates today.</p>
+</div>
+
+<p><strong>Mechanics:</strong> A 5-year loan can be thought of as a series of five 1-year loans chained together. If the Bank promises that short-term rates will stay at 0% for the next 5 years, banks are willing to charge much lower interest rates on 5-year loans today. If the public believes the commitment, long-term borrowing costs fall, spurring housing and investment spending.</p>
+
+<h3 id="t7-qe">7.3 Quantitative Easing (QE)</h3>
+
+<p>When talk isn't enough, the Bank directly intervenes in the long-term bond market.</p>
+
+<div class="definition-box">
+  <div class="box-title">Definition — Quantitative Easing (QE)</div>
+  <p><strong>Quantitative Easing</strong> is the strategy of purchasing large quantities of longer-term government bonds and other securities in the open market, injecting newly created electronic money into the financial system.</p>
+</div>
+
+<div class="theorem-box">
+  <div class="box-title">The Mechanics of QE (Bond Pricing Framework)</div>
+  <p>Recall the inverse relationship between bond prices and yields from Topic 5. The transmission of QE works as follows:</p>
+  <ol>
+    <li>The Bank of Canada buys massive amounts of long-term bonds.</li>
+    <li>This massive new demand shifts the demand curve for bonds to the right.</li>
+    <li><strong>Bond prices rise</strong> dramatically.</li>
+    <li>Because bond prices and yields are inversely related, the <strong>yields (interest rates) on long-term bonds decrease</strong>.</li>
+    <li>Lower yields on safe government bonds force investors to seek returns in riskier assets (corporate bonds, mortgages). This lowers the user cost of capital for firms and the mortgage rates for households, increasing investment (\(I\)) and consumption (\(C\)).</li>
+  </ol>
+</div>
+
+<p><em>Note:</em> The textbook also explains this using the loanable funds market. Buying long-term bonds effectively increases the supply of long-term loans, pushing down the equilibrium long-term interest rate.</p>
+
+<h3 id="t7-lolr">7.4 Lender of Last Resort &amp; Moral Hazard</h3>
+
+<p>A central bank's final major responsibility is maintaining the stability of the broader financial system.</p>
+
+<p><strong>Bank Runs:</strong> Banks operate on fractional reserves. If all depositors panic and demand their cash simultaneously, the bank will fail, even if it is fundamentally solvent. Bank runs are highly contagious.</p>
+
+<div class="definition-box">
+  <div class="box-title">Definition — Lender of Last Resort</div>
+  <p>During a financial panic, the central bank provides emergency short-term loans to financial institutions that cannot secure funding elsewhere, preventing solvent but illiquid banks from collapsing and halting the panic contagion.</p>
+</div>
+
+<div class="warning-box">
+  <div class="box-title">⚠️ The "Too Big To Fail" Dilemma &amp; Moral Hazard</div>
+  <p>By acting as a lender of last resort and bailing out massive, interconnected financial institutions (like AIG in 2008), the central bank creates a severe incentive problem.</p>
+  <p><strong>Moral Hazard:</strong> If large banks know the central bank will save them from bankruptcy to prevent economic chaos ("too big to fail"), they have an incentive to take on excessive, reckless risks to maximize profits. The standard solution to this problem is heavy financial regulation: forcing banks to hold more capital so they don't need bailouts in the first place.</p>
+</div>
+
+<h3 id="t7-prac">7.5 Cumulative Problem Set: Unconventional Policy</h3>
+
+<div class="practice-box">
+  <div class="box-title">📝 Practice 7.1 — Identifying the Tool</div>
+  <p>The Bank of Canada had to resort to unconventional methods to try to stimulate the economy during the COVID recession in 2020 in part because:</p>
+  <p>A) it was no longer allowed to change the reserve requirement.<br>
+  B) the overnight rate hit the zero lower bound.<br>
+  C) inflation was too high.<br>
+  D) there were no longer any Treasury bonds to buy.</p>
+  
+  <div class="solution-toggle" onclick="toggleSolution('sol7-1')">Show Solution</div>
+  <div id="sol7-1" class="solution-content">
+      <strong>Answer: B.</strong>
+      <p><em>Reasoning:</em> When the nominal overnight rate drops to roughly 0%, standard monetary policy (lowering short-term rates to stimulate spending) runs out of room. The Bank must shift to unconventional tools like QE to push down long-term rates.</p>
+  </div>
+</div>
+
+<div class="practice-box">
+  <div class="box-title">📝 Practice 7.2 — QE Mechanics</div>
+  <p>The goal of quantitative easing is to [ Select 1 ]. Quantitative easing achieves this by [ Select 2 ].</p>
+  <p><strong>Select 1 options:</strong> lower short-term interest rates / lower long-term interest rates / raise inflation directly.</p>
+  <p><strong>Select 2 options:</strong> selling short-term bonds / purchasing large amounts of long-term government bonds / buying stocks.</p>
+  
+  <div class="solution-toggle" onclick="toggleSolution('sol7-2')">Show Solution</div>
+  <div id="sol7-2" class="solution-content">
+      <p><strong>Select 1:</strong> lower long-term interest rates.</p>
+      <p><strong>Select 2:</strong> purchasing large amounts of long-term government bonds.</p>
+      <p><em>Reasoning:</em> The short end of the yield curve is already pinned at zero. By buying long-term bonds, the Bank drives up their price, which mathematically depresses their yield, lowering long-term borrowing costs for businesses and households.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- MOCK EXAM                                                    -->
+<!-- ============================================================ -->
+<div class="lecture-banner" id="mock">
+  <h2>8. Full Mock Midterm: Monetary Policy</h2>
+  <div class="tag">Rigorous, exam-style evaluation across all topics</div>
+</div>
+
+<p>This exam tests deep conceptual logic and calculations from Lectures 10 and Chapter 22. Answer before checking the strict grading feedback.</p>
+
+<div class="practice-box">
+  <div class="box-title">📝 Question 1: Money Supply Mechanics</div>
+  <p>If the Bank of Canada wants to reduce nominal interest rates, it will _______ the deposit rate, which causes the money supply to ___________.</p>
+  <p>A) raise; decrease<br>
+     B) lower; decrease<br>
+     C) lower; increase<br>
+     D) raise; increase</p>
+
+  <div class="solution-toggle" onclick="toggleSolution('sol-mock-1')">Show Grading Feedback</div>
+  <div id="sol-mock-1" class="solution-content">
+      <p><strong>Correct Answer: C.</strong></p>
+      <p><em>Analysis:</em> The deposit rate acts as the floor for the overnight market. If the Bank lowers the deposit rate (the return banks get for hoarding excess reserves at the central bank), the opportunity cost of lending to consumers and businesses falls. Banks are incentivized to lend out more of their reserves. As these new loans are created and deposited, the broad money supply <em>increases</em>.</p>
+  </div>
+</div>
+
+<div class="practice-box">
+  <div class="box-title">📝 Question 2: The Quantity Theory in Action</div>
+  <p>If the money supply grows by 5 percent per year, velocity grows by 1 percent per year, and real GDP grows by 3 percent per year, then what is the approximate annual rate of inflation? (Provide your calculation).</p>
+
+  <div class="solution-toggle" onclick="toggleSolution('sol-mock-2')">Show Grading Feedback</div>
+  <div id="sol-mock-2" class="solution-content">
+      <p><strong>Correct Answer: 3%.</strong></p>
+      <p><em>Analysis:</em> You must use the growth rate approximation of the Equation of Exchange:</p>
+      \[ g_M + g_V \approx \pi + g_Y \]
+      <p>Plug in the parameters:</p>
+      \[ 5\% + 1\% = \pi + 3\% \]
+      \[ 6\% = \pi + 3\% \implies \pi = 3\% \]
+      <p><em>Strict Warning:</em> Do not attempt to calculate raw values without base figures. The growth rate summation rule is exact enough for macroeconomic analysis.</p>
+  </div>
+</div>
+
+<div class="practice-box">
+  <div class="box-title">📝 Question 3: Bond Arbitrage and Yields</div>
+  <p>One year before maturity, the price of a bond with a principal amount of $1,000 and a coupon rate of 5 percent paid annually fell to $981.31. What must the current market interest rate (yield) be? Answer in percentage terms, rounded to two decimal places.</p>
+
+  <div class="solution-toggle" onclick="toggleSolution('sol-mock-3')">Show Grading Feedback</div>
+  <div id="sol-mock-3" class="solution-content">
+      <p><strong>Correct Answer: 7.00%.</strong></p>
+      <p><em>Analysis:</em> The buyer acquires the bond with one year left, so it is treated as a 1-year bond for pricing purposes. Find the final payout first:</p>
+      \[ \text{Payout} = \text{Principal} + (\text{Principal} \times \text{Coupon Rate}) = 1,000 + 50 = 1,050 \]
+      <p>Now apply the inverse yield pricing formula:</p>
+      \[ P_{Bond} \times (1 + y) = \text{Payout} \]
+      \[ 981.31 \times (1 + y) = 1,050 \]
+      \[ 1 + y = \frac{1,050}{981.31} \approx 1.07 \]
+      \[ y = 0.07 \text{ or } \mathbf{7.00\%} \]
+  </div>
+</div>
+
+<div class="practice-box">
+  <div class="box-title">📝 Question 4: Operating Band Manipulation</div>
+  <p>If the Bank of Canada is currently paying 5 percent interest on bank reserves (the deposit rate), but then increases that interest rate to 6 percent, banks may decide to hold ________ reserves, causing the number of new loans made to ________.</p>
+  <p>A) fewer; increase<br>
+     B) more; decrease<br>
+     C) fewer; decrease<br>
+     D) more; increase</p>
+
+  <div class="solution-toggle" onclick="toggleSolution('sol-mock-4')">Show Grading Feedback</div>
+  <div id="sol-mock-4" class="solution-content">
+      <p><strong>Correct Answer: B.</strong></p>
+      <p><em>Analysis:</em> If the risk-free return of parking cash at the central bank (deposit rate) increases from 5% to 6%, the hurdle rate for commercial lending increases. Banks will hold <em>more</em> reserves at the BoC instead of making riskier corporate or consumer loans. With fewer loans being made, broad money creation shrinks, causing the number of new loans to <em>decrease</em>.</p>
+  </div>
+</div>
+
+<div class="practice-box">
+  <div class="box-title">📝 Question 5: The Taylor Rule Implementation</div>
+  <p>An economy's neutral real interest rate is estimated to be 1.5%. Due to supply chain shocks, inflation is running at 4.0% (while the target is 2.0%). The economy is overheating, with an output gap of +2.0%. According to the Bank of Canada's policy rule-of-thumb, what should the nominal overnight rate be set to?</p>
+
+  <div class="solution-toggle" onclick="toggleSolution('sol-mock-5')">Show Grading Feedback</div>
+  <div id="sol-mock-5" class="solution-content">
+      <p><strong>Correct Answer: 8.5%.</strong></p>
+      <p><em>Analysis:</em> First, determine the desired real interest rate using the rule:</p>
+      \[ r_{target} = r^* + 0.5(\pi - \pi_{target}) + \text{Output Gap} \]
+      \[ r_{target} = 1.5\% + 0.5(4.0\% - 2.0\%) + 2.0\% \]
+      \[ r_{target} = 1.5\% + 0.5(2.0\%) + 2.0\% = 1.5\% + 1.0\% + 2.0\% = 4.5\% \]
+      <p>The central bank needs a <em>real</em> rate of 4.5% to choke off the severe inflation and output gaps. To find the nominal overnight rate, add current inflation (Fisher Equation):</p>
+      \[ i_f = r_{target} + \pi = 4.5\% + 4.0\% = \mathbf{8.5\%} \]
+  </div>
+</div>
+
+<div class="practice-box">
+  <div class="box-title">📝 Question 6: Transmission Constraints</div>
+  <p>Explain structurally why a severe deflationary cycle (negative inflation) disables standard monetary policy transmission, using the Fisher Equation in your answer.</p>
+
+  <div class="solution-toggle" onclick="toggleSolution('sol-mock-6')">Show Grading Feedback</div>
+  <div id="sol-mock-6" class="solution-content">
+      <p><em>Analysis for full marks:</em></p>
+      <p>Standard monetary policy relies on lowering the <strong>real interest rate (\(r\))</strong> to stimulate \(C\) and \(I\). By the Fisher equation, \(r = i - \pi\). The central bank only controls the nominal rate (\(i\)), and it faces the Zero Lower Bound (\(i \ge 0\)).</p>
+      <p>If deflation takes hold (e.g., \(\pi = -3\%\)), the lowest possible real interest rate achievable by conventional means is:</p>
+      \[ r = 0\% - (-3\%) = +3\% \]
+      <p>Even at a nominal rate of 0%, the real borrowing cost is 3%. The central bank cannot produce negative real interest rates. This disables standard transmission, rendering the central bank powerless to stimulate the economy without resorting to unconventional tools like Quantitative Easing.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- MASTER CHEAT SHEET                                            -->
+<!-- ============================================================ -->
+<div class="lecture-banner" id="cheat">
+  <h2>9. One-Page Master Cheat Sheet: Monetary Policy</h2>
+  <div class="tag">Printable reference for definitions, formulas, and causal chains</div>
+</div>
+
+<div class="summary-box">
+  <div class="box-title">💰 1. Money & Money Supply</div>
+  <p><strong>Three Functions:</strong> Medium of exchange, Unit of account, Store of value.</p>
+  <p><strong>Fiat Money:</strong> No intrinsic value; backed by state decree and social consensus. Cryptocurrencies fail as money (poor medium of exchange/unit of account, high volatility).</p>
+  <p><strong>Measurement:</strong></p>
+  <ul>
+    <li><em>Monetary Base:</em> Currency in circulation + Bank Reserves (direct BoC control).</li>
+    <li><em>Broad Money:</em> Base + Checking/Savings accounts (indirect BoC control via interest rates limiting bank lending).</li>
+  </ul>
+</div>
+
+<div class="summary-box">
+  <div class="box-title">📊 2. Quantity Theory of Money</div>
+  <p><strong>Velocity (\(V\)):</strong> Average value of transactions supported by $1. \(V = \frac{P \times Y}{M}\).</p>
+  <p><strong>Equation of Exchange:</strong> \(M \times V = P \times Y\) (Money Supply \(\times\) Velocity = Nominal GDP).</p>
+  <p><strong>Classical Dichotomy:</strong> In the long run, nominal variables (\(M\)) don't affect real variables (\(Y\)).</p>
+  <p><strong>Long-Run Inflation Formula:</strong> \(\pi \approx g_M - g_Y\) (Assuming \(g_V = 0\)). Inflation is heavily dependent on excessive money growth.</p>
+</div>
+
+<div class="summary-box">
+  <div class="box-title">🎯 3. BoC Mandates & Targets</div>
+  <p><strong>Dual-Mandate:</strong> 1. Price stability (2% inflation target inside a 1-3% band). 2. Maximum sustainable employment.</p>
+  <p><strong>Why not 0% target?</strong> 1. Causes nominal wage rigidity issues (prevents disguised real wage cuts). 2. Hits the Zero Lower Bound (ZLB) faster during recessions. 3. Risks vicious deflationary spirals. 4. Measurement bias (CPI overstates inflation by ~0.5-1%).</p>
+</div>
+
+<div class="summary-box">
+  <div class="box-title">⚙️ 4. Setting Interest Rates</div>
+  <p><strong>The Overnight Rate (\(i_f\)):</strong> The cost to borrow reserves overnight between commercial banks.</p>
+  <p><strong>Operating Band:</strong></p>
+  <ul>
+    <li><em>Bank Rate (Ceiling):</em> Cost to borrow directly from BoC.</li>
+    <li><em>Deposit Rate (Floor):</em> Interest paid by BoC to banks on excess reserves.</li>
+  </ul>
+  <p><em>Modern execution:</em> The BoC supplies excess reserves so the effective overnight rate equals the Deposit Rate.</p>
+  <p><strong>Effective Rate Calculation:</strong> Weighted average of transaction volumes. (Ignore non-interbank numbers like internal cash or central bank reserves).</p>
+</div>
+
+<div class="summary-box">
+  <div class="box-title">📉 5. Bond Pricing</div>
+  <p><strong>Terminology:</strong> Principal = Face value; Coupon Rate = Fixed interest % printed on bond; Yield = Actual market rate of return.</p>
+  <p><strong>1-Year Formula:</strong> \(P_{Bond} = \frac{\text{Principal} + \text{Coupon Payment}}{1 + \text{Yield}}\)</p>
+  <p><strong>Inverse Relationship:</strong> When market interest rates (yields) RISE, existing bond prices FALL.</p>
+</div>
+
+<div class="summary-box">
+  <div class="box-title">🌐 6. Transmission Mechanism & Rules</div>
+  <p><strong>Chain Reaction of an Interest Rate Cut (\(i_f \downarrow\)):</strong></p>
+  <ol>
+    <li>Commercial lending rates fall.</li>
+    <li>Opportunity cost of spending drops \(\implies\) \(C \uparrow\), \(I \uparrow\).</li>
+    <li>Canadian yields drop \(\implies\) foreign capital leaves \(\implies\) CAD depreciates \(\implies\) Exports get cheaper \(\implies\) \(NX \uparrow\).</li>
+    <li>Aggregate expenditure rises, output gap closes, inflation pushes up.</li>
+  </ol>
+  <p><strong>Policy Rule-of-Thumb (Taylor Rule):</strong></p>
+  <p>\(i_f = \text{Neutral Real Rate } (r^*) + \pi + 0.5(\pi - 2\%) + \text{Output Gap}\)</p>
+</div>
+
+<div class="summary-box">
+  <div class="box-title">🚨 7. Unconventional Policy</div>
+  <p><strong>Zero Lower Bound (ZLB):</strong> Nominal rates hit ~0%. Standard policy is paralyzed.</p>
+  <p><strong>Forward Guidance:</strong> Promise to keep rates low long-term to push down long-term yields via expectations.</p>
+  <p><strong>Quantitative Easing (QE):</strong> BoC buys massive amounts of long-term bonds \(\implies\) demand shifts right \(\implies\) bond prices surge \(\implies\) long-term yields crash \(\implies\) stimulates investment when short rates are stuck at 0%.</p>
+  <p><strong>Lender of Last Resort:</strong> BoC provides emergency liquidity to stop bank runs. Creates <em>Moral Hazard</em> (too-big-to-fail banks take excessive risks), necessitating regulation.</p>
+</div>
+
+<hr>
+<p style="text-align:center;color:var(--gray);font-style:italic;margin-top:30px">
+  — End of ECO102 Monetary Policy Master Study Guide —<br>
+  Review your conceptual distinctions, drill the inverse bond pricing math, and memorize the transmission mechanisms. You are ready.
+</p>
+
+</body>
+</html>

@@ -269,7 +269,7 @@ process, which presents as a stubborn `401 Expired access token` while `curl` wi
 same token succeeds.
 
 A new token comes from q.utoronto.ca → Account → Settings → **+ New Access Token**.
-Only the student can create it; leave the expiry blank. On any `401`, check expiry first —
+Only the student can create it; Quercus will not take an empty expiry, so set the latest date it allows. On any `401`, check expiry first —
 the previous token silently died mid-summer and 401'd every call.
 
 ---

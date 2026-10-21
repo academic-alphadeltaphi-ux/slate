@@ -9,7 +9,7 @@ import { SYLLABUS } from '../scripts/lib/syllabus.mjs'
 // rule the timetable cannot express. It used to live here, in a table keyed on the student's own course codes — which meant
 // the app quietly held a piece of course knowledge that setup never wrote and nothing told a new install about. It is
 // a field on the course now, in `scripts/lib/terms.mjs`: the one file a new install rewrites (SPEC §20.48).
-export const HOLIDAY_NAMES = { '2026-09-07': 'Labour Day', '2026-10-12': 'Thanksgiving', '2027-03-26': 'Good Friday' }
+export const HOLIDAY_NAMES = { '2026-09-07': 'Labour Day', '2026-10-12': 'Thanksgiving', '2026-12-08': 'make-up day for Monday classes', '2026-12-09': 'study day', '2026-12-10': 'exam period', '2026-12-11': 'exam period', '2027-03-26': 'Good Friday' }
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const dayOf = iso => new Date(iso + 'T12:00:00')
 

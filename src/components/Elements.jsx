@@ -121,11 +121,12 @@ export function MediaEl({ el, url, width, page, onTranscribed, seek = null }) {
 }
 
 // A document collapsed to a pill. Its file and annotations stay; only the page shows less.
+// A folded text block (a problem's solution, SPEC §20.73) says what it is from its `title`, and has no file or size.
 export function HiddenCard({ el, kind, onShow }) {
-  const Ic = kind === 'pdf' ? Icon.file : kind === 'image' ? Icon.image : kind === 'media' ? Icon.headphones : Icon.clip
+  const Ic = kind === 'pdf' ? Icon.file : kind === 'image' ? Icon.image : kind === 'media' ? Icon.headphones : kind === 'text' ? Icon.eyeOff : Icon.clip
   return (
-    <div className="hidden-card" onClick={e => e.stopPropagation()} onDoubleClick={onShow} title="Double-click or press Show to expand">
-      <span className="hc-icon"><Ic width="15" height="15" /></span><span className="file-name">{nameOf(el.src)}</span><span className="file-meta">{fmtSize(el.size)}</span>
+    <div className={'hidden-card' + (kind === 'text' ? ' hc-text' : '')} onClick={e => e.stopPropagation()} onDoubleClick={onShow} title="Double-click or press Show to expand">
+      <span className="hc-icon"><Ic width="15" height="15" /></span><span className="file-name">{kind === 'text' ? (el.title || 'Folded text') : nameOf(el.src)}</span>{kind !== 'text' && <span className="file-meta">{fmtSize(el.size)}</span>}
       <button className="btn small" onClick={onShow}>Show</button>
     </div>
   )

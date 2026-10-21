@@ -57,6 +57,9 @@ const cmp = (a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity
 
 // ---- atomic writes + own-write tracking (the watcher uses this to ignore echoes) ---------
 export const recentWrites = new Map()   // file → Set of hashes written in the last few seconds
+// The last own write of each layout sidecar, its strokes left out: what the document index needs to see that a save
+// changed only ink, without reading and parsing the 10 MB it just wrote (doc-index.js onEvent).
+export const layoutViews = new Map()    // abs .blocks.json → { hash, elements }
 export const wroteRecently = (file, hash) => recentWrites.get(file)?.has(hash) || false
 // On Windows a rename over a file OneDrive or Defender has open for a moment fails with EPERM, EBUSY or EACCES, and a
 // page save came back 403. The holder lets go within a second: try again a few times (~1.5 s in all) before giving up.
@@ -76,6 +79,7 @@ export async function atomicWrite(file, content) {
   if (!recentWrites.has(file)) recentWrites.set(file, new Set())
   recentWrites.get(file).add(h)
   setTimeout(() => { const set = recentWrites.get(file); if (set) { set.delete(h); if (!set.size) recentWrites.delete(file) } }, 8000).unref()
+  return h
 }
 
 // ---- _slate.json ------------------------------------------------------------------------
@@ -244,6 +248,49 @@ export function compactPoints(json) {
     return '"points": [' + pts.map(a => '[' + a.slice(1, -1).split(',').map(x => x.trim()).join(', ') + ']').join(', ') + ']'
   })
 }
+// One stroke's points as compactPoints writes them, `[[x, y, p, t], …]`, or null for anything but arrays of finite
+// numbers (a NaN is `null` in JSON and '' in a join: those go the old way).
+function pointsLine(pts) {
+  let s = '['
+  for (let i = 0; i < pts.length; i++) {
+    const a = pts[i]
+    if (!Array.isArray(a)) return null
+    for (let j = 0; j < a.length; j++) if (!Number.isFinite(a[j])) return null
+    s += (i ? ', [' : '[') + a.join(', ') + ']'
+  }
+  return s + ']'
+}
+// The same bytes as compactPoints(JSON.stringify(value, null, 2)) — checked on all 755 sidecars of the notes, 2026-10-20 —
+// without the regex pass and without holding the thread. In Slate.app the server runs in the main process, which also
+// delivers the pen's and the mouse's input: on a 9.7 MB sidecar (11,185 strokes) stringify + regex was one ~200 ms block,
+// and the cursor froze after every pause in writing. Here each stroke's points line is built in slices of ~8 ms with a
+// turn of the event loop between them; V8 then pretty-prints the rest with a token where each line goes. A `points` the
+// fast path does not take is left to compactPoints, as before.
+export async function layoutJson(value) {
+  const lines = new Map()
+  let t = performance.now()
+  for (const el of Array.isArray(value?.elements) ? value.elements : []) {
+    if (!Array.isArray(el?.strokes)) continue
+    for (const s of el.strokes) {
+      if (!Array.isArray(s?.points)) continue
+      const l = pointsLine(s.points)
+      if (l !== null) lines.set(s.points, l)
+      if (performance.now() - t > 8) { await new Promise(r => setImmediate(r)); t = performance.now() }
+    }
+  }
+  const parts = [], tag = '\u0000points-' + crypto.randomBytes(4).toString('hex') + ':'
+  let rest = false
+  const json = JSON.stringify(value, (k, v) => {
+    if (k !== 'points' || !Array.isArray(v)) return v
+    const l = lines.get(v) ?? pointsLine(v)
+    if (l === null) { rest = true; return v }
+    parts.push(l)
+    return tag + (parts.length - 1)
+  }, 2)
+  const token = new RegExp('"' + JSON.stringify(tag).slice(1, -1).replaceAll('\\', '\\\\') + '(\\d+)"', 'g')
+  const out = json.replace(token, (_, i) => parts[i])
+  return rest ? compactPoints(out) : out
+}
 
 export async function writeLayout(relMd, layout, baseLayoutHash) {
   relMd = assertPagePath(relMd)   // the same guard as writePage: no sidecar for the root's CLAUDE.md, a `_name` or a dotfile
@@ -258,14 +305,15 @@ async function writeLayoutLocked(relMd, file, layout, baseLayoutHash) {
   if (baseLayoutHash !== undefined && baseLayoutHash !== currentHash) throw new HttpError(409, 'layout changed on disk', { current: await readPage(relMd) })
   if (!layout || !Array.isArray(layout.elements)) throw new HttpError(400, 'layout.elements must be an array')
   const clean = { version: 1, ...layout, elements: layout.elements.filter(e => e && typeof e === 'object' && e.id && e.type) }
-  const text = compactPoints(JSON.stringify(clean, null, 2)) + '\n'
+  const text = (await layoutJson(clean)) + '\n'
   if (text === current) return { layoutHash: currentHash, unchanged: true }
   // A page with nothing pinned has no sidecar to write — unless it carries a mode, which is the one piece of layout
   // a page of plain markdown can still have (SPEC §20.28). Without this, switching a text-only page to Document
   // looked right until it was reopened.
   if (current === null && clean.elements.length === 0 && !clean.mode) return { layoutHash: null, unchanged: true }
-  await atomicWrite(file, text)
-  return { layoutHash: hashText(text) }
+  const layoutHash = await atomicWrite(file, text)   // hashed once: 10 MB of sha1 is ~10 ms of the same thread
+  layoutViews.set(file, { hash: layoutHash, elements: clean.elements.map(e => (e.type === 'ink' ? { ...e, strokes: undefined } : e)) })
+  return { layoutHash }
 }
 
 // ---- create / rename / trash / reorder --------------------------------------------------

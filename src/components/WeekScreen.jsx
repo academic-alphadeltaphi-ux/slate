@@ -55,7 +55,7 @@ const forSays = p => (p === 'both' ? 'the week' : 'the ' + p)
 // The five categories every week has, in one order — and, among the folders a week may also hold, the three the brain
 // files by name (SPEC §20.53): readings beside the lectures, videos next, the module's assignments after the problems.
 // Any other folder (R, Listening) follows in the section's own order.
-const ORDER = ['lectures', 'x:Readings', 'x:Textbook', 'x:Videos', 'notes', 'recordings', 'problems', 'x:Assignments', ...(ED.sheets ? ['sheets'] : [])]
+const ORDER = ['lectures', 'x:Readings', 'x:Textbook', 'x:Videos', 'notes', 'recordings', 'problems', 'x:Assignments', ...(ED.sheets ? ['sheets'] : []), 'x:Study set']
 const CORE = new Set(['lectures', 'notes', 'recordings', 'problems', ...(ED.sheets ? ['sheets'] : [])])
 const ALL = 'all'
 // What a new page is, by the folder you put it in.
@@ -106,7 +106,7 @@ export default function WeekScreen({ path, initialTab = null, onOpen, onOpenTitl
     try {
       if (!(await toggleTask(r.meeting, r.task))) return
       const flip = list => list.map(y => (y.key === r.task.key ? { ...y, done: !y.done } : y))
-      patch(p => p ? { ...p, meetings: p.meetings.map(x => x.id !== r.meeting.id ? x : { ...x, before: flip(x.before), tasks: x.tasks ? { ...x.tasks, done: x.tasks.done + (r.task.done ? -1 : 1) } : x.tasks }),
+      patch(p => p ? { ...p, meetings: p.meetings.map(x => x.id !== r.meeting.id ? x : { ...x, before: flip(x.before), tasks: x.tasks ? { done: x.tasks.done + (r.task.done ? -1 : 1), total: x.tasks.total + (r.task.stale ? (r.task.done ? -1 : 1) : 0) } : x.tasks }),
         weeks: (p.weeks || []).map(x => x.id !== r.meeting.id ? x : { ...x, work: flip(x.work) }) } : p)
       refresh()
     } catch (e) { setNote(`Could not tick that: ${e.message}`) }
@@ -475,7 +475,8 @@ function CoversShelf({ cv, onOpen, onOpenPair, onOpenTitle, onRow, onOpenWeek })
 // One card per set. The card opens the questions — that is what you want nine times out of ten, so it is the whole card
 // and not one button among three — and the questions are chips you tick as you work: once when you have tried one,
 // again once you have checked it against the solutions. There is no page of your own to make first: the questions are
-// already here, and that is what you work on.
+// already here, and that is what you work on. In a course with problem pages (SPEC §20.73) a question that has its page
+// opens it on a click — the problem cut out, room to work, its solution folded — and right-click ticks it instead.
 const NEXT = r => (!r.attempted ? { attempted: true, reviewed: false } : !r.reviewed ? { attempted: true, reviewed: true } : { attempted: false, reviewed: false })
 const SAY = r => (r.reviewed ? 'tried, and checked against the solutions' : r.attempted ? 'tried' : 'not tried yet')
 
@@ -497,11 +498,15 @@ function Problems({ sec, showFor, onOpen, onOpenPair, onOpenTitle, onRow, onRemo
           <ul>{loose.map(r => (
             <li key={r.key} className={r.attempted ? 'on' : ''}>
               <button className={'pb-box' + (r.reviewed ? ' reviewed' : r.attempted ? ' tried' : '')} title={`${SAY(r)} — click to change`} onClick={() => onRow(r, NEXT(r))}>{r.attempted && I('check', { width: 11, height: 11 })}</button>
-              <span className="pb-loose-label">{labelText(r.label)}</span>
+              {r.page
+                ? <button className="link pb-loose-label" title="Open it: the question, room to work, the solution folded until you ask" onClick={() => onOpen(r.page)}>{labelText(r.label)}</button>
+                : <span className="pb-loose-label">{labelText(r.label)}</span>}
               {r.source?.title && <button className="link pb-src" title="Where this was asked" onClick={() => onOpenTitle(r.source.title)}>{String(r.source.title).replace(/_/g, ' ')}</button>}
             </li>))}</ul>
         </div>)}
-      {(sets.some(s => s.rows.length) || loose.length > 0) && <p className="pb-help">Tick a question once when you have tried it, and again once you have checked it against the solutions.</p>}
+      {(sets.some(s => s.rows.length) || loose.length > 0) && <p className="pb-help">{[...sets.flatMap(s => s.rows), ...loose].some(r => r.page)
+        ? 'Click a question to open it: the problem, room to work, and its solution folded until you ask. Right-click a number, or click a box, to tick it: once tried, again once checked against the solution.'
+        : 'Tick a question once when you have tried it, and again once you have checked it against the solutions.'}</p>}
     </div>)
 }
 
@@ -524,7 +529,9 @@ function SetCard({ s, showFor, onOpen, onOpenPair, onRow, onRemove }) {
       {s.rows.length > 0 && (
         <div className="pb-qs">
           {s.rows.map(r => (
-            <button key={r.key} className={'pb-q' + (r.reviewed ? ' reviewed' : r.attempted ? ' tried' : '')} title={`${r.part}: ${SAY(r)} — click to change`} onClick={() => onRow(r, NEXT(r))}>
+            <button key={r.key} className={'pb-q' + (r.reviewed ? ' reviewed' : r.attempted ? ' tried' : '') + (r.page ? ' has-page' : '')}
+              title={r.page ? `${r.part}: open it (${SAY(r)}) — right-click to tick` : `${r.part}: ${SAY(r)} — click to change`}
+              onClick={() => (r.page ? onOpen(r.page) : onRow(r, NEXT(r)))} onContextMenu={e => { e.preventDefault(); onRow(r, NEXT(r)) }}>
               {r.part.replace(/^Q(?=\d)/i, '')}
             </button>))}
         </div>)}

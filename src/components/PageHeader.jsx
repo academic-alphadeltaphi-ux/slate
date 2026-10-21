@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { api } from '../api.js'
 import { Icon } from './Icons.jsx'
 import { sourceOf } from './SourceBanner.jsx'
-import { pairSets, setSays } from '../problems.js'
+import { pairSets, setSays, summarizeBlocks, keyOf } from '../problems.js'
+import { setProblemRow } from '../tick.js'
 import '../styles/pagehead.css'
 
 // The header above a page that is not your own notes (SPEC §20.23). Ruled paper is where you write; a lecture
@@ -22,9 +23,10 @@ export function placeOf(path) {
   const course = p[0] || null
   const week = p.find(x => /^Week \d+/.test(x)) || null
   const bucket = p.length > 2 ? p[p.length - 2] : null
+  const problem = p.length > 3 && p[p.length - 3] === 'Problems' && !!week      // <Week>/Problems/<set>/<page> (SPEC §20.73)
   return {
     course, week: week ? week.replace(/\s*\(.*\)$/, '') : null,
-    label: BUCKET_LABEL[bucket] || (p[1] === 'General' ? 'Course info' : null),
+    label: problem ? 'Problem' : BUCKET_LABEL[bucket] || (p[1] === 'General' ? 'Course info' : null),
     isNotes: p[p.length - 1] === 'Notes' || bucket === 'Notes',
   }
 }
@@ -48,8 +50,26 @@ function useSetOf(page) {
   return set
 }
 
+// A problem's own page (SPEC §20.73) carries its row's two boxes, so the tick is made where the work was done: the row
+// lives on the week's Problems page, found by the label in the page's `problem:` frontmatter.
+function useProblemRow(page) {
+  const label = page?.frontmatter?.kind === 'problem' ? page.frontmatter.problem : null
+  const at = label ? page.path.lastIndexOf('/Problems/') : -1
+  const list = at > 0 ? page.path.slice(0, at) + '/Problems.md' : null
+  const [row, setRow] = useState(null)
+  const load = () => { if (!list) return; api.page(list).then(p => setRow(summarizeBlocks(p.blocks).rows.find(r => r.key === keyOf(label)) || null)).catch(() => setRow(null)) }
+  useEffect(() => {
+    setRow(null); load()
+    if (!list) return
+    return api.events(ev => { if (ev.kind === 'md' && ev.path === list) load() })
+  }, [list, label])
+  const set = async state => { if (!row) return; setRow({ ...row, ...state }); try { await setProblemRow(list, row.key, state) } finally { load() } }
+  return list && row ? { label, row, set } : null
+}
+
 export default function PageHeader({ page, onPrint, split = null, onOpenPair, onCloseRight }) {
   const set = useSetOf(page)
+  const prob = useProblemRow(page)
   if (!page) return null
   const place = placeOf(page.path)
   if (place.isNotes) return null                       // your own notes keep the ruled sheet and no chrome
@@ -71,6 +91,13 @@ export default function PageHeader({ page, onPrint, split = null, onOpenPair, on
               ? <button className="btn small" onClick={() => onCloseRight?.()}><Icon.eyeOff width="13" height="13" />Hide the solutions</button>
               : <button className="btn small primary" title="The solutions beside the questions, in the right pane" onClick={() => onOpenPair(page.path, set.solutions.path)}><Icon.eye width="13" height="13" />Show solutions</button>)}
             {isSolutions && set.questions && onOpenPair && <button className="btn small" title="The questions on the left, these solutions beside them" onClick={() => onOpenPair(set.questions.path, page.path)}>The questions beside it</button>}
+          </div>)}
+        {prob && (
+          <div className="pghead-set pghead-problem">
+            <span className="pghead-set-name">{prob.label}</span>
+            <span className="pghead-set-says">{prob.row.reviewed ? 'tried, and checked against the solution' : prob.row.attempted ? 'tried' : 'not tried yet'}</span>
+            <button className={'btn small' + (prob.row.attempted ? ' primary' : '')} title="Tick it on the week's Problems page" onClick={() => prob.set(prob.row.attempted ? { attempted: false, reviewed: false } : { attempted: true })}><Icon.check width="13" height="13" />Tried it</button>
+            <button className={'btn small' + (prob.row.reviewed ? ' primary' : '')} title="Checked against the solution: the row's second box" onClick={() => prob.set(prob.row.reviewed ? { reviewed: false } : { attempted: true, reviewed: true })}><Icon.checkSquare width="13" height="13" />Checked</button>
           </div>)}
         <div className="pghead-foot">
           <span className="pghead-from">{src ? `From ${src.who && src.who !== 'your professor' ? src.who : 'Quercus'}${when ? ` · ${when}` : ''}` : when ? `Yours · ${when}` : 'Yours'}</span>

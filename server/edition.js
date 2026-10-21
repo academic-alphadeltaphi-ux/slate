@@ -11,7 +11,8 @@ export const ED = EDITIONS[EDITION]
 export const enabled = feature => has(EDITION, feature)
 // The Claude budget for this install: the edition's, unless the settings pin one (`"budget": "light" | "heavy"`).
 export const BUDGET = settings.budget === 'light' || settings.budget === 'heavy' ? settings.budget : ED.budget || 'heavy'
-// How often the scheduled morning runs, in days: the settings' word, else the edition's. Home counts "days behind" from it.
-export const CADENCE_DAYS = Number(settings.cadenceDays) >= 1 ? Math.round(Number(settings.cadenceDays)) : ED.cadenceDays || 1
+// How often the scheduled morning runs, in days: always the edition's — every plan checks every day (2026-10-12), so an
+// install set up when the Pro copy ran every 2 days does not keep that in its settings. Home counts "days behind" from it.
+export const CADENCE_DAYS = ED.cadenceDays || 1
 // Who decides in the morning (SPEC §21.8): 'app' — a scheduled task in the Claude app; 'cli' — claude -p sessions.
 export const RUNNER = settings.runner || ED.runner || 'cli'

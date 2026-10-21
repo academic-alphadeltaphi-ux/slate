@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ECO102 Exercise Sheet — Consumption, Saving, and Investment</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@400;700&display=swap');
+
+  :root {
+    --orange: #E67E22;
+    --orange-bg: #FFF8F0;
+    --orange-border: #F5CBA7;
+    --green: #27AE60;
+    --green-bg: #F0FFF4;
+    --green-border: #A9DFBF;
+    --blue: #2E86C1;
+    --blue-bg: #EBF5FB;
+    --blue-border: #AED6F1;
+    --purple: #8E44AD;
+    --purple-bg: #F5EEF8;
+    --purple-border: #D2B4DE;
+    --red: #E74C3C;
+    --red-bg: #FDEDEC;
+    --red-border: #F5B7B1;
+    --yellow: #F39C12;
+    --yellow-bg: #FEF9E7;
+    --yellow-border: #F9E79F;
+    --teal: #16A085;
+    --teal-bg: #E8F8F5;
+    --teal-border: #A3E4D7;
+    --gray: #566573;
+    --gray-bg: #F2F3F4;
+    --gray-border: #D5D8DC;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    color: #2C3E50;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 30px;
+    background: #FAFBFC;
+  }
+
+  h1 {
+    font-family: 'Merriweather', serif;
+    font-size: 2.2em;
+    color: #1A5276;
+    border-bottom: 4px solid var(--blue);
+    padding-bottom: 15px;
+    margin-bottom: 10px;
+  }
+
+  .subtitle { font-size: 1.1em; color: var(--gray); margin-bottom: 30px; }
+
+  h2 {
+    font-family: 'Merriweather', serif;
+    font-size: 1.7em;
+    color: #1A5276;
+    margin-top: 50px;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 3px solid var(--blue);
+  }
+
+  h3 {
+    font-size: 1.35em;
+    color: #1A5276;
+    margin-top: 35px;
+    margin-bottom: 12px;
+    padding-left: 12px;
+    border-left: 4px solid var(--orange);
+  }
+
+  h4 {
+    font-size: 1.1em;
+    color: var(--purple);
+    margin-top: 25px;
+    margin-bottom: 10px;
+    font-weight: 700;
+  }
+
+  p { margin-bottom: 14px; }
+
+  .toc {
+    background: var(--blue-bg);
+    border: 2px solid var(--blue-border);
+    border-radius: 10px;
+    padding: 25px 30px;
+    margin: 30px 0;
+  }
+  .toc h3 { border-left: none; padding-left: 0; color: var(--blue); margin-top: 0; }
+  .toc ol { padding-left: 20px; }
+  .toc li { margin-bottom: 4px; }
+  .toc a { color: var(--blue); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+
+  .practice-box {
+    background: var(--yellow-bg);
+    border: 2px solid var(--yellow-border);
+    border-left: 6px solid var(--yellow);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 20px 0;
+  }
+  .practice-box .box-title { font-weight: 700; color: var(--yellow); font-size: 1.05em; margin-bottom: 8px; }
+
+  .solution-box {
+    background: var(--gray-bg);
+    border: 2px dashed var(--gray-border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 10px 0 20px 0;
+  }
+  .solution-box .box-title { font-weight: 700; color: var(--gray); font-size: 1.05em; margin-bottom: 8px; }
+
+  .difficulty {
+    display: inline-block;
+    font-size: 0.8em;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 12px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  .diff-easy { background: #D5F5E3; color: #1E8449; }
+  .diff-medium { background: #FEF9E7; color: #B7950B; }
+  .diff-hard { background: #FDEDEC; color: #C0392B; }
+  .diff-challenge { background: var(--purple-bg); color: var(--purple); }
+
+  .source-tag {
+    font-size: 0.78em;
+    color: var(--gray);
+    font-style: italic;
+  }
+
+  table { border-collapse: collapse; width: 100%; margin: 16px 0; }
+  th, td { border: 1px solid var(--gray-border); padding: 10px 14px; text-align: center; }
+  th { background: var(--blue-bg); font-weight: 600; color: #1A5276; }
+  tr:nth-child(even) { background: #F8F9FA; }
+
+  .page-break { page-break-after: always; margin: 40px 0; border-top: 2px dashed #D5D8DC; }
+  ol.spaced > li, ul.spaced > li { margin-bottom: 12px; }
+  .indent { margin-left: 30px; }
+
+  .svg-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin: 20px 0;
+    background: white;
+    border: 1px solid var(--gray-border);
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  }
+
+  @media print {
+    body { max-width: 100%; padding: 20px; font-size: 14px; }
+    .practice-box, .solution-box { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<h1>ECO102 — Comprehensive Exercise Sheet</h1>
+<p class="subtitle">Chapters 13 & 14, Lecture 5, Tutorial 5 — Graduated Difficulty<br>
+Consumption, Saving, Investment, and Loanable Funds</p>
+
+<p><strong>How to use this sheet:</strong> Exercises within each section go from <span class="difficulty diff-easy">Easy</span> to <span class="difficulty diff-medium">Medium</span> to <span class="difficulty diff-hard">Hard</span> to <span class="difficulty diff-challenge">Challenge</span>. Try each problem yourself before looking at the solution. The harder the problem, the more detailed the explanation.</p>
+
+<div class="toc">
+<h3>Contents</h3>
+<ol>
+  <li><a href="#part1">Part 1 — Consumption, Saving, and the Microfoundations (Chapter 13)</a></li>
+  <li><a href="#part2">Part 2 — Investment and User Cost of Capital (Chapter 14)</a></li>
+  <li><a href="#part3">Part 3 — Aggregate Economy and Loanable Funds (Lecture 5 & Tutorial 5)</a></li>
+</ol>
+</div>
+
+<!-- ════════════════════════════════════════════════ -->
+<!-- PART 1: CONSUMPTION & SAVING -->
+<!-- ════════════════════════════════════════════════ -->
+<h2 id="part1">Part 1 — Consumption, Saving, and the Microfoundations</h2>
+
+<h3>Level 1: Definitions and Basic Calculations <span class="difficulty diff-easy">Easy</span></h3>
+
+<div class="practice-box">
+<div class="box-title">Exercise 1.1 <span class="source-tag">(Chapter 13, Study Problem 1)</span></div>
+<p>Your friend just got an unexpected 1,000 dollar tax refund. They plan to put 800 dollars toward paying off credit card debt, put 100 dollars toward their student loans, and use the remaining 100 dollars to purchase a new grill for their deck. </p>
+<p>What is your friend's marginal propensity to consume (MPC)? By how much have they increased their net wealth?</p>
+</div>
+<div class="solution-box">
+<div class="box-title">Solution</div>
+<p><strong>Step 1: Identify Consumption vs. Saving.</strong><br>
+Paying off credit card debt (800 dollars) and paying off student loans (100 dollars) both reduce liabilities. Reducing debt is a form of <strong>saving</strong>. Purchasing a grill (100 dollars) is spending on final goods, which is <strong>consumption</strong>.</p>
+<p><strong>Step 2: Calculate MPC.</strong><br>
+\(MPC = \frac{\Delta C}{\Delta Y} = \frac{100}{1000} = 0.1\).</p>
+<p><strong>Step 3: Calculate Change in Net Wealth.</strong><br>
+Change in Net Wealth = Saving + Net Capital Gains. Since there are no capital gains, the change in net wealth equals the amount saved. They saved 900 dollars (by reducing debt), so their net wealth increased by <strong>900 dollars</strong>.</p>
+</div>
+
+<div class="practice-box">
+<div class="box-title">Exercise 1.2 <span class="source-tag">(Chapter 13, Study Problem 2 modified)</span></div>
+<p>The table below contains data on per person income and consumption in an economy for two recent years.</p>
+<table>
+  <tr>
+    <th>Year</th>
+    <th>Real Income per person</th>
+    <th>Real Consumption per person</th>
+  </tr>
+  <tr>
+    <td>2018</td>
+    <td>61,000 dollars</td>
+    <td>34,500 dollars</td>
+  </tr>
+  <tr>
+    <td>2019</td>
+    <td>62,000 dollars</td>
+    <td>35,400 dollars</td>
+  </tr>
+</table>
+<p>Calculate the <strong>Saving</strong> per person in both years. Then, calculate the <strong>Marginal Propensity to Consume (MPC)</strong> between 2018 and 2019.</p>
+</div>
+<div class="solution-box">
+<div class="box-title">Solution</div>
+<p><strong>1. Calculate Saving:</strong><br>
+Recall the fundamental identity: \(Saving = Income - Consumption\).<br>
+2018 Saving: \(61,000 - 34,500 = \mathbf{26,500\ dollars}\).<br>
+2019 Saving: \(62,000 - 35,400 = \mathbf{26,600\ dollars}\).</p>
+<p><strong>2. Calculate MPC:</strong><br>
+\(MPC = \frac{\Delta C}{\Delta Y}\).<br>
+Change in Consumption (\(\Delta C\)) = \(35,400 - 34,500 = 900\ dollars\).<br>
+Change in Income (\(\Delta Y\)) = \(62,000 - 61,000 = 1,000\ dollars\).<br>
+\(MPC = \frac{900}{1000} = \mathbf{0.90}\).</p>
+<p>This means for every extra dollar earned between 2018 and 2019, citizens consumed 90 cents and saved 10 cents.</p>
+</div>
+
+<h3>Level 2: Graphing the Consumption Function <span class="difficulty diff-medium">Medium</span></h3>
+
+<div class="practice-box">
+<div class="box-title">Exercise 1.3 <span class="source-tag">(Chapter 13, Study Problem 7 — Graphing)</span></div>
+<p>Consider the following situations. What is the effect on the consumption function for each scenario? Demonstrate each answer with a graph.</p>
+<ol type="a">
+  <li>The stock market rises to a record high, boosting household portfolios.</li>
+  <li>The government gives a one-time tax rebate to all citizens.</li>
+</ol>
+</div>
+<div class="solution-box">
+<div class="box-title">Solution</div>
+<p><strong>a. Stock market rises to a record high.</strong><br>
+This is an increase in <strong>Wealth</strong>. When wealth increases, consumers feel richer and do not need to save as much of their current income for retirement. The entire consumption function <strong>shifts UP</strong>.</p>
+
+<p><strong>b. The government gives a one-time tax rebate.</strong><br>
+A one-time rebate is a temporary increase in <em>current income</em> (specifically disposable income). A change in current income does not shift the curve; instead, it causes a <strong>movement along</strong> the consumption function to the right.</p>
+
+<div class="svg-container">
+  <!-- Graph A: Shift UP -->
+  <svg width="350" height="250" viewBox="0 0 350 250">
+    <text x="120" y="20" font-weight="bold" font-size="14">a. Increase in Wealth</text>
+    <!-- Axes -->
+    <line x1="40" y1="200" x2="320" y2="200" stroke="black" stroke-width="2"/>
+    <line x1="40" y1="200" x2="40" y2="40" stroke="black" stroke-width="2"/>
+    <text x="160" y="230" font-size="12" font-weight="bold">Income (Y)</text>
+    <text x="15" y="160" transform="rotate(-90 15,160)" font-size="12" font-weight="bold">Consumption (C)</text>
+    <!-- Original Line -->
+    <line x1="40" y1="160" x2="280" y2="80" stroke="#2E86C1" stroke-width="2"/>
+    <text x="285" y="85" fill="#2E86C1" font-size="11">C1</text>
+    <!-- Shifted Line -->
+    <line x1="40" y1="120" x2="280" y2="40" stroke="#8E44AD" stroke-width="2"/>
+    <text x="285" y="45" fill="#8E44AD" font-size="11">C2</text>
+    <!-- Arrow -->
+    <line x1="160" y1="120" x2="160" y2="85" stroke="black" stroke-width="2" marker-end="url(#arrowhead)"/>
+  </svg>
+
+  <!-- Graph B: Movement Along -->
+  <svg width="350" height="250" viewBox="0 0 350 250">
+    <text x="120" y="20" font-weight="bold" font-size="14">b. Increase in Income</text>
+    <!-- Axes -->
+    <line x1="40" y1="200" x2="320" y2="200" stroke="black" stroke-width="2"/>
+    <line x1="40" y1="200" x2="40" y2="40" stroke="black" stroke-width="2"/>
+    <text x="160" y="230" font-size="12" font-weight="bold">Income (Y)</text>
+    <!-- Original Line -->
+    <line x1="40" y1="180" x2="300" y2="60" stroke="#2E86C1" stroke-width="2"/>
+    <!-- Points -->
+    <circle cx="100" cy="152" r="4" fill="black"/>
+    <circle cx="220" cy="97" r="4" fill="black"/>
+    <!-- Arrow -->
+    <line x1="110" y1="147" x2="210" y2="102" stroke="black" stroke-width="2" marker-end="url(#arrowhead)"/>
+    
+    <defs>
+      <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+        <polygon points="0 0, 10 3.5, 0 7" fill="black" />
+      </marker>
+    </defs>
+  </svg>
+</div>
+</div>
+
+<div class="practice-box">
+<div class="box-title">Exercise 1.4 <span class="source-tag">(Chapter 13, Study Problem 8)</span></div>
+<p>Suppose the federal government passes a tax cut.</p>
+<ol type="a">
+  <li>What would change if the tax cut was explicitly announced as <em>temporary</em> (only for this year) compared to a <em>permanent</em> tax cut?</li>
+  <li>Explain why a temporary tax cut might increase total consumption less than a permanent tax cut.</li>
+</ol>
+</div>
+<div class="solution-box">
+<div class="box-title">Solution</div>
+<p><strong>a. Temporary vs Permanent Effects:</strong><br>
+A <em>permanent</em> tax cut increases a household's disposable income not just today, but for every year into the future. Therefore, it drastically increases their <strong>permanent income</strong>. Because consumption is heavily driven by permanent income, a permanent tax cut causes the consumption function to shift UP significantly.</p>
+<p>A <em>temporary</em> tax cut only increases disposable income for one year. Spread over a lifetime, this barely changes permanent income at all. Therefore, the consumption function will only shift up slightly.</p>
+<p><strong>b. Why the temporary cut is less effective:</strong><br>
+According to the <strong>Permanent Income Hypothesis</strong>, households practice <strong>consumption smoothing</strong>. Because of diminishing marginal benefits, they do not want to blow a temporary windfall all at once. Instead, consumption smoothers will save the vast majority of a temporary tax cut to finance a tiny increase in consumption for the rest of their lives. Only the "hand-to-mouth" consumers (who are credit-constrained and spend everything they get) will spend the temporary tax cut immediately. As a result, the aggregate increase in consumption is much smaller for a temporary tax cut than a permanent one.</p>
+</div>
+
+<h3>Level 3: Microfoundations — Smoothers vs. Hand-to-Mouth <span class="difficulty diff-hard">Hard</span></h3>
+
+<div class="practice-box">
+<div class="box-title">Exercise 1.5 <span class="source-tag">(Chapter 13, Study Problem 5)</span></div>
+<p>For the following scenario, predict how consumption changes for both <strong>consumption smoothers</strong> and <strong>hand-to-mouth consumers</strong>. How does <strong>total aggregate consumption</strong> change?</p>
+<p><em>Scenario:</em> Household income rises by 6% this year, but income growth is widely expected and announced to return to its normal growth rate of 2% next year.</p>
+</div>
+<div class="solution-box">
+<div class="box-title">Solution</div>
+<p>This scenario represents a <strong>temporary</strong> rise in income (a one-year spike above the normal trend).</p>
+<p><strong>Consumption Smoothers:</strong> They base their spending on <em>permanent income</em>. A temporary 6% spike spread over their entire remaining lifetime increases their permanent income only very slightly. Therefore, they will experience a <strong>small increase</strong> in consumption (saving the vast majority of the extra income).</p>
+<p><strong>Hand-to-Mouth Consumers:</strong> They face credit constraints or behavioral limitations and spend their current income. Since their current income rose by 6%, their consumption will experience a <strong>large increase</strong> (they spend the entire windfall).</p>
+<p><strong>Total Consumption:</strong> Because the macroeconomy is a mix of both types of people, total aggregate consumption will show an <strong>intermediate increase</strong> (larger than the smoothers' response, but smaller than the hand-to-mouth response).</p>
+</div>
+
+<h3>Level 4: The Rational Rule and Permanent Income <span class="difficulty diff-challenge">Challenge</span></h3>
+
+<div class="practice-box">
+<div class="box-title">Exercise 1.6 <span class="source-tag">(Chapter 13, Study Problem 4)</span></div>
+<p>Which of the following people are engaging in consumption smoothing and which are not? Explain your reasoning using the opportunity cost and marginal principles.</p>
+<ol type="a">
+  <li>Sharon won 10 million dollars in Lotto 6/49 in 2004. By 2015, she had burned through almost all the winnings, was riding the bus to a part-time job, and was living in a rental property.</li>
+  <li>Karyn takes out modest student and personal loans to pay for living expenses while she finishes her degree. She plans to get an accounting degree and enter the workforce making about 50,000 a year, and will eventually earn close to six figures.</li>
+</ol>
+</div>
+<div class="solution-box">
+<div class="box-title">Solution</div>
+<p><strong>a. Sharon (Lottery Winner) - NOT Consumption Smoothing.</strong><br>
+Sharon failed to smooth her consumption. She treated a massive, temporary shock to her current income as if it were her permanent income. By the <em>marginal principle</em>, she experienced severe diminishing marginal benefits by spending so rapidly early on, and now has very low consumption (riding the bus, renting) later in life. By the <em>opportunity cost principle</em>, she gave up the massive interest payments she could have earned by saving that money, which could have financed a highly elevated, perfectly smooth standard of living for her entire life.</p>
+<p><strong>b. Karyn (Student) - IS Consumption Smoothing.</strong><br>
+Karyn correctly recognizes that her <em>permanent income</em> (a lifetime of high accounting salaries) is much higher than her current income (close to zero). By the <em>marginal principle</em>, the marginal benefit of an extra dollar of consumption today (when she is broke) is extremely high. By the <em>opportunity cost principle</em>, taking on debt costs her interest, but the marginal benefit of eating and paying rent today exceeds the opportunity cost of paying the loan back with interest in the future when she is wealthy and her marginal benefit of consumption is much lower. Borrowing to smooth consumption is the rational choice.</p>
+</div>
+
+<div class="page-break"></div>
+
+<!-- ════════════════════════════════════════════════ -->
+<!-- PART 2: INVESTMENT -->
+<!-- ════════════════════════════════════════════════ -->
+<h2 id="part2">Part 2 — Investment and User Cost of Capital</h2>
+
+<h3>Level 1: Basic Categorization & Calculations <span class="difficulty diff-easy">Easy</span></h3>
+
+<div class="practice-box">
+<div class="box-title">Exercise 2.1 <span class="source-tag">(Chapter 14, Study Problem 1)</span></div>
+<p>Determine if the following scenarios are describing macroeconomic <strong>saving</strong> or <strong>investment</strong>. If they describe investment, specify which of the three types of investment it is.</p>
+<ol type="a">
+  <li>Amazon purchases 100 million dollars of products from a Chinese manufacturer to add to its warehouse inventory.</li>
+  <li>SpaceX spends 5 million dollars on writing and testing new code to improve its rocket stability.</li>
+  <li>You buy a newly built 2026 home in Toronto.</li>
+</ol>
+</div>
+<div class="solution-box">
+<div class="box-title">Solution</div>
+<p><strong>a. Investment.</strong> Specifically, <strong>Inventory Investment</strong>. Unsold goods and raw materials kept on hand are counted as adding to the capital stock.</p>
+<p><strong>b. Investment.</strong> Specifically, <strong>Business Investment (Intellectual Property)</strong>. Spending on software, R&D, and coding creates new productive capacity for the business.</p>
+<p><strong>c. Investment.</strong> Specifically, <strong>Housing Investment</strong>. Purchasing a <em>newly built</em> home creates a new capital asset that provides a stream of future housing services. (If you had bought an old home, it would be saving/asset transfer).</p>
+</div>
+
+<div class="practice-box">
+<div class="box-title">Exercise 2.2 <span class="source-tag">(Chapter 14, Study Problem 5)</span></div>
+<p>Use the compounding or discounting formulas to answer the following questions.</p>
+<ol type="a">
+  <li>Your small business has a cash reserve of about 200,000 dollars, earning a 2% annual interest rate. How much will that be worth in exactly three years?</li>
+  <li>You want to have 1 million dollars in your retirement account in 50 years. If your account grows at an annual rate of 4%, how much would you have to deposit today (as a lump sum) to reach 1 million dollars in 50 years?</li>
+</ol>
+</div>
+<div class="solution-box">
+<div class="box-title">Solution</div>
+<p><strong>a. Compounding (Future Value):</strong><br>
+Formula: \(FV = PV \times (1 + r)^t\)<br>
+\(FV = 200,000 \times (1 + 0.02)^3\)<br>
+\(FV = 200,000 \times 1.061208 = \mathbf{212,241.60\ dollars}\).</p>
+<p><strong>b. Discounting (Present Value):</strong><br>
+Formula: \(PV = \frac{FV}{(1 + r)^t}\)<br>
+\(PV = \frac{1,000,000}{(1 + 0.04)^{50}}\)<br>
+\(PV = \frac{1,000,000}{7.10668} \approx \mathbf{140,712.62\ dollars}\).</p>
+</div>
+
+<h3>Level 2: Graphing The Investment Line <span class="difficulty diff-medium">Medium</span></h3>
+
+<div class="practice-box">
+<div class="box-title">Exercise 2.3 <span class="source-tag">(Chapter 14, Study Problem 12 — Graphing)</span></div>
+<p>You are working for a major bank, forecasting investment. Consider what happens to aggregate investment in each of the following scenarios. Show the change graphically, using the Investment Line.</p>
+<ol type="a">
+  <li>A new technology is discovered that drastically increases the productive capacity of factories.</li>
+  <li>Business executives expect their profit margins to decline over the next decade due to pessimistic economic forecasts.</li>
+</ol>
+</div>
+<div class="solution-box">
+<div class="box-title">Solution</div>
+<p>The Investment Line slopes downward because a higher real interest rate raises the user cost of capital, reducing the number of profitable projects.</p>
+
+<p><strong>a. New Technology discovered.</strong><br>
+Technological advances increase the marginal product of capital (VMPK). This makes capital more profitable at <em>any</em> interest rate. The Investment Line shifts to the <strong>RIGHT</strong>.</p>
+
+<p><strong>b. Expectations of declining profit margins.</strong><br>
+Pessimism about future economic conditions leads managers to revise down their revenue forecasts. Fewer investment projects will be profitable at any given interest rate. The Investment Line shifts to the <strong>LEFT</strong>.</p>
+
+<div class="svg-container">
+  <!-- Graph A: Tech (Shift Right) -->
+  <svg width="350" height="250" viewBox="0 0 350 250">
+    <text x="100" y="20" font-weight="bold" font-size="14">a. Tech Advancement</text>
+    <line x1="40" y1="200" x2="320" y2="200" stroke="black" stroke-width="2"/>
+    <line x1="40" y1="200" x2="40" y2="40" stroke="black" stroke-width="2"/>
+    <text x="140" y="230" font-size="12" font-weight="bold">Total Investment (I)</text>
+    <text x="15" y="160" transform="rotate(-90 15,160)" font-size="12" font-weight="bold">Real Interest Rate</text>
+    <!-- Original -->
+    <line x1="60" y1="60" x2="220" y2="180" stroke="#E74C3C" stroke-width="2"/>
+    <text x="225" y="185" fill="#E74C3C" font-size="11">I1</text>
+    <!-- Shifted -->
+    <line x1="120" y1="60" x2="280" y2="180" stroke="#27AE60" stroke-width="2"/>
+    <text x="285" y="185" fill="#27AE60" font-size="11">I2</text>
+    <line x1="140" y1="120" x2="190" y2="120" stroke="black" stroke-width="2" marker-end="url(#arrowhead)"/>
+  </svg>
+
+  <!-- Graph B: Pessimism (Shift Left) -->
+  <svg width="350" height="250" viewBox="0 0 350 250">
+    <text x="100" y="20" font-weight="bold" font-size="14">b. Pessimistic Expectations</text>
+    <line x1="40" y1="200" x2="320" y2="200" stroke="black" stroke-width="2"/>
+    <line x1="40" y1="200" x2="40" y2="40" stroke="black" stroke-width="2"/>
+    <text x="140" y="230" font-size="12" font-weight="bold">Total Investment (I)</text>
+    <!-- Original -->
+    <line x1="120" y1="60" x2="280" y2="180" stroke="#E74C3C" stroke-width="2"/>
+    <text x="285" y="185" fill="#E74C3C" font-size="11">I1</text>
+    <!-- Shifted -->
+    <line x1="60" y1="60" x2="220" y2="180" stroke="#8E44AD" stroke-width="2"/>
+    <text x="225" y="185" fill="#8E44AD" font-size="11">I2</text>
+    <line x1="200" y1="120" x2="150" y2="120" stroke="black" stroke-width="2" marker-end="url(#arrowhead)"/>
+  </svg>
+</div>
+</div>
+
+<h3>Level 3: User Cost of Capital & Threshold Rates <span class="difficulty diff-hard">Hard</span></h3>
+
+<div class="practice-box">
+<div class="box-title">Exercise 2.4 <span class="source-tag">(Tutorial 5, Question 2 a & b)</span></div>
+<p>A firm is deciding whether to buy new machines. The price of each machine (\(P_k\)) is 6,000 dollars. They must borrow the funds from a local bank at a real interest rate (\(r\)) of 4%. The firm anticipates each machine’s value will depreciate (\(d\)) by 5% each year.</p>
+<ol type="a">
+  <li>Calculate the firm’s User Cost of Capital.</li>
+  <li>Suppose the price of the firm's output is 10 dollars. The Marginal Product of Capital (MPK) is given by the formula: \(MPK = 344 - 29K\), where \(K\) is the number of machines. How many machines (\(K\)) should the firm purchase to maximize profits?</li>
+</ol>
+</div>
+<div class="solution-box">
+<div class="box-title">Solution</div>
+<p><strong>a. Calculate User Cost of Capital:</strong><br>
+The user cost is the marginal cost of using one machine for one year. It accounts for foregone interest and depreciation.<br>
+\(User\ Cost = P_k \times (r + d)\)<br>
+\(User\ Cost = 6000 \times (0.04 + 0.05) = 6000 \times 0.09 = \mathbf{540\ dollars}\).</p>
+<p><strong>b. Maximize Profits:</strong><br>
+A firm maximizes profit by investing until the Value of the Marginal Product of Capital (VMPK) equals the User Cost.<br>
+\(VMPK = Price \times MPK\)<br>
+\(VMPK = 10 \times (344 - 29K) = 3440 - 290K\)</p>
+<p>Set VMPK equal to User Cost:<br>
+\(3440 - 290K = 540\)<br>
+\(2900 = 290K\)<br>
+\(K = \mathbf{10\ machines}\).</p>
+</div>
+
+<div class="practice-box">
+<div class="box-title">Exercise 2.5 <span class="source-tag">(Chapter 14, Study Problem 11)</span></div>
+<p>The manager of a T-shirt company is considering investing in a new embroidery machine that would cost 8,500 dollars, and the depreciation rate is 6.5% per year. The expected increase in next year's revenue as a result of the investment would be 1,500 dollars.</p>
+<p>For what values of the interest rate (\(r\)) should the company make this investment?</p>
+</div>
+<div class="solution-box">
+<div class="box-title">Solution</div>
+<p>According to the Rational Rule for Investors, the company should invest if the present value of the benefits exceeds the up-front cost. Using the valuation formula shortcut:<br>
+\(\frac{\text{Next year's revenue}}{r + d} > \text{Up-front cost}\)</p>
+<p>Plug in the known values:<br>
+\(\frac{1500}{r + 0.065} > 8500\)</p>
+<p>Solve for \(r\):<br>
+\(1500 > 8500 \times (r + 0.065)\)<br>
+\(\frac{1500}{8500} > r + 0.065\)<br>
+\(0.17647 > r + 0.065\)<br>
+\(r < 0.17647 - 0.065\)<br>
+\(r < \mathbf{0.11147}\) (or roughly <strong>11.15%</strong>).</p>
+<p>The company should only make the investment if the real interest rate is lower than 11.15%.</p>
+</div>
+
+<h3>Level 4: Mixed Interest Rates <span class="difficulty diff-challenge">Challenge</span></h3>
+
+<div class="practice-box">
+<div class="box-title">Exercise 2.6 <span class="source-tag">(Tutorial 5, Question 2 e)</span></div>
+<p>Take the same firm from Exercise 2.4. The price of a machine is still 6,000 dollars, and depreciation is still 5%.</p>
+<p>However, now assume the firm has <strong>3,000 dollars in cash on hand</strong>, but must <strong>borrow the remaining 3,000 dollars</strong>. Because of a special relationship, the bank charges a <strong>4%</strong> real interest rate on the borrowed funds. Meanwhile, the average market interest rate (what the firm could earn if it put its cash in a savings account) is <strong>15%</strong>.</p>
+<p>Calculate the new User Cost of Capital.</p>
+</div>
+<div class="solution-box">
+<div class="box-title">Solution</div>
+<p>This problem requires applying the <strong>opportunity cost principle</strong> precisely. The formula \(User\ Cost = P_k(r + d)\) must be split up because the interest rate (\(r\)) is different for the two halves of the funding.</p>
+<p><strong>1. Depreciation Cost:</strong><br>
+The entire 6,000 dollar machine depreciates at 5%.<br>
+\(Depreciation = 6000 \times 0.05 = \mathbf{300\ dollars}\).</p>
+<p><strong>2. Cost of Borrowed Funds:</strong><br>
+The firm borrows 3,000 dollars at a 4% interest rate.<br>
+\(Borrowing\ Cost = 3000 \times 0.04 = \mathbf{120\ dollars}\).</p>
+<p><strong>3. Opportunity Cost of Cash on Hand:</strong><br>
+The firm uses 3,000 dollars of its own cash. If they didn't buy the machine, they could have saved this cash and earned the market interest rate of 15%. This foregone interest is a real cost.<br>
+\(Opportunity\ Cost\ of\ Cash = 3000 \times 0.15 = \mathbf{450\ dollars}\).</p>
+<p><strong>Total User Cost of Capital:</strong><br>
+\(Total\ Cost = 300 + 120 + 450 = \mathbf{870\ dollars}\).</p>
+</div>
+
+<div class="page-break"></div>
+
+<!-- ════════════════════════════════════════════════ -->
+<!-- PART 3: AGGREGATE ECONOMY & LOANABLE FUNDS -->
+<!-- ════════════════════════════════════════════════ -->
+<h2 id="part3">Part 3 — The Aggregate Economy and Loanable Funds</h2>
+
+<h3>Level 1: Identifying Market Actors <span class="difficulty diff-easy">Easy</span></h3>
+
+<div class="practice-box">
+<div class="box-title">Exercise 3.1 <span class="source-tag">(Chapter 14, Study Problem 13)</span></div>
+<p>Determine if the following people are demanders, suppliers, or not involved in the market for loanable funds.</p>
+<ol type="a">
+  <li>Latisha wants to save up for a new laptop to use in her business, so she puts aside 100 dollars a month until she can afford it.</li>
+  <li>Gerardo borrows 30,000 dollars from his local bank for a new addition to his warehouse.</li>
+  <li>Dana buys 1,200 dollars of stocks every year in her retirement account.</li>
+</ol>
+</div>
+<div class="solution-box">
+<div class="box-title">Solution</div>
+<p><strong>a. Supplier.</strong> By putting money aside in a bank account, Latisha is providing funds to the financial system. She is a supplier of loanable funds (a saver).</p>
+<p><strong>b. Demander.</strong> Gerardo is borrowing money to build new physical capital (the warehouse addition). He is demanding loanable funds to finance investment.</p>
+<p><strong>c. Supplier.</strong> By purchasing stocks, Dana is funneling her savings into the financial markets, indirectly providing funds to businesses that issue those stocks. She is a supplier of loanable funds.</p>
+</div>
+
+<h3>Level 2: Shifting the Market <span class="difficulty diff-medium">Medium</span></h3>
+
+<div class="practice-box">
+<div class="box-title">Exercise 3.2 <span class="source-tag">(Tutorial 5, Question 3a)</span></div>
+<p>Draw a model of the Market for Loanable Funds to visualize the effect of the government moving from a historical budget deficit to a balanced budget.</p>
+<p>State what happens to the equilibrium real interest rate (\(r^*\)) and the quantity of loanable funds (\(Q^*\)).</p>
+</div>
+<div class="solution-box">
+<div class="box-title">Solution</div>
+<p>Moving from a deficit (dissaving) to a balanced budget means the government is no longer draining funds from the market. <strong>Public saving increases.</strong> This causes the Supply of Loanable Funds to shift to the <strong>right</strong>.</p>
+<div class="svg-container">
+  <svg width="400" height="300" viewBox="0 0 400 300">
+    <line x1="50" y1="250" x2="350" y2="250" stroke="black" stroke-width="2"/>
+    <line x1="50" y1="250" x2="50" y2="50" stroke="black" stroke-width="2"/>
+    <!-- Demand -->
+    <line x1="80" y1="60" x2="320" y2="230" stroke="#2E86C1" stroke-width="3"/>
+    <text x="325" y="235" fill="#2E86C1" font-size="12" font-weight="bold">Demand (I)</text>
+    <!-- Old Supply -->
+    <line x1="120" y1="230" x2="300" y2="60" stroke="#E74C3C" stroke-width="3"/>
+    <text x="305" y="65" fill="#E74C3C" font-size="12" font-weight="bold">Supply 1 (S)</text>
+    <!-- New Supply -->
+    <line x1="170" y1="230" x2="350" y2="60" stroke="#27AE60" stroke-width="3" stroke-dasharray="6,4"/>
+    <text x="355" y="65" fill="#27AE60" font-size="12" font-weight="bold">Supply 2 (S')</text>
+    <!-- Old Eq -->
+    <circle cx="210" cy="153" r="5" fill="black"/>
+    <line x1="50" y1="153" x2="210" y2="153" stroke="black" stroke-dasharray="3,3"/>
+    <text x="25" y="158" font-size="12" font-weight="bold">r1</text>
+    <!-- New Eq -->
+    <circle cx="236" cy="171" r="5" fill="black"/>
+    <line x1="50" y1="171" x2="236" y2="171" stroke="black" stroke-dasharray="3,3"/>
+    <text x="25" y="176" font-size="12" font-weight="bold">r2</text>
+    <!-- Labels -->
+    <text x="140" y="280" font-weight="bold">Quantity of Funds</text>
+    <text x="15" y="200" transform="rotate(-90 15,200)" font-weight="bold">Real Interest Rate (r)</text>
+    <line x1="260" y1="100" x2="310" y2="100" stroke="black" stroke-width="2" marker-end="url(#arrowhead)"/>
+  </svg>
+</div>
+<p><strong>Result:</strong> The real interest rate (\(r^*\)) <strong>falls</strong>, and the quantity of private investment (\(Q^*\)) <strong>increases</strong>. This undoes the "Crowding Out" effect.</p>
+</div>
+
+<h3>Level 3: Double Shifts and Disequilibriums <span class="difficulty diff-hard">Hard</span></h3>
+
+<div class="practice-box">
+<div class="box-title">Exercise 3.3 <span class="source-tag">(Lecture 5, Clicker Question)</span></div>
+<p>Suppose government purchases increase in preparation for a potential military conflict. At the same time, a new technology breakthrough improves the productivity of capital goods. What is the ultimate effect on the neutral real interest rate (\(r^*\))?</p>
+</div>
+<div class="solution-box">
+<div class="box-title">Solution</div>
+<p>This is a "double shift" scenario.</p>
+<p><strong>Effect 1: Increase in Government Purchases.</strong> Assuming taxes remain constant, an increase in \(G\) means the government budget deficit worsens. <em>Public saving decreases.</em> The <strong>Supply</strong> of loanable funds shifts to the <strong>Left</strong>. (This drives \(r^*\) UP).</p>
+<p><strong>Effect 2: Tech Breakthrough.</strong> This increases the marginal product of capital (VMPK). Capital is more profitable, so firms demand more funds. The <strong>Demand</strong> for loanable funds shifts to the <strong>Right</strong>. (This also drives \(r^*\) UP).</p>
+
+<div class="svg-container">
+  <svg width="400" height="300" viewBox="0 0 400 300">
+    <line x1="50" y1="250" x2="350" y2="250" stroke="black" stroke-width="2"/>
+    <line x1="50" y1="250" x2="50" y2="50" stroke="black" stroke-width="2"/>
+    
+    <!-- Original Demand -->
+    <line x1="80" y1="60" x2="280" y2="230" stroke="#2E86C1" stroke-width="2"/>
+    <!-- New Demand (Shift Right) -->
+    <line x1="140" y1="60" x2="340" y2="230" stroke="#8E44AD" stroke-width="3" stroke-dasharray="6,4"/>
+    
+    <!-- Original Supply -->
+    <line x1="100" y1="230" x2="300" y2="60" stroke="#E74C3C" stroke-width="2"/>
+    <!-- New Supply (Shift Left) -->
+    <line x1="40" y1="230" x2="240" y2="60" stroke="#27AE60" stroke-width="3" stroke-dasharray="6,4"/>
+    
+    <!-- Old Eq -->
+    <circle cx="190" cy="153" r="4" fill="black"/>
+    <line x1="50" y1="153" x2="190" y2="153" stroke="black" stroke-dasharray="3,3"/>
+    <text x="25" y="158" font-size="12" font-weight="bold">r1</text>
+    
+    <!-- New Eq -->
+    <circle cx="190" cy="103" r="6" fill="black"/>
+    <line x1="50" y1="103" x2="190" y2="103" stroke="black" stroke-dasharray="3,3"/>
+    <text x="25" y="108" font-size="12" font-weight="bold">r2</text>
+    
+    <!-- Arrows -->
+    <line x1="280" y1="180" x2="320" y2="180" stroke="black" stroke-width="2" marker-end="url(#arrowhead)"/>
+    <line x1="250" y1="102" x2="205" y2="102" stroke="black" stroke-width="2" marker-end="url(#arrowhead)"/>
+  </svg>
+</div>
+
+<p><strong>Result:</strong> Because both shifts put upward pressure on the interest rate, we can definitively say that <strong>\(r^*\) increases</strong>. However, because Supply shifting left reduces Quantity, while Demand shifting right increases Quantity, the net effect on \(Q^*\) is ambiguous (it depends on the exact magnitude of the shifts).</p>
+</div>
+
+<div class="practice-box">
+<div class="box-title">Exercise 3.4 <span class="source-tag">(Tutorial 5, Question 3d)</span></div>
+<p>The government fixes the interest rate at a level strictly greater than the equilibrium neutral real interest rate (\(r > r^*\)) for a day, and lets the markets adjust the following day.</p>
+<p>What happens to the quantity of loanable funds traded on that day? What happens the next day?</p>
+</div>
+<div class="solution-box">
+<div class="box-title">Solution</div>
+<p>When the government fixes the interest rate above equilibrium (\(r_{fixed} > r^*\)), it creates a <strong>price floor</strong>.</p>
+<p>At this artificially high interest rate, savers want to supply a large amount of funds, but businesses (investors) demand very few funds because the cost of borrowing is too high.</p>
+
+<p><strong>During the day (Fixed Rate):</strong> The quantity traded is limited by the lower quantity demanded (\(Q_d\)). There is a <strong>surplus of desired saving</strong> (\(Q_s - Q_d\)). This surplus is either hoarded or spent on consumption.</p>
+<p><strong>The next day (Markets adjust):</strong> Surplus savers begin accepting lower interest rates to get their money loaned out. The rate naturally falls back down until \(r = r^*\). <strong>No curves shift</strong> during this process; it is merely a return to equilibrium along the existing curves.</p>
+</div>
+
+<h3>Level 4: The Three-Person Economy Simulation <span class="difficulty diff-challenge">Challenge</span></h3>
+
+<div class="practice-box">
+<div class="box-title">Exercise 3.5 <span class="source-tag">(Tutorial 5, Question 1)</span></div>
+<p>Suppose the economy has three individuals: Stocke, Raynie, and Marco. At the start of the period, Stocke has 50 dollars, Raynie has 20 dollars, and Marco has 0 dollars.</p>
+<ol type="a">
+  <li>Stocke buys a falafel from Raynie for 10 dollars.</li>
+  <li>Stocke buys a newly-produced chair from Marco for 20 dollars to put in his office.</li>
+  <li>Marco wants to buy three falafels from Raynie (total 30 dollars), but only has 20 dollars. He borrows 10 dollars from Stocke to buy them.</li>
+  <li>Raynie puts all of her cash into a safe in her home.</li>
+</ol>
+<p>Calculate Income (\(Y\)), Consumption (\(C\)), Investment (\(I\)), and Saving (\(S\)) for all three individuals, and find the aggregate totals. Finally, show what happens if Stocke refuses to loan Marco the 10 dollars, and Raynie instead uses her income to buy a 30 dollar dining table (new capital) from Marco.</p>
+</div>
+<div class="solution-box">
+<div class="box-title">Solution</div>
+<p><strong>Part 1: With the Loan</strong></p>
+<ul>
+  <li><strong>Stocke:</strong> \(Y = 0\). \(C = 10\) (falafel). \(I = 20\) (chair for business). \(S = Y - C = \mathbf{-10}\).</li>
+  <li><strong>Marco:</strong> \(Y = 20\) (sold chair). \(C = 30\) (3 falafels). \(I = 0\). \(S = Y - C = \mathbf{-10}\).</li>
+  <li><strong>Raynie:</strong> \(Y = 40\) (sold 4 falafels). \(C = 0\). \(I = 0\) (putting money in a safe is not physical capital). \(S = Y - C = \mathbf{40}\).</li>
+</ul>
+<p><em>Aggregate:</em> \(Y = 60\), \(C = 40\), \(I = 20\), \(S = 20\). (\(S = I\) holds).</p>
+
+<p><strong>Part 2: Without the Loan + Raynie Invests</strong></p>
+<ul>
+  <li><strong>Stocke:</strong> \(Y = 0\). \(C = 10\). \(I = 20\). \(S = \mathbf{-10}\). (Unchanged, he just holds cash instead of a loan).</li>
+  <li><strong>Raynie:</strong> \(Y = 30\) (Marco only bought 2 falafels without the loan, plus Stocke's 1). She buys a dining table for her business, so \(I = 30\). \(C = 0\). \(S = Y - C = \mathbf{30}\).</li>
+  <li><strong>Marco:</strong> \(Y = 50\) (sold 20 chair + 30 table). \(C = 20\) (2 falafels). \(I = 0\). \(S = Y - C = \mathbf{30}\).</li>
+</ul>
+<p><em>New Aggregate:</em> \(Y = 80\), \(C = 30\), \(I = 50\), \(S = 50\).</p>
+<p><em>Insight:</em> Raynie's decision to buy physical capital instead of hoarding cash boosted total GDP (\(Y\)) from 60 to 80, and total investment from 20 to 50.</p>
+</div>
+
+<p style="text-align:center; margin-top:50px; font-weight:700; color:#1A5276;">— End of Exercise Sheet —</p>
+
+</body>
+</html>

@@ -189,7 +189,9 @@ async function unreviewedSessions(course, info, items) {
   const sessions = (await sessionsFor(course, info.term, ROOT)).filter(s => s.date <= DATE)
   for (const s of sessions) if (!sync?.sheets?.[sessionKey(course, s)]) U.push(`Session ${s.n} (${s.date}) — ${queueLabel.get(sessionKey(course, s)) || 'not in the queue yet: run the morning sync'}`)
   for (const w of weeks(info.term).filter(w => w.monday <= DATE)) {
-    if (sessions.some(s => s.week?.n === w.n)) continue
+    // A week with a sheet on record is not unflagged, session or not: ECO206 Week 2's is filed under the tutorial that is
+    // now Week 1's (scripts/lib/sessions.mjs), so no session lands in that week.
+    if (sessions.some(s => s.week?.n === w.n) || Object.values(sync?.sheets || {}).some(x => x.courseKey === course && x.week === w.label)) continue
     const material = items.filter(it => it.kind === 'md' && (p => p.week?.n === w.n && p.depth === 4 && ['Lectures', 'Recordings'].includes(p.sub))(place(info.term, it.parts)))
     if (material.length) U.push(`${w.label} — ${count(material.length, 'file page')} but no Desktop session folder, so nothing was flagged for a sheet`)
   }

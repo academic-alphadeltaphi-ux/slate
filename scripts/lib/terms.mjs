@@ -1,4 +1,4 @@
-// Rendered by scripts/courses.mjs from nothing yet (setup writes Hub/_courses.json) on 2026-09-30T18:26:58.437Z — edit the JSON and run `node scripts/courses.mjs write`, never this file.
+// Rendered by scripts/courses.mjs from nothing yet (setup writes Hub/_courses.json) on 2026-10-21T19:32:03.726Z — edit the JSON and run `node scripts/courses.mjs write`, never this file.
 // Rendered by scripts/courses.mjs from Hub/_courses.json — do not edit by hand; edit the JSON and run
 // `node scripts/courses.mjs write`. The calendar, the courses and every helper below are what the app files things by:
 // the term weeks (Week 1 is the week of the first Monday; reading weeks are skipped in the numbering), the courses with
@@ -8,8 +8,8 @@ import { THIS } from '../../src/edition.js'
 export const COURSES = {}
 
 const FALL = { name: "Fall 2026", start: "2026-09-07", end: "2026-12-07", reading: ["2026-10-26"] }
-const WINTER = { name: "Winter 2027", start: "2027-01-04", end: "2027-04-05", reading: ["2027-02-15"] }
-export const NO_CLASS = ["2026-09-07", "2026-10-12", "2027-03-26"]
+const WINTER = { name: "Winter 2027", start: "2027-01-11", end: "2027-04-05", reading: ["2027-02-15"] }
+export const NO_CLASS = ["2026-09-07", "2026-10-12", "2026-12-08", "2026-12-09", "2026-12-10", "2026-12-11", "2027-03-26"]
 // The one calendar-facts export set (SPEC §20.1): the plan, the Google calendar, the course screen and the
 // Sunday review all read these, so a day is a class in every screen or none.
 export const TERMS = { FALL, WINTER }

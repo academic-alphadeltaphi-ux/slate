@@ -13,3 +13,7 @@ setup-state.json
 Setup progress.md
 courses.json
 setup-downloads/
+
+# the optional study set (SPEC §21.16): its work folders, and the skill once a copy installs it
+study-set-work/
+.claude/skills/study-set-pro/

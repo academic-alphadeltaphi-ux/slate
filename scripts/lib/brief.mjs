@@ -11,7 +11,7 @@ import { COURSES, weeks, weekFor, todayIso, isClassDay } from './terms.mjs'
 import { SYLLABUS } from './syllabus.mjs'
 import { readBrain, inboxItems, weekNOf } from './brain.mjs'
 import { readJson } from './problems.mjs'
-import { bucketFor, FOLDER, pageWeek, fileWeek, isAdmin } from './filing.mjs'
+import { bucketFor, FOLDER, pageWeek, fileWeek, isAdmin, ownWeeks } from './filing.mjs'
 import { meetingId, testsFor } from '../../src/calendar.js'
 import { readReview, reviewBrief } from './review.mjs'
 import { namesIt } from '../../src/resolve.js'
@@ -67,7 +67,8 @@ const kindFor = folder => ({ Lectures: 'lecture', Readings: 'reading', Problems:
 // The rules' proposal for one waiting page, with why. `wks` are the course's weeks; `posted` its posting date.
 export function propose(it, info, wks, excerpt = '') {
   const title = String(it.title || path.basename(String(it.page || ''), '.md'))
-  const mod = weekFromModule(it.module, wks, info.term)
+  const own = ownWeeks(wks, info.skipsWeeks)   // a number in a title or module is the course's own (ECO206's 13 is Week 14)
+  const mod = weekFromModule(it.module, own, info.term)
   const postedWeek = it.posted ? weekFor(info.term, it.posted) : null
   const because = []
   let week = null, folder = null
@@ -75,7 +76,7 @@ export function propose(it, info, wks, excerpt = '') {
     // A module's forum, quiz, hand-in or video was read into the shape of a page (SPEC §20.53); the fetch's own line under
     // the title says which. Those have shelves of their own — Assignments, Videos — whatever their title looks like.
     const item = /^_?Quercus (discussion forum|quiz|assignment|video)\b/m.exec(String(excerpt || ''))?.[1] || null
-    const pw = pageWeek(title, it.module, wks)
+    const pw = pageWeek(title, it.module, own)
     if (pw) { week = pw.week; folder = pw.lecture ? 'Lectures' : /\breading/i.test(title) ? 'Readings' : null; because.push(pw.lecture ? 'a lecture page in a numbered module' : 'the title carries its week number') }
     else if (mod) { week = mod.week; because.push(mod.because); folder = /\breading/i.test(title) ? 'Readings' : /\b(quiz|forum|discussion|assignment|hand-?in)\b/i.test(title) ? 'Assignments' : /\bvideo|watch|mini-?lecture\b/i.test(title) ? 'Videos' : null }
     if (item && week) { folder = item === 'video' ? 'Videos' : 'Assignments'; because.push(`the fetch read it from the module's ${item}`) }

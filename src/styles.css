@@ -740,8 +740,10 @@ button:disabled { opacity: .35; cursor: default; }
 /* The offer after a clip: ask about the region you just took (SPEC §20.30). */
 .clip-ask { position: absolute; z-index: 5000; display: flex; align-items: center; gap: 4px; padding: 4px; border-radius: var(--radius);
   background: var(--glass-solid); border: 1px solid var(--edge-2); box-shadow: var(--shadow); }
-.clip-ask > button:first-child { display: inline-flex; align-items: center; gap: 6px; border: 0; background: none; padding: 4px 10px; border-radius: 3px; color: var(--text); font-size: 12.5px; font-weight: 500; }
-.clip-ask > button:first-child:hover { background: var(--hover); }
+.clip-ask > button:not(.clip-ask-x) { display: inline-flex; align-items: center; gap: 6px; border: 0; background: none; padding: 4px 10px; border-radius: 3px; color: var(--text); font-size: 12.5px; font-weight: 500; }
+.clip-ask > button:not(.clip-ask-x):hover { background: var(--hover); }
+/* While the desktop app photographs a clip (SPEC §20.71), nothing that floats over the page is in the picture. */
+body.slate-capturing :is(.tools, .toolbar, .ask-panel, .sel-box, .sel-bar, .locate-box, .clip-ask, .clip-shot, .clip-box, .eraser-cursor) { visibility: hidden !important; }
 .clip-ask-x { border: 0; background: none; color: var(--muted-2); display: grid; place-items: center; padding: 5px; border-radius: 3px; }
 .clip-ask-x:hover { color: var(--text); background: var(--hover); }
 

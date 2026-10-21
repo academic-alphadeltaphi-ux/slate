@@ -2,6 +2,7 @@
 // the page-typed scores for quercus-sync, page ownership and the append-only merge on disk, and the summary that
 // becomes Hub/_problems.json and the GET /api/problems response. The text rules live in src/problems.js.
 import fs from 'node:fs/promises'
+import fsSync from 'node:fs'
 import path from 'node:path'
 import crypto from 'node:crypto'
 import { COURSES, TERMS, WEEK_PAGES, weeks, weekFor, localStamp, short, todayIso } from './terms.mjs'
@@ -9,7 +10,7 @@ import { SYLLABUS } from './syllabus.mjs'
 import { shortBookName } from './textbook.mjs'
 import { parsePage, joinPage, newId } from '../../server/format.js'
 import { expandMeetings, syllabusWeekN, addDays, daysTo } from '../../src/calendar.js'
-import { HEADING, keyOf, mergeRows, findProblemsBlock, summarizeBlocks, extractProblemRefs, webassignLabel, rowKind, counts as countRows } from '../../src/problems.js'
+import { HEADING, keyOf, mergeRows, findProblemsBlock, summarizeBlocks, extractProblemRefs, webassignLabel, rowKind, counts as countRows, problemPageRel } from '../../src/problems.js'
 import { findPlanBlock, planTasks, mentions, taskWords } from '../../src/plan.js'
 import { REAL_WIN } from './platform.mjs'
 
@@ -374,10 +375,12 @@ function sourceOf(row, ctx) {
   if (title && ctx.lecturePages.has(title)) return { kind: 'quercus-page', page: `${ctx.courseKey}/${ctx.week.dir}/Lectures/${title}.md`, title }
   return { kind: 'own', page: null, title }
 }
+// The row's own page (SPEC §20.73), when problem-pages.mjs has made it: its path follows from the label.
+const pageOfRow = (r, ctx) => { const rel = problemPageRel(`${ctx.courseKey}/${ctx.week.dir}`, r.label); return rel && ctx.root && fsSync.existsSync(path.join(ctx.root, rel)) ? rel : null }
 const weekRow = (r, ctx) => {
   const source = sourceOf(r, ctx), kind = rowKind(r.label)
   const set = kind === 'set' && source.kind === 'syllabus' ? ctx.sets.get(r.key) || null : null
-  return { key: r.key, label: r.label, line: r.line, attempted: r.attempted, reviewed: r.reviewed, solved: r.solved, kind, source, due: set ? set.due : ctx.tutorial, score: r.score }
+  return { key: r.key, label: r.label, line: r.line, attempted: r.attempted, reviewed: r.reviewed, solved: r.solved, kind, source, due: set ? set.due : ctx.tutorial, score: r.score, page: pageOfRow(r, ctx) }
 }
 async function courseContext(root, courseKey) {
   const announcements = new Set(await listMd(path.join(root, courseKey, 'Announcements', 'Announcements')))
@@ -397,7 +400,7 @@ export async function summarize(root, { today = todayIso(), registry = null } = 
       const rel = pageRel(courseKey, w)
       const pg = await readProblemsPage(root, rel, reg); if (!pg) continue
       const dir = path.join(root, courseKey, w.dir)
-      const ctx = { courseKey, week: w, tutorial: tutorialFor(courseKey, w, meetings), claude: new Set(reg.pages?.[rel]?.claude || []), weekPages: new Set(await listMd(dir)), lecturePages: new Set(await listMd(path.join(dir, 'Lectures'))), ...cc }
+      const ctx = { root, courseKey, week: w, tutorial: tutorialFor(courseKey, w, meetings), claude: new Set(reg.pages?.[rel]?.claude || []), weekPages: new Set(await listMd(dir)), lecturePages: new Set(await listMd(path.join(dir, 'Lectures'))), ...cc }
       const rows = pg.rows.map(r => weekRow(r, ctx))
       const c = countRows(pg.rows, pg.solved)
       course.weeks.push({ n: w.n, week: w.label, weekDir: w.dir, page: rel, topic: pg.topic, tutorial: ctx.tutorial, counts: c, rows })
@@ -422,7 +425,7 @@ export async function pageSummary(root, rel, { today = todayIso() } = {}) {
   const { courseKey, week: w } = loc, info = COURSES[courseKey]
   const meetings = expandMeetings(w.monday, addDays(w.monday, 13))
   const dir = path.join(root, courseKey, w.dir)
-  const ctx = { courseKey, week: w, tutorial: tutorialFor(courseKey, w, meetings), claude: new Set(reg.pages?.[rel]?.claude || []), weekPages: new Set(await listMd(dir)), lecturePages: new Set(await listMd(path.join(dir, 'Lectures'))), ...(await courseContext(root, courseKey)) }
+  const ctx = { root, courseKey, week: w, tutorial: tutorialFor(courseKey, w, meetings), claude: new Set(reg.pages?.[rel]?.claude || []), weekPages: new Set(await listMd(dir)), lecturePages: new Set(await listMd(path.join(dir, 'Lectures'))), ...(await courseContext(root, courseKey)) }
   const wa = info.grading?.components?.some(c => c.key === 'webassign') ? await webassignScores(courseKey, root) : null
   return { page: rel, courseKey, course: info.code, color: info.color, week: w.label, n: w.n, topic: pg.topic, tutorial: ctx.tutorial, counts: pg.counts, rows: pg.rows.map(r => weekRow(r, ctx)), blockId: pg.blockId, hash: pg.hash,
     webassign: wa ? { ...wa, set: wa.sets.find(s => s.n === w.n) || null } : null, today }

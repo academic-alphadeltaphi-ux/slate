@@ -448,6 +448,9 @@ export function parsePlanBlock(md) {
 }
 // Every depth-0 task of the container with its group: [{ group, groupKey, text, key, done, stale, line }].
 export const planTasks = md => { const p = parsePlanBlock(md); return p.groups.flatMap(g => g.tasks.map(t => ({ group: g.label, groupKey: g.key, ...t }))) }
+// Ticked of total, over the lines that are still work: a line " · no longer listed" counts only once he has ticked it, as
+// the Sunday review counts (scripts/review.mjs prep). Counting every line put ECO208 Term Test 1 at Tasks 2/39 with 22 live.
+export const taskCount = ts => { const live = ts.filter(t => !t.stale || t.done); return { done: live.filter(t => t.done).length, total: live.length } }
 const renderTask = (t, done = false) => `- [${done ? 'x' : ' '}] ${t.text}`
 export const renderGroup = g => [`### ${g.label}`, '', ...g.tasks.map(t => renderTask(t, !!t.tick))].join('\n')
 // A fresh container.
@@ -666,7 +669,7 @@ export function buildPlan(inputs) {
         const mine = planTasks(page.blocks[bi].md).filter(t => t.groupKey === groupKey(meetingLabel(m)))
         if (mine.length) {
           before = mine.map(t => { const g = generated.find(x => taskKey(x.text) === t.key), auto = autoOf(planRel, groupKey(meetingLabel(m)), t); return { text: t.text, key: t.key, done: t.done, kind: g?.kind || 'other', generated: gen.has(t.key) || !!g, stale: t.stale, pending: false, line: t.line, ...(g?.claude ? { claude: g.claude } : {}), ...(auto ? { auto } : {}) } })
-          tasks = { done: before.filter(t => t.done).length, total: before.length }
+          tasks = taskCount(before)
         }
       }
     }
@@ -702,7 +705,7 @@ export function buildPlan(inputs) {
           if (!brain) for (const t of onPage) if (gen.has(t.key) && !generated.some(g => taskKey(g.text) === t.key)) generated.push({ text: t.text.replace(/ · no longer listed\s*$/, ''), kind: kindOfText(t.text), due: /participation/i.test(t.text) ? dateIn(t.text) : null })
           if (onPage.length) {
             work = onPage.map(t => { const g = generated.find(x => taskKey(x.text) === t.key), auto = autoOf(rel, gk, t); return { text: t.text, key: t.key, done: t.done, kind: g?.kind || kindOfText(t.text), due: g?.due || null, dueTime: g?.dueTime || null, generated: gen.has(t.key) || !!g, stale: t.stale, pending: false, line: t.line, ...(g?.claude ? { claude: g.claude } : {}), ...(auto ? { auto } : {}) } })
-            tasks = { done: work.filter(t => t.done).length, total: work.length }
+            tasks = taskCount(work)
           }
         }
       }
@@ -750,7 +753,7 @@ export function buildPlan(inputs) {
       if ((sheetPages[courseKey]?.[w.n] || []).length || sheets.some(s => s.courseKey === courseKey && s.week === w.label)) sheetWeeks.add(w.n)
       const pr = problemsRowsOf(problemsPageRel(courseKey, w)); if (pr && pr.counts.assigned) problems[w.n] = { attempted: pr.counts.attempted, assigned: pr.counts.assigned }
       const pl = planPages[planPageRel(courseKey, w)]
-      if (pl) { const bi = findPlanBlock(pl.blocks, state.pages?.[planPageRel(courseKey, w)]?.blockId); if (bi >= 0) { const ts = planTasks(pl.blocks[bi].md); if (ts.length) tasks[w.n] = { done: ts.filter(x => x.done).length, total: ts.length } } }
+      if (pl) { const bi = findPlanBlock(pl.blocks, state.pages?.[planPageRel(courseKey, w)]?.blockId); if (bi >= 0) { const ts = planTasks(pl.blocks[bi].md); if (ts.length) tasks[w.n] = taskCount(ts) } }
     }
     const hubTest = (hub?.tests || []).find(x => x.courseKey === courseKey && x.date === t.date)
     tests.push({ courseKey, course: codeOf(courseKey), color: info(courseKey).color || null, key: t.key, title: t.title, date: t.date, daysLeft: daysTo(t.date, today), url: hubTest?.url || null, assumed: !!t.assumed,
@@ -770,7 +773,7 @@ export function buildPlan(inputs) {
     ev.sort((a, b) => (a.at || '00:00').localeCompare(b.at || '00:00') || a.type.localeCompare(b.type))
     daysOut.push({ date: d, weekday: weekdayOf(d), rel: relDay(d, today), events: ev })
   }
-  const pages = pageSpecs.map(s => { const pg = planPages[s.path]; const bi = pg ? findPlanBlock(pg.blocks, state.pages?.[s.path]?.blockId) : -1; const ts = bi >= 0 ? planTasks(pg.blocks[bi].md) : []; return { path: s.path, courseKey: s.courseKey, course: codeOf(s.courseKey), week: s.week.label, exists: !!pg, tasks: { done: ts.filter(t => t.done).length, total: ts.length } } })
+  const pages = pageSpecs.map(s => { const pg = planPages[s.path]; const bi = pg ? findPlanBlock(pg.blocks, state.pages?.[s.path]?.blockId) : -1; const ts = bi >= 0 ? planTasks(pg.blocks[bi].md) : []; return { path: s.path, courseKey: s.courseKey, course: codeOf(s.courseKey), week: s.week.label, exists: !!pg, tasks: taskCount(ts) } })
   const tasksAll = meetings.reduce((a, m) => ({ done: a.done + (m.tasks?.done || 0), total: a.total + (m.tasks?.total || 0) }), { done: 0, total: 0 })
   // what Claude could not decide alone and asked the student (SPEC §20.37): the open ones, oldest first
   const questions = brain ? Object.values(brain.questions || {}).filter(q => q && !q.answered).sort((a, b) => String(a.at).localeCompare(String(b.at))) : []

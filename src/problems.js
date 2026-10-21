@@ -134,6 +134,29 @@ export function rowKind(label) {
   if (/webassign/i.test(label)) return 'set'
   return parts.length === 1 && SET_RE.test(parts[0]) ? 'set' : 'problem'
 }
+// ---- a problem's own page (SPEC §20.73) ------------------------------------------------------------------------------
+// In a course that keeps problem pages (`problemPages` in scripts/lib/terms.mjs), every itemised row has a page of its
+// own: the question cropped out of its PDF, room to work, and the solution folded until asked for. It sits beside the
+// week's other problems, a folder per set, so the shelf and the week's Problems page keep showing the documents:
+//   Ch 2 #2            → <Week>/Problems/Ch 2/Ch 2 · Problem 2.md
+//   Problem Set 2 · Q3 → <Week>/Problems/Problem Set 2/Problem Set 2 · Q3.md
+// The path follows from the label alone, so the row is never rewritten to point at it (§20.2 stays append-only). A set's
+// own row (`Fall-Ex1 · WebAssign`, `Problem set & application`) has none: there is no one question to cut out.
+const UNSAFE = /[\\/:*?"<>|#[\]]/g
+const safeName = s => String(s || '').replace(/\s+[—–]\s+/g, ' - ').replace(UNSAFE, '').replace(/\s+/g, ' ').trim()
+export function problemPlace(label) {
+  if (!label || rowKind(label) === 'set') return null
+  const text = identityText(label)
+  const ch = /^ch(?:apter)?\.?\s*(\d+)\s*#\s*([\w.]+)$/i.exec(text)
+  if (ch) return { group: `Ch ${ch[1]}`, name: `Ch ${ch[1]} · Problem ${ch[2]}`, chapter: Number(ch[1]), n: ch[2] }
+  const parts = text.split(' · '), name = safeName(text)
+  if (!name) return null
+  const q = /^(?:q|question|problem|exercise)\s*(\d+[a-z]?)$/i.exec(parts[parts.length - 1].trim())
+  return { group: parts.length > 1 ? safeName(parts[0]) || 'More' : 'More', name, chapter: null, n: q ? q[1] : null }
+}
+// `weekRel` is `<Course>/<Term>/<Week …>`.
+export const problemPageRel = (weekRel, label) => { const p = problemPlace(label); return p ? `${weekRel}/Problems/${p.group}/${p.name}.md` : null }
+
 // withRowState(md, key, { attempted?, reviewed? }) → the block with that row's box and its nested `reviewed` box set (a
 // missing `reviewed` line is added under the row when it is set), or null when the row is gone. The screens tick rows
 // one click at a time with this (SPEC §20.32); `toggleMdTask` cannot, because every row's nested line is the same text.

@@ -126,7 +126,7 @@ export default function Home({ onOpen, onOpenTitle, onOpenCourse, onScreen, onTa
     try {
       if (!(await toggleTask(m, t))) return
       const flip = list => list.map(y => (y.key === t.key ? { ...y, done: !y.done } : y))
-      patch(p => p ? { ...p, meetings: p.meetings.map(x => x.id !== m.id ? x : { ...x, before: flip(x.before), tasks: x.tasks ? { ...x.tasks, done: x.tasks.done + (t.done ? -1 : 1) } : x.tasks }),
+      patch(p => p ? { ...p, meetings: p.meetings.map(x => x.id !== m.id ? x : { ...x, before: flip(x.before), tasks: x.tasks ? { done: x.tasks.done + (t.done ? -1 : 1), total: x.tasks.total + (t.stale ? (t.done ? -1 : 1) : 0) } : x.tasks }),
         weeks: (p.weeks || []).map(x => x.id !== m.id ? x : { ...x, work: flip(x.work) }) } : p)
       refresh()
     } catch (e) { setError(`Could not tick “${t.text}”: ${e.message}`) }

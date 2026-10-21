@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{TITLE}}</title>
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['\\(','\\)']],
+    displayMath: [['\\[','\\]']],
+    processEscapes: true
+  },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@400;700&display=swap');
+
+  :root {
+    --orange: #E67E22; --orange-bg: #FFF8F0; --orange-border: #F5CBA7;
+    --green: #27AE60;  --green-bg:  #F0FFF4; --green-border:  #A9DFBF;
+    --blue: #2E86C1;   --blue-bg:   #EBF5FB; --blue-border:   #AED6F1;
+    --purple: #8E44AD; --purple-bg: #F5EEF8; --purple-border: #D2B4DE;
+    --red: #E74C3C;    --red-bg:    #FDEDEC; --red-border:    #F5B7B1;
+    --yellow: #F39C12; --yellow-bg: #FEF9E7; --yellow-border: #F9E79F;
+    --teal: #16A085;   --teal-bg:   #E8F8F5; --teal-border:   #A3E4D7;
+    --gray: #566573;   --gray-bg:   #F2F3F4; --gray-border:   #D5D8DC;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, 'Segoe UI', Arial, sans-serif;
+    font-size: 16px; line-height: 1.7; color: #2C3E50;
+    max-width: 920px; margin: 0 auto; padding: 40px 30px; background: #FAFBFC;
+  }
+  h1 {
+    font-family: 'Merriweather', Georgia, serif; font-size: 2.3em; color: #1A5276;
+    border-bottom: 4px solid var(--blue); padding-bottom: 15px; margin-bottom: 10px;
+  }
+  .subtitle { font-size: 1.1em; color: var(--gray); margin-bottom: 30px; }
+  h2 {
+    font-family: 'Merriweather', Georgia, serif; font-size: 1.75em; color: #1A5276;
+    margin-top: 55px; margin-bottom: 15px; padding-bottom: 8px;
+    border-bottom: 3px solid var(--blue);
+  }
+  h3 {
+    font-size: 1.35em; color: #1A5276; margin-top: 35px; margin-bottom: 12px;
+    padding-left: 12px; border-left: 4px solid var(--orange);
+  }
+  h4 { font-size: 1.12em; color: var(--purple); margin-top: 25px; margin-bottom: 10px; font-weight: 700; }
+  p { margin-bottom: 14px; }
+  ul, ol { margin-bottom: 14px; padding-left: 28px; }
+  li { margin-bottom: 6px; }
+
+  .toc {
+    background: var(--blue-bg); border: 2px solid var(--blue-border);
+    border-radius: 10px; padding: 25px 30px; margin: 30px 0;
+  }
+  .toc h3 { border-left: none; padding-left: 0; color: var(--blue); margin-top: 0; }
+  .toc ol { padding-left: 22px; }
+  .toc li { margin-bottom: 5px; }
+  .toc a { color: var(--blue); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  .toc ol ol { margin-top: 4px; padding-left: 24px; }
+
+  .definition-box, .theorem-box, .example-box, .intuition-box,
+  .warning-box, .practice-box, .solution-box, .summary-box, .formula-box {
+    border-radius: 8px; padding: 20px 24px; margin: 20px 0;
+  }
+  .definition-box { background: var(--orange-bg); border: 2px solid var(--orange-border); border-left: 6px solid var(--orange); }
+  .definition-box .box-title { font-weight: 700; color: var(--orange); font-size: 1.05em; margin-bottom: 8px; }
+
+  .theorem-box, .formula-box { background: var(--blue-bg); border: 2px solid var(--blue-border); border-left: 6px solid var(--blue); }
+  .theorem-box .box-title, .formula-box .box-title { font-weight: 700; color: var(--blue); font-size: 1.05em; margin-bottom: 8px; }
+
+  .example-box { background: var(--green-bg); border: 2px solid var(--green-border); border-left: 6px solid var(--green); }
+  .example-box .box-title { font-weight: 700; color: var(--green); font-size: 1.05em; margin-bottom: 8px; }
+
+  .intuition-box { background: var(--purple-bg); border: 2px solid var(--purple-border); border-left: 6px solid var(--purple); }
+  .intuition-box .box-title { font-weight: 700; color: var(--purple); font-size: 1.05em; margin-bottom: 8px; }
+
+  .warning-box { background: var(--red-bg); border: 2px solid var(--red-border); border-left: 6px solid var(--red); }
+  .warning-box .box-title { font-weight: 700; color: var(--red); font-size: 1.05em; margin-bottom: 8px; }
+
+  .practice-box { background: var(--yellow-bg); border: 2px solid var(--yellow-border); border-left: 6px solid var(--yellow); }
+  .practice-box .box-title { font-weight: 700; color: #B9770E; font-size: 1.05em; margin-bottom: 8px; }
+
+  .solution-box { background: var(--gray-bg); border: 2px dashed var(--gray-border); }
+  .solution-box .box-title { font-weight: 700; color: var(--gray); font-size: 1.05em; margin-bottom: 8px; }
+
+  .summary-box { background: var(--teal-bg); border: 2px solid var(--teal-border); border-left: 6px solid var(--teal); }
+  .summary-box .box-title { font-weight: 700; color: var(--teal); font-size: 1.05em; margin-bottom: 8px; }
+
+  table { border-collapse: collapse; width: 100%; margin: 16px 0; }
+  th, td { border: 1px solid var(--gray-border); padding: 10px 14px; text-align: left; }
+  th { background: var(--blue-bg); font-weight: 600; color: #1A5276; }
+  tr:nth-child(even) { background: #F8F9FA; }
+
+  .lecture-banner {
+    background: linear-gradient(135deg, #1A5276, #2E86C1);
+    color: white; padding: 28px 32px; border-radius: 12px;
+    margin: 50px 0 30px 0;
+  }
+  .lecture-banner h2 {
+    color: white; border: none; margin: 0; padding: 0; font-size: 2em;
+  }
+  .lecture-banner .tag { font-size: 0.95em; opacity: 0.9; margin-top: 6px; }
+
+  strong.hl { color: var(--blue); }
+  code { background: #F4F6F7; padding: 2px 6px; border-radius: 4px; font-size: 0.95em; }
+  hr { border: none; border-top: 2px dashed var(--gray-border); margin: 40px 0; }
+
+  .solution-toggle {
+      cursor: pointer;
+      color: #0056b3;
+      text-decoration: underline;
+      font-weight: bold;
+      display: inline-block;
+      margin-top: 1rem;
+  }
+
+  .solution-content {
+      display: none;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px dashed var(--yellow-border);
+  }
+
+  @media print {
+    body { max-width: 100%; padding: 20px; font-size: 13.5px; }
+    .definition-box, .theorem-box, .example-box, .intuition-box, .warning-box,
+    .practice-box, .solution-box, .summary-box, .formula-box, .lecture-banner { break-inside: avoid; }
+    .solution-content { display: block !important; }
+    .solution-toggle { display: none; }
+    .svg-container, .toc { break-inside: avoid; }
+  }
+
+  /* ---- from the 2025-26 exercise sheets and unit guides ---- */
+  .difficulty { display: inline-block; font-size: 0.8em; font-weight: 700; padding: 2px 10px; border-radius: 12px; margin-left: 8px; vertical-align: middle; }
+  .diff-easy { background: #D5F5E3; color: #1E8449; }
+  .diff-medium { background: #FEF9E7; color: #B7950B; }
+  .diff-hard { background: #FDEDEC; color: #C0392B; }
+  .diff-challenge { background: var(--purple-bg); color: var(--purple); }
+  .source-tag { font-size: 0.78em; color: var(--gray); font-style: italic; font-weight: 400; }
+  .page-break { page-break-after: always; margin: 40px 0; border-top: 2px dashed #D5D8DC; }
+  ol.spaced > li, ul.spaced > li { margin-bottom: 12px; }
+  .indent { margin-left: 30px; }
+  .svg-container { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin: 20px 0; background: white; border: 1px solid var(--gray-border); border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  .svg-container svg { max-width: 100%; height: auto; }
+  table.center th, table.center td { text-align: center; }
+  table.glossary td:first-child { font-weight: 600; white-space: nowrap; }
+  .end-note { text-align: center; color: var(--gray); font-style: italic; margin-top: 30px; }
+</style>
+<script>
+  function toggleSolution(id) {
+      const el = document.getElementById(id);
+      if (el.style.display === "block") {
+          el.style.display = "none";
+      } else {
+          el.style.display = "block";
+      }
+  }
+</script>
+</head>
+<body>

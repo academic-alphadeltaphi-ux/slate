@@ -32,6 +32,11 @@ conversation.
 **Updating:** close the app, open the `Slate` folder in Claude Code and say *update Slate*. It fetches the newest
 release from here and swaps it in, in the same folder: your notes, courses and settings stay as they are.
 
+**Optional: the study set (Pro).** In the `Slate` folder, say *add the study set skill*. Then *do the study set for week 3
+of ECO206* (any course, any week) has Claude write a study guide that teaches the week from zero, an exercise sheet in four
+levels and a one-to-three-page week at a glance, and put them in that week's **Study set** folder. It runs only when you
+ask, is sized for a Pro plan, and *remove the study set skill* takes it out again.
+
 **Had Slate before these releases (a zip)?** That copy can't update itself. Close its app and send the message above
 all the same. When you reply *set me up*, Claude finds the old copy and asks whether to carry it over: your notes,
 courses and Quercus key stay as they are, nothing is fetched twice, and the old copy's morning check is switched off.

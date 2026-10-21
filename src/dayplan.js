@@ -144,7 +144,23 @@ const sumFree = (free, before = null) => free.reduce((n, i) => n + Math.max(0, M
 const LEVEL_RANK = { crucial: 0, important: 1, normal: 2, optional: 3 }
 const UNSPLIT = new Set(['quiz', 'bring'])
 export const kindOf = r => (r.type === 'hand-in' ? 'due' : r.type === 'mine' ? 'mine' : (r.task?.kind || 'other'))
-const ratioOf = (calibration, courseKey, kind) => { const v = calibration?.[`${courseKey}|${kind}`] ?? calibration?.[kind]; const n = typeof v === 'number' ? v : v?.ratio; return Number.isFinite(n) && n > 0 ? n : 1 }
+// The ratio the day applies to a course's kind of work (scripts/lib/work.mjs learn): the course's own, once three sessions
+// have taught it; else the kind's across courses, once it holds three sessions from at least two courses; else none. One
+// session is a guess, not a measure: ECO227's one WebAssign set (30 minutes against 90, 2026-10-10) was the whole
+// `problems` ratio, and it cut the problem blocks of ECO206, ECO208 and FCS298 to a third with ECO227's. A bare number
+// is a ratio set by hand, taken as it stands.
+export const CALIBRATION_MIN = { sessions: 3, courses: 2 }
+const ratioIn = v => { const n = typeof v === 'number' ? v : v?.ratio; return Number.isFinite(n) && n > 0 ? n : null }
+const taught = v => typeof v === 'number' || (v?.n ?? 0) >= CALIBRATION_MIN.sessions
+const spread = v => typeof v === 'number' || Object.keys(v?.courses || {}).length >= CALIBRATION_MIN.courses
+export function ratioOf(calibration, courseKey, kind) {
+  const own = calibration?.[`${courseKey}|${kind}`], all = calibration?.[kind]
+  if (taught(own) && ratioIn(own)) return ratioIn(own)
+  if (taught(all) && spread(all) && ratioIn(all)) return ratioIn(all)
+  return 1
+}
+// The ratios the day applies, for an agent reading the log: a course's own once taught, the kind's once taught and spread.
+export const calibrationInForce = calibration => Object.fromEntries(Object.entries(calibration || {}).filter(([k, v]) => ratioIn(v) && taught(v) && (k.includes('|') || spread(v))))
 export const tierOf = (courseKey, prefs) => { const p = withDefaults(prefs); const i = p.tiers.findIndex(t => (t || []).includes(courseKey)); return i < 0 ? Math.max(0, p.tiers.length - 1) : i }
 
 // How long a row takes: Claude's minutes when he gave them, else the kind's default, times what the work log has learned

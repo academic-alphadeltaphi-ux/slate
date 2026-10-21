@@ -82,11 +82,14 @@ export async function askedWork(root, { rowId, title, courseKey = null, course =
   return session
 }
 // ---- what the sessions teach -----------------------------------------------------------------------------------------
-// A ratio of actual to estimated, per course and kind and per kind alone, as an exponential average (a third of the way
-// toward each new session) so a bad guess in week one does not weigh forever. Only a finished session with an estimate
-// teaches. The estimate is the one the ratio multiplies (src/dayplan.js minutesOf): `base`, before any calibration.
-// Against the planned minutes — base times the old ratio — it settled on the square root of the true ratio (a task that
-// takes twice as long converged on 1.41×). A session on his own number teaches nothing: the ratio never scales it.
+// A ratio of actual to estimated, per course and kind and per kind alone. The first three sessions weigh the same (a
+// running mean), then each new one moves it a third of the way, so a bad guess in week one does not weigh forever; the
+// first session used to be the whole ratio until the next. Only a finished session with an estimate teaches. The estimate
+// is the one the ratio multiplies (src/dayplan.js minutesOf): `base`, before any calibration. Against the planned
+// minutes — base times the old ratio — it settled on the square root of the true ratio (a task that takes twice as long
+// converged on 1.41×). A session on his own number teaches nothing: the ratio never scales it. The kind's own ratio counts
+// the sessions each course gave it (`courses`): the day applies it to a course with no ratio of its own only once it
+// holds more than one course's sessions (src/dayplan.js ratioOf), and applies no ratio before three sessions.
 const CLAMP = r => Math.min(4, Math.max(0.25, r))
 export function learn(log, s) {
   const est = s.student ? null : s.base !== undefined ? s.base : s.planned
@@ -94,8 +97,9 @@ export function learn(log, s) {
   const ratio = CLAMP(s.minutes / est)
   for (const key of [s.courseKey && s.kind ? `${s.courseKey}|${s.kind}` : null, s.kind || null].filter(Boolean)) {
     const c = log.calibration[key] || { ratio: 1, n: 0 }
-    const a = c.n === 0 ? 1 : 1 / 3
-    log.calibration[key] = { ratio: Math.round((c.ratio * (1 - a) + ratio * a) * 100) / 100, n: c.n + 1, at: stamp() }
+    const a = 1 / Math.min(3, c.n + 1)
+    const courses = key.includes('|') ? null : s.courseKey ? { ...(c.courses || {}), [s.courseKey]: (c.courses?.[s.courseKey] || 0) + 1 } : c.courses || null
+    log.calibration[key] = { ratio: Math.round((c.ratio * (1 - a) + ratio * a) * 100) / 100, n: c.n + 1, ...(courses ? { courses } : {}), at: stamp() }
   }
 }
 

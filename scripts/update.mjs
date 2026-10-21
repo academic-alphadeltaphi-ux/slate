@@ -147,6 +147,10 @@ function rebuild(log) {
     const r = node('setup.mjs', ['app']); if (r.status !== 0) stop(`The app could not be rebuilt:\n${(r.stderr || r.stdout).trim().split('\n').slice(-6).join('\n')}\nnode scripts/update.mjs --rollback puts the old version back.`, { reason: 'app', ...log })
     steps.push('app')
   }
+  // an optional skill they added (SPEC §21.16) lives outside the shipped files: refreshed from this release's extras/
+  if (fs.existsSync(path.join(REPO, '.claude', 'skills', 'study-set-pro')) && fs.existsSync(path.join(REPO, 'scripts', 'study-set.mjs'))) {
+    const r = node('study-set.mjs', ['add', '--refresh']); if (r.status === 0) steps.push('study set skill')
+  }
   // the schedule is bound to this folder, which has not moved; say so if a task has gone missing all the same
   let schedule = null
   if (state.done?.schedule) { const r = node('setup.mjs', ['schedule', '--check']); schedule = r.status === 0 ? 'in place' : (r.stderr || r.stdout).trim().split('\n').slice(-3).join(' ') }

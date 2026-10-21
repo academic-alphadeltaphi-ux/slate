@@ -37,13 +37,25 @@ export const isMyMedia = url => /(?:play|mymedia|stream)\.library\.utoronto\.ca/
 // The MyMedia videos an HTML body embeds or links — the player's <iframe>, a watch link, a bare stream url in the text —
 // with the title the tag gives (an iframe's `title`, a link's words), '' when it gives none. A professor who embeds the
 // week's video in the week's page never makes it a module item, and the fetch only knew the module item.
+// Canvas's editor titles every iframe it inserts "embedded content", which names nothing: then the video takes the bold
+// line just above it, when only tags stand between the two (ECO206's topic pages: "**V1: Preference Assumptions**", then
+// the player), written "V1 · Preference Assumptions". Every one of ECO206's 27 embeds was "embedded content" until
+// 2026-10-13, and all but the first of a run were taken for the first (scripts/quercus-sync.mjs addVideo).
 // → [{ id, url, title }]
+const NAMELESS = /^(?:embedded content|video|video player|media|player)?$/i
 export function mymediaIn(html) {
   const out = new Map(), s = String(html || ''), words = t => t.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim()
+  const labelAbove = h => {
+    const last = [...h.matchAll(/<(strong|b|h[1-6])\b[^>]*>([\s\S]*?)<\/\1>/gi)].pop()
+    return last && !words(h.slice(last.index + last[0].length)) ? words(last[2]).replace(/^([^:]{1,12}):\s+/, '$1 · ') : ''
+  }
+  let after = 0   // where the previous video's tag ended: a label above one player is not the next one's
   for (const m of s.matchAll(/<(a|iframe)\b([^>]*)>([\s\S]*?)<\/\1>/gi)) {
     const url = (/\b(?:href|src)="([^"]+)"/i.exec(m[2])?.[1] || '').replace(/&amp;/g, '&'); if (!isMyMedia(url)) continue
-    const t = words(/\btitle="([^"]*)"/i.exec(m[2])?.[1] || m[3])
-    if (!out.has(mymediaId(url))) out.set(mymediaId(url), { id: mymediaId(url), url, title: /^https?:/i.test(t) ? '' : t })
+    let t = words(/\btitle="([^"]*)"/i.exec(m[2])?.[1] || m[3])
+    if (/^https?:/i.test(t) || NAMELESS.test(t)) t = labelAbove(s.slice(after, m.index))
+    after = m.index + m[0].length
+    if (!out.has(mymediaId(url))) out.set(mymediaId(url), { id: mymediaId(url), url, title: t })
   }
   for (const m of s.matchAll(/https?:\/\/(?:play|mymedia|stream)\.library\.utoronto\.ca[^\s"'<>]*/gi)) if (isMyMedia(m[0]) && !out.has(mymediaId(m[0]))) out.set(mymediaId(m[0]), { id: mymediaId(m[0]), url: m[0], title: '' })
   return [...out.values()]

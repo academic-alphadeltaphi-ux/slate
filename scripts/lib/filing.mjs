@@ -83,6 +83,11 @@ export function pageWeek(title, module, weeksList) {
   }
   return null
 }
+// ownWeeks(weeks, skips) → the weeks as a course counts them, for a title or module that carries the course's own number.
+// ECO206 numbers its teaching weeks, twelve a term, and has no week of its own for slate's Week 13 (Dec 7, Tutorial 9
+// only): its "13: Welfare Economics" (Wed Jan 13) is slate's Week 14. `skips` is COURSES[k].skipsWeeks; without it a
+// course counts as slate does.
+export const ownWeeks = (weeksList, skips = []) => (skips?.length ? weeksList.filter(w => !skips.includes(w.n)) : weeksList)
 // fileWeek(posted, from, weeks) → the week a file belongs to: the week it was posted in, unless the page linking it is
 // next week's reading, posted a week early on purpose (CLA204 links the Homeric Hymn from "Next Week's Reading").
 export const fileWeek = (posted, from, weeksList) => (!posted ? null : /\bnext week/i.test(String(from || '')) ? weeksList.find(x => x.n === posted.n + 1) || posted : posted)

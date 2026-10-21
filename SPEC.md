@@ -2535,8 +2535,8 @@ app that did not open, documents that never arrived, to-dos that led nowhere. Ea
 **One road.** Both copies check every morning (`cadenceDays: 1`; the Pro copy was every two days) as a scheduled task
 inside the Claude app (`runner: 'app'`; the Max copy used the command line tool, launchd or Task Scheduler, and a
 Terminal login). An app task runs on the model the app is set to — `create_scheduled_task` takes none — so an edition's
-`model` and `costScale` only matter on the optional CLI road. An install keeps the cadence it was set up with
-(`Hub/_settings.json`); the change reaches new setups.
+`model` and `costScale` only matter on the optional CLI road. An install kept the cadence it was set up with
+(`Hub/_settings.json`) until 2026-10-12, when the edition's cadence began to win (§21.15).
 
 **The schedule proves itself.** Setup's status says first that the conversation must be one opened on the Slate
 folder: a task belongs to the folder of the conversation that creates it, and one made elsewhere runs there, without
@@ -2739,6 +2739,60 @@ on a brother's two zips of 2026-09-23 (the Windows one, and the Mac one on a PC)
 exactly as feared; the carry-over passes; and the first morning afterwards fetched 8 files and 3 pages the 2026-09-23
 fetch had never found, none of them already in the notes, then asked for links to the to-dos that copy wrote before
 every task needed one (§21.11) — which the morning session gives.
+
+### 21.15 Every plan, every day, and a key that has to expire (2026-10-12)
+
+Two corrections from the student. **The key:** every place that said to leave the Quercus token's expiry blank — setup's token
+step, the guide, the no-key and 401 sentences, the brain and sync prompts, the quercus skill — now says to pick the
+latest date it allows: Quercus will not make a token without one. The key therefore stops working on that date; the
+morning ends on the 401 sentence (§21.5's `token` scenario) and the brother makes a new one.
+
+**The cadence:** "every plan can check daily — a light morning is not that much usage for Pro or Max." Both editions
+were already `cadenceDays: 1` (§21.11), but an install kept the cadence its settings were written with, and `adopt`
+carried an earlier copy's over — so a Pro copy set up before 2026-09-29 (a brother's, `cadenceDays: 2`) checked every two
+days even after a fresh install. Now `run.mjs` and `server/edition.js` take the cadence from the edition alone, and
+`adopt` writes the edition's. The settings field is still written, as a record.
+
+### 21.16 The study set, Pro — optional, and on request (2026-10-21)
+
+**What the student decided.** A brother on a Pro plan can have the study material the student builds for himself, cut down to three
+pieces and to a Pro allowance: a **study guide** that teaches the week from zero (the ECO102 shape: prerequisites,
+numbered sections each ending in a problem set, a short mock, a one-page cheat sheet), an **exercise sheet** in four
+levels per topic, and a **week at a glance** of one to three infographic sheets. No formula sheets, no videos. It is
+optional — a skill a brother adds by saying *add the study set skill* — and it never runs by itself: *do the study set
+for week 3 of ECO206* builds one, and Claude may suggest it once when a test is close, never build it unasked. Always in
+English. Length follows the material: the student's own courses run to 120 pages a week, a light week gets a short guide. This
+is the Pro version, and says so (`study-set-pro`); a Max one may follow.
+
+**The shape that fits Pro.** Three writers and no more: the conversation's own Claude writes the guide, one agent the
+exercise sheet, one the glance, both agents on Sonnet. None of the student's reader rounds or verifiers. The sources are read
+once: the main writer reads the week (text caches first, page images only for the pages with ink or figures that
+carry a formula or a graph) and writes `brief.md` — topics in slide order, notation, every formula, every course problem
+with its official answer, the shared numbers, the figures — and the two agents work from that brief and the few files
+it names. What keeps quality without reviewers is the free part: `check` (below) and every number recomputed.
+
+**Where it lives.** `extras/study-set-pro/` ships in every copy and is inert there: `node scripts/study-set.mjs add`
+copies it into `.claude/skills/study-set-pro/` (and `remove` takes it out; the guard refuses an installed copy in the
+kit, so it is never on by default). `update.mjs` refreshes an installed skill from the new release's `extras/`. The
+models are the student's own: an ECO102 week guide and exercise sheet, and the approved ECO206 Week 1 glance with its spec.
+
+**No Python, no Chrome.** the student's pipeline printed through headless Chrome at a Mac path and Python helpers (PyMuPDF,
+the glance plotter, the checker); a brother's PC has none of them and the kit denies python. So:
+`scripts/study-set.mjs` — `start <course> <week>` (the week's files in a short listing: a PDF's pages, text, and the
+pages with annotations or figures, read with pdf.js; look-alike question pages folded to one line; the work folder
+`study-set-work/<CODE>-week-<N>/`), `pages` (PDF pages as PNG, ink included), `check` (the checker ported: every
+`formulas.json` item taught in a lesson box and not only in a solution, a problem set closing every numbered section,
+Levels 1–4 in every Part, toggles, ids, anchors, TeX in SVG; then a render: raw TeX, MathJax errors, too-wide equations,
+glance cards that overflow or a footer off the page, with 150-dpi previews to look at), and `print` (the PDF — or the
+glance's 300-dpi sheets and its print PDF — onto `Week N — study guide` / `exercise sheet` / `at a glance` in the week's
+`Study set` folder; a re-print keeps the printout's id, so ink stays). The renderer is `scripts/study-set-render.cjs`, a
+real Electron main process like `print-pages.cjs`: printToPDF, DevTools screenshots at dpi/96, pdf.js for pages. The
+glance plotter is `scripts/lib/study-set/glance.mjs` + `figure.mjs` (glance.py ported; the Week 1 sheets rebuild from
+the ported spec), and the guide template `scripts/lib/study-set/head.html` gained Windows fonts.
+
+**On the screen.** `Study set` is not the full edition's `Study sheets` bucket (`sheets: false` stays false: no queue, no
+readiness bars, nothing measured by it). It is a folder of the week, so it is drawn as one of the week's own categories
+(§20.30), with the bookmark and after the others.
 
 ## 20.56 The gated page and the open stream (2026-09-18)
 
@@ -3313,6 +3367,42 @@ reads the run in progress; the stale-lock takeover can admit two — went to the
 still unproven: the toast's app id, the UTF-8 console, the shim's resolution, the frame. `refile.mjs` and
 `study-sheets.mjs` still write the sync's memory without the lock. Dictation's worker outlives a server killed by
 SIGTERM. Claude Code on Windows warns that `Write(**)` and `Glob(**)` permission rules are never consulted.
+
+## 20.72 The winter starts on Jan 11, and the first week of December is one day long (2026-10-07)
+
+`WINTER.start` was `2027-01-04`, the Monday after the university reopens. The Faculty of Arts & Science's Academic Dates
+page says otherwise: Jan 4–5 are Presidential Days (closed) and "Classes in Winter (S) courses begin and classes for
+Fall-Winter (Y) course resume" on **Mon Jan 11**; the ECO206 front page ("Classes resume Mon 11-Jan", its Week 13 on Wed
+13-Jan) and the ECO227 outline (winter Week 1 = 01-11) agree. So slate held a Week 14 (Jan 4) that never meets: the course
+screen and calendar expanded ECO206/208/227 classes on Jan 4–8, every winter week was one number too high (26 in the
+year), and ECO227's winter syllabus keys — written in the outline's numbering — sat a week early (Test 3 on the Feb 8
+week while its date was in Week 20). Now Week 14 is Jan 11 and the year has 25 weeks; the last regular class is Fri Apr 9
+and Mon Apr 12 is a Friday make-up day, which none of the courses meet on.
+
+**What moved with it.** ECO206's test windows (Quercus counts twelve teaching weeks a term and has no week for slate's
+Week 13, so Quercus N is N+1 from 13): Test 3 Weeks 7–15, Test 4 11–18, Test 5 16–23, Quercus's numbers after the dot.
+The assumed windows end at the test's week: ECO208 Midterm 3 13–19, ECO227 Test 3 14–19. `syllabus.mjs` did not change —
+its ECO227 keys were already right for the new start. The template, `DEFAULT_CALENDAR`, the kit's example and the
+personas carry the new calendar, so a kit built from here is right; a brother's install whose `courses.json` spells the
+old winter out keeps it until that file changes, and its notebook keeps its scaffolded Week 14 (Jan 4) until
+`scripts/shift-winter.mjs` runs there (not shipped in an update yet).
+
+**A course's own numbers.** `pageWeek` filed a synced page titled "13: Welfare Economics" in slate's Week 13 by its
+number; ECO206's 13 is Jan 13, slate's Week 14. `COURSES[k].skipsWeeks` names the slate weeks a course has no number
+for (ECO206: `[13]`), and `filing.mjs ownWeeks` is the list a number in a title or a module name indexes — in the sync
+and in the brief's proposal alike.
+
+**December.** The fall's regular classes end Mon Dec 7; Tue Dec 8 is the make-up day for Monday classes (Tuesday's do
+not meet; ECO227 sits Test 2 in it), Wed Dec 9 a study day, exams from Thu Dec 10. `NO_CLASS` gains Dec 8–11, so Week 13
+meets on its Monday only (ECO206 Tutorial 9, ECO227's lecture), and the calendar says why the rest are cancelled.
+
+**The notebooks.** `scripts/shift-winter.mjs --yes-migrate` renumbered each course's `Winter 2027/` once. A week folder
+holds two kinds of thing: what belongs to its Monday (the week page, Notes, Lectures, Recordings, Study sheets, ink —
+`Week 15 (Jan 11)` → `Week 14 (Jan 11)`) and what a syllabus key placed (ECO227's Problems page and Textbook shelf, which
+keep their number — `Week 15 (Jan 11)/Textbook` → `Week 15 (Jan 18)/Textbook`). Week 14 (Jan 4) held only empty
+scaffolding and went; a moved Problems page kept its registry entry, and its header, still the script's, took the new
+label with a new hash. ECO206's ink on the Jan 18 week page went with its date. Then `textbook.mjs --force` printed weeks
+14–25 again under their new labels. It is guarded and idempotent: a notebook already in the new numbering is left alone.
 
 ## 22. Today's work (2026-09-20)
 

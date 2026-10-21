@@ -9,6 +9,9 @@ import { createPortal } from 'react-dom'
 import ContextMenu from './ContextMenu.jsx'
 import { Icon } from './Icons.jsx'
 pdfjs.GlobalWorkerOptions.workerSrc = workerUrl
+// pdf.js's WebAssembly decoders (JBIG2/CCITT masks, JPEG 2000, ICC colour), served whole by vite.config.js. Absolute,
+// because the worker resolves its no-wasm fallback module against its own URL.
+const WASM_URL = new URL(import.meta.env.BASE_URL + 'pdfjs/wasm/', location.href).href
 
 export const HL_COLORS = ['#ffd60a', '#34c759', '#ff9f0a', '#ff375f', '#5ac8fa', '#bf5af2']
 const PAGE_GAP = 12
@@ -91,7 +94,7 @@ export default function PdfEl({ el, url, width, annotations = [], scrollRoot, pa
 
   useEffect(() => {
     let cancelled = false
-    const task = pdfjs.getDocument({ url })
+    const task = pdfjs.getDocument({ url, wasmUrl: WASM_URL })
     task.promise.then(async d => {
       const sizes = await Promise.all(Array.from({ length: d.numPages }, (_, i) => d.getPage(i + 1).then(p => { const v = p.getViewport({ scale: 1 }); return { w: v.width, h: v.height } })))
       if (cancelled) return

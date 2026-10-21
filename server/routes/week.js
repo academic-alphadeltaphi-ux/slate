@@ -32,7 +32,7 @@ const BUCKETS = [
 ]
 const DOC_RE = /\.(pdf)$/i
 // The folders the brain files by name beside the six (SPEC §20.53) draw with an icon of their own; any other gets the file.
-const EXTRA_ICON = { Readings: 'bookOpen', Textbook: 'book', Videos: 'eye', Assignments: 'checkSquare', Listening: 'headphones' }
+const EXTRA_ICON = { Readings: 'bookOpen', Textbook: 'book', Videos: 'eye', Assignments: 'checkSquare', Listening: 'headphones', 'Study set': 'bookmark' }
 const TRANSCRIPT_RE = /\.(transcript\.json|srt|vtt)$/i
 // Speech as server/index.js decides it (not imported: a route that imports index.js deadlocks its top-level await).
 // Where there is none — a PC, an Intel Mac — a recording is never "to transcribe", or its cell would sit half-done for ever.

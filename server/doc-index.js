@@ -5,7 +5,7 @@
 // `<name>.pdf.txt` and POST /api/search/reindex, and it all comes back. SPEC.md §10, §20.6.
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { ROOT } from './fs.js'
+import { ROOT, layoutViews } from './fs.js'
 import { fold, parsePage } from './format.js'
 import { textFor, isCache, assetPath, cachePath } from './pdf-text.js'
 
@@ -35,6 +35,14 @@ export function mdOf(rel) {
   return m ? `${m[1]}${m[2]}.md` : null
 }
 const isPdfEl = (el, src) => el.type === 'pdf' || (el.type === 'file' && /\.pdf$/i.test(src))
+// What of a layout the index reads (scanPage below): its PDFs, its recordings and its recognised handwriting. A save that
+// leaves this as it was — new strokes, a box moved — needs no rescan (onEvent).
+const indexedOf = elements => (Array.isArray(elements) ? elements : []).map(el => {
+  if (!el?.id) return ''
+  const src = String(el.src || '')
+  if (isPdfEl(el, src) || el.type === 'media' || MEDIA_RE.test(src)) return `${el.id}\t${el.type}\t${src}`
+  return el.type === 'ink' ? `${el.id}\tink\t${inkText(el)}` : ''
+}).filter(Boolean).join('\n')
 const pushError = (p, e) => { errors.push({ path: p, error: e?.message || String(e), at: new Date().toISOString() }); if (errors.length > 50) errors.shift() }
 
 // Returns at once; the walk and the scans run behind it. Pages with documents are queued first so their hits
@@ -139,13 +147,13 @@ export async function scanPage(relMd, { full = true } = {}) {
       if (text) items.push({ kind: 'ink', el: el.id, text, folded: fold(text) })
     }
   }
-  pages.set(relMd, { items, blocks: md === null ? [] : offsetsOf(md), at: Date.now() })
+  pages.set(relMd, { items, blocks: md === null ? [] : offsetsOf(md), at: Date.now(), indexed: indexedOf(layout?.elements) })
 }
 export function remove(relMd) { pages.delete(relMd) }
 export function removeDir(relDir) { for (const k of [...pages.keys()]) if (k === relDir || k.startsWith(relDir + '/')) pages.delete(k) }
 
 // Called by watch.js for every event, own writes included (the index must stay right even when clients are not told).
-export function onEvent(type, rel, kind) {
+export function onEvent(type, rel, kind, ownHash = null) {
   if (DEBUG) console.log('[docs] event', type, kind, rel)
   if (isCache(rel)) {                                                         // our own cache write coming back: not news
     const now = Date.now()
@@ -155,7 +163,15 @@ export function onEvent(type, rel, kind) {
   if (type === 'unlinkDir') { removeDir(rel); if (rel.endsWith('.assets')) enqueue(mdOf(rel)); return }
   if (type === 'addDir') return
   if (kind === 'md') return type === 'unlink' ? enqueue(rel, 100, true) : enqueue(rel, 100, false)   // offsets only; a full scan when the page is new
-  if (kind === 'layout') return type === 'unlink' ? enqueue(mdOf(rel), 100, true) : enqueue(mdOf(rel))
+  if (kind === 'layout') {
+    if (type === 'unlink') return enqueue(mdOf(rel), 100, true)
+    // Our own save (`ownHash`, from watch.js) with the same documents and handwriting text the index holds: nothing to
+    // read. Every ink save used to parse the whole sidecar and fold every page of its PDFs again — on a 9.7 MB page
+    // ~130 ms of the thread that, in Slate.app, also delivers the pen's and the mouse's input.
+    const view = ownHash ? layoutViews.get(path.join(ROOT, rel)) : null, prev = pages.get(mdOf(rel))
+    if (view && view.hash === ownHash && prev?.indexed !== undefined && prev.indexed === indexedOf(view.elements)) return
+    return enqueue(mdOf(rel))
+  }
   if (kind === 'asset' && (isCache(rel) || /\.(pdf|transcript\.json|txt)$/i.test(rel) || MEDIA_RE.test(rel))) enqueue(mdOf(rel))
   // A cache written by scripts/pdf-text.mjs (or by hand) rescans its owner: a stat and a read, the cache is valid, nothing
   // is written again, so the loop ends there.

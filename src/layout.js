@@ -5,6 +5,12 @@ export const FLOW_X = 48, FLOW_TOP = 48, GAP = 48, MAX_AUTO_W = 645, MIN_W = 160
 // the sheet centred and edged like a page rather than running off into empty desk.
 export const DOC_W = 860, DOC_GAP = 24
 export const isDoc = layout => layout?.mode === 'doc'
+// The width an auto text box wraps at. On the canvas it is the measure and nothing else: it used to shrink with the
+// visible width (`canvasW / zoom`), so zooming in past about 1.3× in a 950 px pane — or a narrower window, or split view —
+// wrapped the paragraphs above a document into more lines and slid it down under the handwriting and clips pinned beside
+// it (2026-10-13, ECO208 Session 2: the PDF moved 120 px at 1.6×). Zoom now only scales. A document-mode page, where
+// nothing is pinned, still narrows with its window — but not with the zoom.
+export const autoWidth = ({ doc = false, x = FLOW_X, viewW = Infinity } = {}) => (doc ? Math.max(MIN_W, Math.min(DOC_W, viewW - x - 48)) : MAX_AUTO_W)
 // The ruled-paper pitch (--lh in styles.css). A pinned element's y snaps to it, so a box that is clicked into
 // existence, dragged or dropped puts its text on the rules instead of between them (SPEC §12). x is never snapped:
 // the rules are horizontal. Hold Alt while dragging to place a box off the baseline.

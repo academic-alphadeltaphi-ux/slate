@@ -61,7 +61,7 @@ export default function Todo({ onOpen, onOpenCourse, day = null, course = null, 
     try {
       if (!(await toggleTask(m, t))) return false
       const flip = list => list.map(y => (y.key === t.key ? { ...y, done: !y.done } : y))
-      patch(p => p ? { ...p, meetings: p.meetings.map(x => x.id !== m.id ? x : { ...x, before: flip(x.before), tasks: x.tasks ? { ...x.tasks, done: x.tasks.done + (t.done ? -1 : 1) } : x.tasks }),
+      patch(p => p ? { ...p, meetings: p.meetings.map(x => x.id !== m.id ? x : { ...x, before: flip(x.before), tasks: x.tasks ? { done: x.tasks.done + (t.done ? -1 : 1), total: x.tasks.total + (t.stale ? (t.done ? -1 : 1) : 0) } : x.tasks }),
         weeks: (p.weeks || []).map(x => x.id !== m.id ? x : { ...x, work: flip(x.work) }) } : p)
       refresh()
       return true

@@ -45,7 +45,8 @@ const MODEL = opt('--model', settings.model || ED.model || 'sonnet')
 // The dollar caps are Sonnet's, times the edition's price scale (a Max copy on Fable: five); a settings.maxUsd is absolute.
 const SCALE = Number(settings.costScale) > 0 ? Number(settings.costScale) : ED.costScale || 1
 const MAX_TURNS = Number(opt('--max-turns', settings.maxTurns || 40)), MAX_USD = Number(opt('--max-usd', settings.maxUsd || 1.5 * SCALE))
-const CADENCE = Number(settings.cadenceDays) >= 1 ? Number(settings.cadenceDays) : ED.cadenceDays || 1
+// always the edition's: every plan checks every day (2026-10-12), whatever cadence an older install's settings still name
+const CADENCE = ED.cadenceDays || 1
 // Who decides (SPEC §21.8): 'cli' spawns claude -p per course below; 'app' means the session calling fetch/brief/finish decides.
 const RUNNER = settings.runner || ED.runner || 'cli'
 // A plan that has not got the edition's model: Sonnet decides instead, from now on, and the settings say why. Temp then
@@ -189,7 +190,7 @@ function fetchFailure(f) {
   const out = f.stderr + f.stdout
   if (f.last?.reason === 'busy') return { reason: 'busy', note: 'Another Quercus check was already running, so this one stopped without changing anything; what it fetches shows when it finishes.', done: 'another sync was running' }
   if (/could not be reached|no data for \d+ s\b/i.test(out)) return { reason: 'network', note: 'Quercus could not be reached — no wifi? Nothing was changed; the next run will try again.', done: 'Quercus unreachable' }
-  if (/401|Expired access token|No Quercus access key/i.test(out)) return { reason: 'token', note: 'Quercus refused the access key. Make a new one at q.utoronto.ca → Account → Settings → + New Access Token (expiry blank) and store it with `node scripts/setup.mjs token <key>`.', done: 'token refused' }
+  if (/401|Expired access token|No Quercus access key/i.test(out)) return { reason: 'token', note: 'Quercus refused the access key. Make a new one at q.utoronto.ca → Account → Settings → + New Access Token (Expires: the latest date it allows) and store it with `node scripts/setup.mjs token <key>`.', done: 'token refused' }
   if (f.killed) return { reason: 'network', note: 'The Quercus fetch ran past four minutes and was stopped — a slow or half-up network? What it had fetched is kept; the next run carries on.', done: 'fetch timed out' }
   return { reason: 'fetch', note: `The Quercus fetch failed: ${(f.stderr || f.stdout).trim().split('\n').pop()}`, done: 'fetch failed' }
 }

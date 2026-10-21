@@ -20,7 +20,7 @@ import { guardFlags } from './lib/argv.mjs'
 import { requireQuercusAuth } from './lib/quercus-auth.mjs'
 import { fetchSafe, NET_DOWN } from './lib/net.mjs'
 import { acquireLock } from './lib/brain.mjs'
-import { bucketFor, FOLDER, headingFor, pageWeek, fileWeek } from './lib/filing.mjs'
+import { bucketFor, FOLDER, headingFor, pageWeek, fileWeek, ownWeeks } from './lib/filing.mjs'
 import { whereOf } from './lib/move.mjs'
 import { VIDEO_RE } from '../src/plan.js'
 import { isMyMedia, mymediaId, mymediaIn, download as fetchMyMedia, humanDuration } from './lib/mymedia.mjs'
@@ -55,7 +55,7 @@ const errors = []
 // Canvas answers 401 for two different things: a key that is dead ("Invalid access token"), and a page the student may not
 // see — an instructor who hid the Files tab, a module not yet published. Only the first ends the morning; the second is a
 // line in the errors. A 401 whose body does not name the token is checked once against /users/self, which every key can read.
-const TOKEN_ERROR = '401 Expired access token: make a new one at q.utoronto.ca → Account → Settings → + New Access Token (expiry blank), then store it with `node scripts/setup.mjs token <key>` (or in the Claude desktop config for the full edition)'
+const TOKEN_ERROR = '401 Expired access token: make a new one at q.utoronto.ca → Account → Settings → + New Access Token (Expires: the latest date it allows), then store it with `node scripts/setup.mjs token <key>` (or in the Claude desktop config for the full edition)'
 let tokenOk = null
 async function tokenRefused(r) {
   let body = ''; try { body = await r.text() } catch { }
@@ -411,7 +411,7 @@ for (const [course, info] of Object.entries(COURSES)) {
   // MyMedia videos a page, the syllabus, an announcement or a description embeds (scripts/lib/mymedia.mjs mymediaIn): the
   // same download as a module's video item, done once the places are read. The tag's title names one, else where it sits.
   const videos = new Map()
-  const noteVideos = (html, module, from) => { const vs = mymediaIn(html); vs.forEach((v, i) => { if (!videos.has(v.id)) videos.set(v.id, { url: v.url, title: v.title || `${from} video${vs.length > 1 ? ` ${i + 1}` : ''}`, module }) }) }
+  const noteVideos = (html, module, from) => { const vs = mymediaIn(html); vs.forEach((v, i) => { if (!videos.has(v.id)) videos.set(v.id, { url: v.url, title: v.title || `${from} video${vs.length > 1 ? ` ${i + 1}` : ''}`, module, from }) }) }
   for (const m of Array.isArray(mods) ? mods : []) for (const it of m.items || []) if (it.type === 'Page' && it.page_url) pageUrls.set(it.page_url, { module: m.name }); else if (it.type === 'ExternalUrl') notePages(it.external_url, m.name)
   const front = await get(`/courses/${cid}/front_page`)
   if (front?.url) pageUrls.set(front.url, { module: 'front page', front: true })
@@ -451,7 +451,7 @@ for (const [course, info] of Object.entries(COURSES)) {
       // the inbox while it waits, else wherever Claude put it (scripts/lib/move.mjs keeps `section` and `title` in step) — and
       // waits to be read again. A page moved without a record is not recreated where a rule once put it: it waits again.
       let rel = seen?.inbox || (seen?.courseKey && seen.section != null ? `${seen.courseKey}/${seen.section}/${seen.title}.md` : null)
-      if (!rel && seen) { const p = pageWeek(pg.title, meta.module, weeks(info.term)); rel = `${course}/${p ? (p.lecture ? `${p.week.dir}/Lectures` : p.week.dir) : 'General'}/${safeName(p ? p.title : pg.title || url)}.md` }
+      if (!rel && seen) { const p = pageWeek(pg.title, meta.module, ownWeeks(weeks(info.term), info.skipsWeeks)); rel = `${course}/${p ? (p.lecture ? `${p.week.dir}/Lectures` : p.week.dir) : 'General'}/${safeName(p ? p.title : pg.title || url)}.md` }
       if (rel && !(await exists(path.join(ROOT, rel)))) rel = null
       const isNew = !rel
       if (isNew) rel = `Hub/Inbox/${course}/${await freeTitle(path.join(HUB, 'Inbox', course), safeName(pg.title || url), '')}.md`
@@ -484,7 +484,8 @@ for (const [course, info] of Object.entries(COURSES)) {
     }
     // "1: Constrained Optimization" / "Week 3 …" → that week's folder, beside Notes and Lectures; a lecture page inside a
     // week's module (CLA204's "Lecture 2: Mythology, Hesiod 1") → that week's Lectures; else General (filing.mjs pageWeek).
-    const place = meta.front ? null : pageWeek(pg.title, meta.module, weeks(info.term))
+    // The number is the course's own (ownWeeks): ECO206's "13: …" is slate's Week 14.
+    const place = meta.front ? null : pageWeek(pg.title, meta.module, ownWeeks(weeks(info.term), info.skipsWeeks))
     const section = meta.front ? 'General' : place ? (place.lecture ? `${place.week.dir}/Lectures` : place.week.dir) : 'General'
     const title = meta.front ? 'Home' : safeName(place ? place.title : pg.title || url)
     const md = path.join(nb, section, `${title}.md`)
@@ -521,7 +522,7 @@ for (const [course, info] of Object.entries(COURSES)) {
   for (const a of asgRaw || []) { noteIds(a.description, 'assignment', a.name, true); noteVideos(a.description, 'assignment', a.name) }
   for (const d of discs) { noteIds(d.message, 'discussion', d.title, true); attach(d.attachments, 'discussion', d.title); noteVideos(d.message, 'discussion', d.title) }
   for (const q of quizzes) { noteIds(q.description, 'quiz', q.title, true); noteVideos(q.description, 'quiz', q.title) }
-  for (const v of videos.values()) await addVideo(course, nb, v.title, v.url, { module: v.module })
+  for (const v of videos.values()) await addVideo(course, nb, v.title, v.url, { module: v.module, from: v.from })
   // The tab adds files nobody linked; it never overwrites the module a file was found in (it did, and every ECO208 file
   // reached the brain as `module: files` — review 2026-09-18).
   const tab = await getAll(`/courses/${cid}/files?per_page=100`); for (const f of Array.isArray(tab) ? tab : []) if (!found.has(Number(f.id))) found.set(Number(f.id), { module: 'files', heading: '', from: null })
@@ -764,14 +765,21 @@ async function addFile(course, nb, section, title, fileId, name, url, size, opts
 // it rather than linking out (SPEC §20.56). Skipped when the file is already there, so a re-run costs one HEAD-less
 // check and no bytes. The download itself needs no UTORid — see scripts/lib/mymedia.mjs.
 async function addVideo(course, nb, rawTitle, url, opts = {}) {
-  const title = safeName(rawTitle.replace(/^[A-Z]+\s*•\s*/, '').replace(/:/g, '-'))
-  const dir = path.join(nb, 'Videos'), assets = path.join(dir, `${title}.assets`)
-  const name = `${title}.mp4`, dst = path.join(assets, name)
+  let title = safeName(rawTitle.replace(/^[A-Z]+\s*•\s*/, '').replace(/:/g, '-'))
+  const dir = path.join(nb, 'Videos')
+  let name = `${title}.mp4`, dst = path.join(dir, `${title}.assets`, name)
   // Keyed by the MyMedia id, not by this path: once a video is here it may be filed anywhere in the course — the
   // week's Videos shelf, General — and a path check would fetch a second copy on the next run.
   const vid = mymediaId(url)
   if (vid && state.videos[vid]) return
-  if (await exists(dst)) { state.videos[vid] = { title, where: 'Videos', at: today }; return }
+  // A file already at the path is this video from a run before the record, unless another video holds the name: then
+  // this one takes the next free name. Two videos named alike — ECO206's 27 embeds were all "embedded content" — used
+  // to find the first one's file, count themselves fetched and never download (2026-09-30: 18 videos, one page).
+  if (await exists(dst)) {
+    if (!Object.entries(state.videos).some(([id, v]) => id !== vid && v?.title === title)) { state.videos[vid] = { title, where: 'Videos', at: today }; return }
+    const base = title
+    for (let i = 2; (await exists(dst)) || (await exists(path.join(dir, `${title}.md`))); i++) { title = `${base} (${i})`; name = `${title}.mp4`; dst = path.join(dir, `${title}.assets`, name) }
+  }
   if (DRY) { log(`  video: ${rawTitle} → Videos/${title} (would fetch)`); return }
   let got
   try { got = await fetchMyMedia(url, dst) }
@@ -779,7 +787,8 @@ async function addVideo(course, nb, rawTitle, url, opts = {}) {
   log(`  video: ${rawTitle} → Videos/${title} (${humanDuration(got.seconds)}, ${(got.bytes / 1e6).toFixed(1)} MB)`)
   if (vid) state.videos[vid] = { title, where: 'Videos', at: today }
   const md = path.join(dir, `${title}.md`)
-  if (!(await exists(md))) await write(md, `---\ncreated: "${stamp()}"\nkind: "lecture"\ntags: ["quercus", "video"]\n---\n# ${title}\n\n_From MyMedia${opts.module ? ` · ${opts.module}` : ''} · ${today}_\n`)
+  const on = opts.from && opts.from !== opts.module ? ` · on “${opts.from}”` : ''   // the page that embeds it, which says the week
+  if (!(await exists(md))) await write(md, `---\ncreated: "${stamp()}"\nkind: "lecture"\ntags: ["quercus", "video"]\n---\n# ${title}\n\n_From MyMedia${opts.module ? ` · ${opts.module}` : ''}${on} · ${today}_\n`)
   const sidecarPath = path.join(dir, `${title}.blocks.json`), sidecar = await readJson(sidecarPath, { version: 1, elements: [] })
   if (!sidecar.elements.some(e => e.type === 'media' && e.src === `${title}.assets/${path.basename(got.path)}`))
     sidecar.elements.push({ id: newId(), type: 'media', src: `${title}.assets/${path.basename(got.path)}`, size: got.bytes })

@@ -38,14 +38,14 @@ export function start() {
     const rel = path.relative(ROOT, absPath).split(path.sep).join('/')
     if (!rel) return
     // Our own writes still refresh the index, but clients are not told: they already have that content.
-    let mine = false
+    let mine = false, ownHash = null
     if ((type === 'change' || type === 'add') && recentWrites.has(absPath)) {
-      try { mine = wroteRecently(absPath, hashText(await fs.readFile(absPath, 'utf8'))) } catch { }
+      try { const h = hashText(await fs.readFile(absPath, 'utf8')); mine = wroteRecently(absPath, h); if (mine) ownHash = h } catch { }
     }
     const kind = classify(rel)
     if (kind === 'md') { if (type === 'unlink') search.remove(rel); else await search.update(rel) }
     if (type === 'unlinkDir') search.removeDir(rel)
-    if (docIndex?.onEvent) { try { await docIndex.onEvent(type, rel, kind) } catch (e) { console.error('[doc-index]', e.message) } }   // own writes included, like the md index
+    if (docIndex?.onEvent) { try { await docIndex.onEvent(type, rel, kind, ownHash) } catch (e) { console.error('[doc-index]', e.message) } }   // own writes included, like the md index
     // The PDF-text cache (<name>.pdf.txt) is never news to a client.
     if (!mine && !/\.pdf\.txt$/i.test(rel)) broadcast({ type, path: rel, kind, at: Date.now() })
   })

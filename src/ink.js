@@ -37,17 +37,32 @@ function centerlinePath(pts) {
 
 // Returns { d, fill } for pens (a filled outline that follows pressure) or { d, strokeWidth } for
 // the highlighter (a flat marker: constant width, square ends).
+// The width follows the stroke's own pressure whenever it varies, whatever the pointerdown called the device: a third of
+// the student's Huion strokes begin as `mouse` while carrying the pen's pressure, and it was thrown away for a width guessed from
+// speed. A stroke at 0 throughout is a pen whose pressure was lost — a pressed device with no sensor sends 0.5, never 0 —
+// and is drawn at a steady 0.5, the pen's own size; drawn at 0 (or simulated from a 0 seed) it was a hairline: every one
+// of the 1,457 strokes the student wrote on 2026-10-13 while his Huion driver sent no pressure. Anything else draws as before.
+const varies = pts => pts.some(p => p[2] !== pts[0][2])
 export function strokePath(stroke, { scale = 1, offset = { x: 0, y: 0 }, live = false } = {}) {
   const pts = stroke.points.map(p => [p[0] * scale + offset.x, p[1] * scale + offset.y, p[2]])
   if (stroke.tool === 'highlighter') return { d: centerlinePath(pts), strokeWidth: stroke.width * HIGHLIGHTER_FACTOR * scale }
-  const outline = getStroke(pts, { size: stroke.width * scale, thinning: 0.62, smoothing: 0.5, streamline: live ? 0.35 : 0.45, simulatePressure: !stroke.pen, last: !live })
+  const flat = !varies(pts), lost = flat && pts[0][2] === 0
+  const outline = getStroke(lost ? pts.map(p => [p[0], p[1], 0.5]) : pts, { size: stroke.width * scale, thinning: 0.62, smoothing: 0.5, streamline: live ? 0.35 : 0.45, simulatePressure: flat && !lost && !stroke.pen, last: !live })
   return { d: outlineToPath(outline), fill: true }
 }
 
+// Cached per stroke: the page's size, the eraser and every drag frame ask for the bounds of every stroke, and on a page
+// of 127,000 points that scan was 6 ms of each frame. A committed stroke never changes; the point count catches the
+// live one, which grows in place.
+const boundsCache = new WeakMap()
 export function strokeBounds(stroke) {
+  const c = boundsCache.get(stroke)
+  if (c && c.n === stroke.points.length) return c.b
   let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity
   for (const p of stroke.points) { if (p[0] < x0) x0 = p[0]; if (p[0] > x1) x1 = p[0]; if (p[1] < y0) y0 = p[1]; if (p[1] > y1) y1 = p[1] }
-  return { x0, y0, x1, y1 }
+  const b = Object.freeze({ x0, y0, x1, y1 })
+  boundsCache.set(stroke, { n: stroke.points.length, b })
+  return b
 }
 // Extent of all ink on the page, in page coordinates, so the paper grows as you draw.
 export function inkBounds(elements, pos) {

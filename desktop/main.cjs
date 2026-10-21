@@ -67,6 +67,14 @@ async function main() {
     webPreferences: { contextIsolation: true, sandbox: true },
   })
   mainWin = win
+  // Check my work (SPEC §20.71): the page asks its server for a picture of a rectangle of this window exactly as drawn —
+  // typed text, math, handwriting, PDFs. The server runs in this process, so a function on globalThis is the whole bridge.
+  // The rectangle comes in the page's CSS pixels; capturePage wants the window's, which differ once the page is zoomed.
+  globalThis.slateCapture = async r => {
+    const z = win.webContents.getZoomFactor(), n = v => Math.max(0, Math.round(v * z))
+    const img = await win.webContents.capturePage({ x: n(r.x), y: n(r.y), width: Math.max(1, n(r.w)), height: Math.max(1, n(r.h)) })
+    return img.toPNG()
+  }
   // The page draws the hidden title bar's chrome — a 42px gutter for the traffic lights, bars that drag the window — when
   // its user agent says Electron (src/main.jsx). Inside a Windows frame that is an empty strip and dead bars: without the
   // word, it lays itself out as it does in a browser.

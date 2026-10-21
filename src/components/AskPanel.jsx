@@ -56,21 +56,22 @@ export default function AskPanel({ page, onAppend, onReadInk }) {
   // A pending openAsk() for this page fires whether the rail was just mounted or already open (every store change looks).
   useEffect(() => {
     const p = takePending(path)
-    if (p) send({ question: p.question || undefined, preset: p.preset || undefined, block: p.block || undefined, problem: p.problem || undefined })
+    if (p) send({ question: p.question || undefined, preset: p.preset || undefined, block: p.block || undefined, problem: p.problem || undefined, image: p.image || undefined, place: p.place || undefined })
   }, [path, ask.version])
   useEffect(() => () => { abort.current?.abort() }, [])   // leaving the app: no orphan stream (the thread stays)
 
   const loadContext = (p, week) => contextFor(p, { week }).then(c => patch(p, th => { th.context = c })).catch(e => patch(p, th => { th.context = { error: e.message, items: [] } }))
   const setWeek = week => { patch(path, th => { th.week = week; th.context = null }); loadContext(path, week) }
 
-  const send = async ({ question, preset, block, problem } = {}) => {
+  const send = async ({ question, preset, block, problem, image, place } = {}) => {
     if (abort.current) return
     const th = thread(path)
     const asked = preset ? PRESETS[preset]?.label || preset : String(question ?? th.draft).trim()
     // A selected passage rides with the question rather than replacing it: "about this passage … <what you asked>".
     const q = !preset && th.quote ? `About this passage from the page:\n\n“${th.quote}”\n\n${asked}` : asked
     if (!asked) return
-    const turn = { id: uid(), at: new Date().toISOString(), q, asked, quote: (!preset && th.quote) || null, image: (!preset && th.image) || null, preset: preset || null, block: block || null, problem: problem || null, a: '', sources: [], chars: 0, status: 'streaming', phase: 'reading', error: null, ms: null, model: null, usage: null, saved: null }
+    const img = image || (!preset && th.image) || null   // a clip asked about, or the picture Check my work was given
+    const turn = { id: uid(), at: new Date().toISOString(), q, asked, quote: (!preset && th.quote) || null, image: img, place: place || null, preset: preset || null, block: block || null, problem: problem || null, a: '', sources: [], chars: 0, status: 'streaming', phase: 'reading', error: null, ms: null, model: null, usage: null, saved: null }
     const history = th.turns.filter(x => x.status === 'done' && x.a).slice(-6).map(x => ({ q: x.q, a: x.a }))
     patch(path, x => { x.turns.push(turn); x.quote = null; x.image = null; if (!question && !preset) x.draft = '' })
     stick.current = true
@@ -79,11 +80,12 @@ export default function AskPanel({ page, onAppend, onReadInk }) {
     // stops, which covers writing then thinking then asking; this covers writing and asking in the same breath. It is
     // a no-op when every element is already read — unchanged ink is skipped by its hash — and a failure here must
     // never stop the question: the answer is then simply the one it would have given a moment ago.
-    try { await onReadInk?.() } catch { }
+    // Check my work reads the ink from the picture itself, so it does not wait for Apple's recognition.
+    if (preset !== 'check') try { await onReadInk?.() } catch { }
     const flush = () => { raf.current = null; patch(path, () => { }) }
     const later = () => { if (!raf.current) raf.current = setTimeout(flush, 120) }
     try {
-      await askStream({ page: path, question: preset ? undefined : q, preset, block, problem, history, week: th.week, image: (!preset && th.image) || undefined }, ev => {
+      await askStream({ page: path, question: preset ? undefined : q, preset, block, problem, history, week: th.week, image: img || undefined }, ev => {
         if (ev.type === 'context') { turn.sources = ev.items || []; turn.chars = ev.chars || 0; patch(path, x => { x.context = ev }) }
         else if (ev.type === 'status') { turn.phase = ev.phase; if (ev.model) turn.model = ev.model; later() }
         else if (ev.type === 'delta') { turn.a += ev.text; later() }
@@ -103,8 +105,10 @@ export default function AskPanel({ page, onAppend, onReadInk }) {
     if (turn.status === 'done' && turn.preset && PRESETS[turn.preset]?.auto) save(turn)   // the solution lands on the page by itself
   }
   const stop = () => abort.current?.abort()
-  const save = turn => { if (turn.saved || !turn.a.trim()) return; const id = onAppend?.(noteMarkdown(turn), { below: true }); if (id) patch(path, () => { turn.saved = id }) }
-  const retry = turn => send({ question: turn.preset ? undefined : (turn.asked || turn.q), preset: turn.preset || undefined, block: turn.block || undefined, problem: turn.problem || undefined })
+  // A checked piece of work keeps its feedback beside the work (to the right of what was clipped); the rest below the page.
+  const save = turn => { if (turn.saved || !turn.a.trim()) return; const id = onAppend?.(noteMarkdown(turn), turn.place ? { at: turn.place } : { below: true }); if (id) patch(path, () => { turn.saved = id }) }
+  const retry = turn => send({ question: turn.preset ? undefined : (turn.asked || turn.q), preset: turn.preset || undefined, block: turn.block || undefined, problem: turn.problem || undefined, image: turn.preset ? turn.image || undefined : undefined, place: turn.place || undefined })
+  const imgUrl = src => api.fileUrl(page.dir, src.startsWith(page.dir + '/') ? src.slice(page.dir.length + 1) : src)
   const lastDone = [...t.turns].reverse().find(x => x.status === 'done' && !x.saved)
   const lastTurn = t.turns[t.turns.length - 1]
 
@@ -148,7 +152,7 @@ export default function AskPanel({ page, onAppend, onReadInk }) {
       </div>
       <div className="ask-thread" ref={list} onScroll={e => { const el = e.currentTarget; stick.current = el.scrollTop + el.clientHeight >= el.scrollHeight - 40 }}>
         {t.turns.length === 0 && <div className="ask-presets">{SUGGESTIONS.map(s => <button key={s} className="chip" onClick={() => send({ question: s })}>{s}</button>)}</div>}
-        {t.turns.map(turn => <Turn key={turn.id} turn={turn} renderer={renderer} onSave={() => save(turn)} onRetry={() => retry(turn)} />)}
+        {t.turns.map(turn => <Turn key={turn.id} turn={turn} renderer={renderer} imgUrl={imgUrl} onSave={() => save(turn)} onRetry={() => retry(turn)} />)}
       </div>
       <div className="ask-size" title="Drag to resize" onPointerDown={startSize} />
       <div className="ask-compose">
@@ -173,7 +177,7 @@ export default function AskPanel({ page, onAppend, onReadInk }) {
   )
 }
 
-function Turn({ turn, renderer, onSave, onRetry }) {
+function Turn({ turn, renderer, imgUrl, onSave, onRetry }) {
   const ref = useRef(null)
   const html = useMemo(() => renderer.html(turn.a), [turn.a, renderer])
   const inner = useMemo(() => ({ __html: html }), [html])   // stable identity, or React 19 re-sets innerHTML and drops the typeset math
@@ -182,7 +186,8 @@ function Turn({ turn, renderer, onSave, onRetry }) {
   const copy = () => { try { navigator.clipboard?.writeText(turn.a) } catch { } }
   return (
     <div className={'ask-turn ' + turn.status}>
-      <div className="ask-q">{turn.asked || turn.q}{turn.quote ? <span className="ask-q-sub"> · about a passage</span> : turn.image ? <span className="ask-q-sub"> · about a clipped region</span> : null}{turn.preset === 'solution' && turn.problem?.label ? <span className="ask-q-sub"> · {turn.problem.label}</span> : null}</div>
+      <div className="ask-q">{turn.asked || turn.q}{turn.quote ? <span className="ask-q-sub"> · about a passage</span> : turn.image && turn.preset !== 'check' ? <span className="ask-q-sub"> · about a clipped region</span> : null}{turn.preset === 'solution' && turn.problem?.label ? <span className="ask-q-sub"> · {turn.problem.label}</span> : null}
+        {turn.image && <img className="ask-q-shot" src={imgUrl(turn.image)} alt="what you clipped" />}</div>
       {turn.status === 'error'
         ? <div className="ask-err">{turn.error?.message}{turn.error?.code === 'login' && <span className="ask-hint">Same fix as the Sync button.</span>}</div>
         : turn.a
@@ -193,8 +198,8 @@ function Turn({ turn, renderer, onSave, onRetry }) {
         <div className="ask-foot">
           <span className="ask-meta">{turn.status === 'stopped' ? 'stopped · ' : ''}{footLine(turn)}</span>
           {turn.saved
-            ? <span className="ask-saved">{turn.preset === 'solution' ? 'Written at the end of the page' : 'Saved on the page'} · ⌘Z undoes</span>
-            : <><button className="ask-link" onClick={onSave}>Save as note <kbd>⌘↩</kbd></button><button className="ask-link" onClick={copy}>Copy</button></>}
+            ? <span className="ask-saved">{turn.preset === 'solution' ? 'Written at the end of the page' : turn.place ? 'Put beside your work' : 'Saved on the page'} · ⌘Z undoes</span>
+            : <><button className="ask-link" onClick={onSave}>{turn.place ? 'Put it on the page' : 'Save as note'} <kbd>⌘↩</kbd></button><button className="ask-link" onClick={copy}>Copy</button></>}
           <button className="ask-link" onClick={onRetry}>Retry</button>
         </div>)}
       {turn.status === 'error' && <div className="ask-foot"><button className="ask-link" onClick={onRetry}>Retry</button></div>}

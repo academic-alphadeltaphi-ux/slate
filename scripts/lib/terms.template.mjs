@@ -8,8 +8,8 @@ export const COURSES = /*COURSES*/{}/*/COURSES*/
 
 /*CALENDAR*/
 const FALL = { name: 'Fall 2026', start: '2026-09-07', end: '2026-12-07', reading: ['2026-10-26'] }
-const WINTER = { name: 'Winter 2027', start: '2027-01-04', end: '2027-04-05', reading: ['2027-02-15'] }
-export const NO_CLASS = ['2026-09-07', '2026-10-12', '2027-03-26']
+const WINTER = { name: 'Winter 2027', start: '2027-01-11', end: '2027-04-05', reading: ['2027-02-15'] }
+export const NO_CLASS = ['2026-09-07', '2026-10-12', '2026-12-08', '2026-12-09', '2026-12-10', '2026-12-11', '2027-03-26']
 /*/CALENDAR*/
 // The one calendar-facts export set (SPEC §20.1): the plan, the Google calendar, the course screen and the
 // Sunday review all read these, so a day is a class in every screen or none.

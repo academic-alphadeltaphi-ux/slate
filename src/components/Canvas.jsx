@@ -1,6 +1,6 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { api } from '../api.js'
-import { computeLayout, pageExtent, reorderBlocks, maxZ, minZ, FIRST, FLOW_X, MAX_AUTO_W, DOC_W, isDoc, MIN_W, DEFAULT_W, ANNOTATION_TYPES, OVERLAY_TYPES, elementKind, inlineKind, snapRule } from '../layout.js'
+import { computeLayout, pageExtent, reorderBlocks, maxZ, minZ, FIRST, FLOW_X, MAX_AUTO_W, autoWidth, isDoc, MIN_W, DEFAULT_W, ANNOTATION_TYPES, OVERLAY_TYPES, elementKind, inlineKind, snapRule } from '../layout.js'
 import { buildExtensions } from '../editor/extensions.js'
 import { createRenderer } from '../editor/markdown.js'
 import { newId } from '../editor/ids.js'
@@ -12,17 +12,20 @@ import PdfEl from './PdfEl.jsx'
 import ContextMenu from './ContextMenu.jsx'
 import { InkSvg } from './Ink.jsx'
 import { Icon } from './Icons.jsx'
-import Tools, { stepZoom } from './Tools.jsx'
+import Tools, { stepZoom, ZOOM_MIN, ZOOM_MAX, createPenStore } from './Tools.jsx'
 import { useDialog } from './Dialog.jsx'
 import { useGoTo } from './useGoTo.js'
-import { compactPoint, hitStroke, eraseStrokePartial, newStrokeId, inkBounds, INK_SIZES, ERASER_SIZES, defaultInkColor, inkColorMap } from '../ink.js'
+import { compactPoint, hitStroke, eraseStrokePartial, newStrokeId, inkBounds, strokePath, INK_SIZES, ERASER_SIZES, defaultInkColor, inkColorMap } from '../ink.js'
 import { hitInkAt, inkMenuItems, textBlockFromInk, penBox } from '../hwr.js'
 import InkTextCard from './InkText.jsx'
 import { openAsk } from '../ask.js'
 import { THIS as ED } from '../edition.js'
+// the student's own copy clips what is on screen, handwriting alone included, and checks work (SPEC §20.71); the brothers' keep §20.30.
+const FULL_CLIP = ED.key === 'full'
 import { start as startDictation, supported as dictationSupported, joinPhrase } from '../dictate.js'
 
 const ls = { get: (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d } catch { return d } }, set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)) } catch { } } }
+const INK_SAVE_MS = 1500   // a stroke's save waits this long for the pen to pause (scheduleLayout)
 const INK_COLORS_UI = ['#1d1d1f', '#f2f2f7', '#2563eb', '#e11d48', '#16a34a', '#ea580c', '#7c3aed', '#ffd60a']
 const isTyping = () => { const a = document.activeElement; return !!a && (['INPUT', 'TEXTAREA', 'SELECT'].includes(a.tagName) || a.isContentEditable) }
 
@@ -46,9 +49,12 @@ const Canvas = forwardRef(function Canvas({ page, external, onStatus, onOpenTitl
   const [conflict, setConflict] = useState(null)
   const [elMenu, setElMenu] = useState(null)
   const [tool, setTool] = useState(() => ({ mode: 'select', color: defaultInkColor(), size: INK_SIZES[2], eraser: 'stroke', eraserSize: ERASER_SIZES[1] }))
-  const [live, setLive] = useState(null)
-  const [penInfo, setPenInfo] = useState(null)
-  const [eraserPos, setEraserPos] = useState(null)
+  // Writing never sets state per pen movement: each one re-rendered the whole page, and on a page with 2,963 strokes a
+  // frame took 80–950 ms, so the ink trailed the pen further the more was written. The live stroke, the pen readout and
+  // the eraser ring are written to the DOM directly; state changes only when the stroke starts, ends or leaves the page.
+  const livePath = useRef(null), eraserRing = useRef(null), extentRef = useRef(null)
+  const penStore = useMemo(createPenStore, [])
+  const [grow, setGrow] = useState(null)        // the page under a stroke that runs past its edge, until the pen lifts
   const [lasso, setLasso] = useState(null)      // the live lasso polygon, page coordinates
   const [clip, setClip] = useState(null)        // the live clip rectangle, page coordinates
   const [clipped, setClipped] = useState(null)  // the clip just taken, and the offer to ask about it
@@ -114,16 +120,16 @@ const Canvas = forwardRef(function Canvas({ page, external, onStatus, onOpenTitl
   // because nothing on disk moves.
   const doc = isDoc(layout)
   const setDoc = on => { commit(); updateLayout(cur => ({ ...cur, mode: on ? 'doc' : undefined })); scheduleLayout(); if (on) setTool(t => ({ ...t, mode: 'select' })) }
-  const measure = doc ? DOC_W : MAX_AUTO_W
   const { pos, content } = useMemo(() => computeLayout(blocks, effectiveLayout, sizes, canvasW / zoom, doc), [blocks, effectiveLayout, sizes, canvasW, zoom, doc])
   posRef.current = pos; sizesRef.current = sizes; contentRef.current = content
   const located = useGoTo(goTo, { canvasRef, pageRef, zoomRef, sizes, layout, pos })
   const extent = useMemo(() => {
     const ink = inkBounds(layout.elements, pos)
     let w = Math.max(content.w, ink.w), h = Math.max(content.h, ink.h)
-    if (live) { for (const p of live.stroke.points) { w = Math.max(w, live.offset.x + p[0] + 20); h = Math.max(h, live.offset.y + p[1] + 20) } }
+    if (grow) { w = Math.max(w, grow.w); h = Math.max(h, grow.h) }
     return pageExtent({ w, h }, canvasW / zoom, canvasH / zoom, doc)
-  }, [content, layout, pos, live, canvasW, canvasH, zoom, doc])
+  }, [content, layout, pos, grow, canvasW, canvasH, zoom, doc])
+  extentRef.current = extent
 
   // ---- history: every canvas action except typing (TipTap has its own undo) ---------------------
   const snapshot = () => ({ blocks: blocksRef.current, layout: layoutRef.current })
@@ -187,17 +193,23 @@ const Canvas = forwardRef(function Canvas({ page, external, onStatus, onOpenTitl
     }
   }, [page.path])
   const schedulePage = () => { sv.current.page.version++; clearTimeout(timers.current.page); timers.current.page = setTimeout(savePage, 500) }
-  const scheduleLayout = () => { sv.current.layout.version++; clearTimeout(timers.current.layout); timers.current.layout = setTimeout(saveLayout, 300) }
+  // Saving a heavily inked page is ~110 ms of JSON in Slate.app's main process, the thread that also delivers the pen's
+  // input, so a stroke is saved once the pen pauses (INK_SAVE_MS) and never while it is down. Closing the window or the
+  // page still flushes at once (__slateFlush, the unmount save).
+  const scheduleLayout = (ms = 300) => { sv.current.layout.version++; clearTimeout(timers.current.layout); timers.current.layout = setTimeout(saveLayoutIdle, ms) }
+  const saveLayoutIdle = () => { if (inkRef.current) timers.current.layout = setTimeout(saveLayoutIdle, 400); else saveLayout() }
   savePageRef.current = savePage; saveLayoutRef.current = saveLayout
   // One new text container through the page's own hash-checked save; ⌘Z removes it. `below: true` pins it one rule
   // under the page's content (ask's Save as note, and a spoken phrase with no cursor anywhere); `after: <id>` pins it
   // under a pinned block or inserts it next in file order; otherwise it flows at the end. Returns the new id.
-  const appendBlock = (md, { after, below } = {}) => {
+  const appendBlock = (md, { after, below, at } = {}) => {
     const id = newId(); commit()
     const cur = blocksRef.current, i = after ? cur.findIndex(b => (b.id || FIRST) === after) : -1
     updateBlocks(bs => (i >= 0 ? [...bs.slice(0, i + 1), { id, md }, ...bs.slice(i + 1)] : [...bs, { id, md }]))
     const p = after ? posRef.current?.get(after) : null, sz = after ? sizesRef.current?.get(after) : null
-    if (below && !isDoc(layoutRef.current)) { const c = contentRef.current; updateLayout(l => ({ ...l, elements: [...l.elements, { id, type: 'text', x: FLOW_X, y: snapRule(c.h + 24), w: 'auto', z: maxZ(l) + 1 }] })); scheduleLayout() }
+    // `at`: a page point — Check my work's note, pinned to the right of the work it is about (SPEC §20.71)
+    if (at && !isDoc(layoutRef.current)) { updateLayout(l => ({ ...l, elements: [...l.elements, { id, type: 'text', x: Math.max(0, Math.round(at.x)), y: snapRule(Math.max(0, at.y)), w: 460, z: maxZ(l) + 1 }] })); scheduleLayout() }
+    else if (below && !isDoc(layoutRef.current)) { const c = contentRef.current; updateLayout(l => ({ ...l, elements: [...l.elements, { id, type: 'text', x: FLOW_X, y: snapRule(c.h + 24), w: 'auto', z: maxZ(l) + 1 }] })); scheduleLayout() }
     else if (p?.pinned) { updateLayout(l => ({ ...l, elements: [...l.elements, { id, type: 'text', x: p.x, y: snapRule(p.y + (sz?.h || 0) + 24), w: p.w, z: maxZ(l) + 1 }] })); scheduleLayout() }
     schedulePage()
     return id
@@ -306,7 +318,7 @@ const Canvas = forwardRef(function Canvas({ page, external, onStatus, onOpenTitl
     const onWheel = e => {
       if (!e.ctrlKey && !e.metaKey) return
       e.preventDefault()
-      const z0 = zoomRef.current, z1 = Math.min(3, Math.max(0.5, z0 * Math.exp(-e.deltaY * 0.01)))
+      const z0 = zoomRef.current, z1 = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, z0 * Math.exp(-e.deltaY * 0.01)))
       if (z1 === z0) return
       const r = el.getBoundingClientRect(), pr = pageRef.current.getBoundingClientRect(), sc = pageRef.current.parentElement
       const px = (e.clientX - pr.left) / z0, py = (e.clientY - pr.top) / z0
@@ -456,7 +468,12 @@ const Canvas = forwardRef(function Canvas({ page, external, onStatus, onOpenTitl
     e.preventDefault(); e.stopPropagation()
     const at = { x: e.clientX, y: e.clientY }
     if (kind === 'text') {
-      setElMenu({ at, items: [{ label: 'Delete this text box', danger: true, onClick: () => removeBlock(el.key) }] })
+      // Only a box with a place in the layout can fold: the anonymous first block has none.
+      const inLayout = el.id && layoutRef.current.elements.some(x => x.id === el.id)
+      const name = el.title || (/^#+\s+(.+)$/m.exec(el.md || '')?.[1] || '').trim() || 'Folded text'
+      setElMenu({ at, items: [
+        ...(inLayout ? [{ label: el.hidden ? 'Show' : 'Fold into a pill', onClick: () => patchElement(el.id, el.hidden ? { hidden: false } : { hidden: true, title: name }, true) }] : []),
+        { label: 'Delete this text box', danger: true, onClick: () => removeBlock(el.key) }] })
       return
     }
     const name = decodeURIComponent((el.src || '').split('/').pop()), inline = inlineKind(el)
@@ -511,6 +528,34 @@ const Canvas = forwardRef(function Canvas({ page, external, onStatus, onOpenTitl
       st.stroke.points.push(pt)
     }
   }
+  // The stroke being drawn, straight into the ink layer's live <path>: the same outline as before (strokePath, live),
+  // with no React render. `style` is set once per stroke, the outline at every movement; no stroke clears it.
+  const drawLive = (style = false) => {
+    const st = inkRef.current, el = livePath.current
+    if (!el) return
+    if (!st?.stroke) { el.removeAttribute('d'); return }
+    const s = st.stroke, p = strokePath(s, { offset: st.scope.offset, live: true })
+    if (style) {
+      const color = colorMap[s.color] || s.color
+      el.setAttribute('class', s.tool)
+      if (p.fill) { el.setAttribute('fill', color); for (const a of ['stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin']) el.removeAttribute(a) }
+      else { el.setAttribute('fill', 'none'); el.setAttribute('stroke', color); el.setAttribute('stroke-width', p.strokeWidth); el.setAttribute('stroke-linecap', 'butt'); el.setAttribute('stroke-linejoin', 'round') }
+    }
+    el.setAttribute('d', p.d)
+  }
+  // The page used to grow under every live point; now it is told only when the pen crosses its edge, which pageExtent's
+  // margin makes rare. A document's width never followed the ink, so only its height is watched.
+  const growUnderPen = st => {
+    const l = st.stroke.points[st.stroke.points.length - 1], ex = extentRef.current; if (!l || !ex) return
+    const x = st.scope.offset.x + l[0] + 20, y = st.scope.offset.y + l[1] + 20
+    if (y > ex.h || (!doc && x > ex.w)) setGrow(g => ({ w: Math.max(g?.w || 0, x), h: Math.max(g?.h || 0, y) }))
+  }
+  const moveEraser = pt => {
+    const el = eraserRing.current; if (!el) return
+    if (!pt) { el.style.display = 'none'; return }
+    const r = toolRef.current.eraserSize
+    el.style.display = ''; el.style.left = pt.x - r + 'px'; el.style.top = pt.y - r + 'px'
+  }
   const onInkDown = e => {
     if (e.pointerType === 'touch') return
     const t = toolRef.current, isPen = e.pointerType === 'pen'
@@ -524,7 +569,7 @@ const Canvas = forwardRef(function Canvas({ page, external, onStatus, onOpenTitl
     const eraser = t.mode === 'eraser' || (isPen && (e.button === 5 || (e.buttons & 32)))
     try { pageRef.current.setPointerCapture(e.pointerId) } catch { }
     const pt = pagePoint(e)
-    if (eraser) { inkRef.current = { eraser: true, committed: false }; setEraserPos(pt); eraseAt(pt.x, pt.y); return }
+    if (eraser) { inkRef.current = { eraser: true, committed: false }; if (t.mode === 'eraser') moveEraser(pt); eraseAt(pt.x, pt.y); return }
     const host = e.target.closest('.el[data-kind="pdf"], .el[data-kind="image"]')
     const hp = host ? pos.get(host.dataset.id) : null
     const scope = hp ? { parent: host.dataset.id, offset: { x: hp.x, y: hp.y }, parentW: typeof hp.w === 'number' ? hp.w : null } : { parent: null, offset: { x: 0, y: 0 }, parentW: null }
@@ -532,18 +577,18 @@ const Canvas = forwardRef(function Canvas({ page, external, onStatus, onOpenTitl
     const stroke = { id: newStrokeId(), tool: mode, color: t.color, width: t.size, pen: isPen, points: [] }
     inkRef.current = { scope, stroke, t0: (e.nativeEvent || e).timeStamp }
     addInkPoints(e)
-    setLive({ stroke: { ...stroke, points: stroke.points.slice() }, offset: scope.offset, scale: 1 })
+    drawLive(true)
   }
   const onInkMove = e => {
-    if (e.pointerType === 'pen') setPenInfo({ type: 'pen', pressure: e.pressure, tilt: e.tiltX || e.tiltY ? `${e.tiltX}°/${e.tiltY}°` : null })
-    else if (toolRef.current.mode !== 'select' && e.buttons) setPenInfo({ type: e.pointerType, pressure: e.pressure, tilt: null })
-    if (toolRef.current.mode === 'eraser') setEraserPos(pagePoint(e))
+    if (e.pointerType === 'pen') penStore.set(`pen · ${e.pressure.toFixed(2)}${e.tiltX || e.tiltY ? ` · ${e.tiltX}°/${e.tiltY}°` : ''}`)
+    else if (toolRef.current.mode !== 'select' && e.buttons) penStore.set(`${e.pointerType} · no pressure`)
+    if (toolRef.current.mode === 'eraser') moveEraser(pagePoint(e))
     const st = inkRef.current; if (!st) return
     if (st.lasso) { const pt = pagePoint(e); const l = st.pts[st.pts.length - 1]; if (Math.hypot(pt.x - l[0], pt.y - l[1]) > 2) { st.pts.push([pt.x, pt.y]); setLasso(st.pts.slice()) } return }
     if (st.clip) { setClip(rectOf(st.start, pagePoint(e))); return }
     if (st.eraser) { if (e.buttons) { const pt = pagePoint(e); eraseAt(pt.x, pt.y) } return }
     addInkPoints(e)
-    setLive({ stroke: { ...st.stroke, points: st.stroke.points.slice() }, offset: st.scope.offset, scale: 1 })
+    drawLive(); growUnderPen(st)
   }
   const onInkUp = e => {
     const st = inkRef.current; if (!st) return
@@ -552,7 +597,7 @@ const Canvas = forwardRef(function Canvas({ page, external, onStatus, onOpenTitl
     if (st.lasso) { setLasso(null); setSel(selectByPolygon(st.pts)); return }
     if (st.clip) { const r = rectOf(st.start, pagePoint(e)); setClip(null); if (r.w >= 4 && r.h >= 4) makeClip(r); else setTool(t => ({ ...t, mode: 'select' })); return }
     if (st.eraser) { scheduleRecognise(); return }      // erasing changes the ink too, so its text is stale as well
-    addInkPoints(e); setLive(null)
+    addInkPoints(e); drawLive(); setGrow(null)
     const stroke = st.stroke
     if (stroke.points.length === 1) stroke.points.push(stroke.points[0].slice())
     commit()
@@ -561,7 +606,7 @@ const Canvas = forwardRef(function Canvas({ page, external, onStatus, onOpenTitl
       if (idx >= 0) { const el = cur.elements[idx]; const elements = cur.elements.slice(); elements[idx] = { ...el, strokes: [...el.strokes, stroke] }; return { ...cur, elements } }
       return { ...cur, elements: [...cur.elements, { id: newId(), type: 'ink', ...(st.scope.parent ? { parent: st.scope.parent, parentW: st.scope.parentW } : {}), strokes: [stroke] }] }
     })
-    scheduleLayout(); scheduleRecognise()
+    scheduleLayout(INK_SAVE_MS); scheduleRecognise()
   }
   // ---- lasso: select handwriting, then move, resize, recolour or delete it (OneNote-style) ------------
   const inkFrame = el => { if (!el.parent) return { off: { x: 0, y: 0 }, k: 1 }; const p = pos.get(el.parent); if (!p) return null; return { off: { x: p.x, y: p.y }, k: el.parentW && typeof p.w === 'number' ? p.w / el.parentW : 1 } }
@@ -716,7 +761,25 @@ const Canvas = forwardRef(function Canvas({ page, external, onStatus, onOpenTitl
   // images, PDF highlights and the ink over them. The PNG is saved like any upload ("Clip n.png" in
   // the page's assets) and the element records where it was taken from. SPEC.md §5.
   const rectOf = (a, b) => ({ x: Math.min(a.x, b.x), y: Math.min(a.y, b.y), w: Math.abs(a.x - b.x), h: Math.abs(a.y - b.y) })
+  // the student's copy, inside the desktop app (SPEC §20.71): the rectangle photographed exactly as drawn — typed text, math,
+  // handwriting, PDFs, images — by the window itself (POST /api/capture → desktop/main.cjs). Only what is on screen can be
+  // photographed, so the rectangle is cut to the canvas's visible area; the floating tools are hidden for the two frames
+  // it takes. null in a browser (501) or on any failure, and the picture is composed below instead.
+  const captureRect = async rect => {
+    if (!FULL_CLIP) return null
+    const el = canvasRef.current, pr = pageRef.current.getBoundingClientRect(), vr = el.getBoundingClientRect(), z = zoomRef.current
+    const x0 = Math.max(vr.left, pr.left + rect.x * z), y0 = Math.max(vr.top, pr.top + rect.y * z)
+    const x1 = Math.min(vr.left + el.clientWidth, pr.left + (rect.x + rect.w) * z), y1 = Math.min(vr.top + el.clientHeight, pr.top + (rect.y + rect.h) * z)
+    if (x1 - x0 < 4 || y1 - y0 < 4) return null
+    document.body.classList.add('slate-capturing')
+    try {
+      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))
+      const r = await fetch('/api/capture', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ x: x0, y: y0, w: x1 - x0, h: y1 - y0 }) })
+      return r.ok && (r.headers.get('content-type') || '').startsWith('image/png') ? await r.blob() : null
+    } catch { return null } finally { document.body.classList.remove('slate-capturing') }
+  }
   const makeClip = async rect => {
+    const shot = await captureRect(rect)
     const root = pageRef.current, pr = root.getBoundingClientRect(), z = zoomRef.current
     const S = 2   // output pixels per page unit: crisp on a retina screen, files stay small
     const boxOfNode = n => { const r = n.getBoundingClientRect(); return { x: (r.left - pr.left) / z, y: (r.top - pr.top) / z, w: r.width / z, h: r.height / z } }
@@ -732,43 +795,47 @@ const Canvas = forwardRef(function Canvas({ page, external, onStatus, onOpenTitl
       }
       for (const node of host.querySelectorAll('.pdf-annot')) { const hit = clipBox(boxOfNode(node)); if (hit) marks.push({ hit, color: node.style.getPropertyValue('--c') || '#ffd60a', underline: node.classList.contains('underline') }) }
     }
-    if (!sources.length) { setTool(t => ({ ...t, mode: 'select' })); dialog.alert({ title: 'Nothing to clip there', message: 'A clip captures part of a PDF page or an image. Drag the rectangle over one.' }); return }
-    const out = document.createElement('canvas'); out.width = Math.round(rect.w * S); out.height = Math.round(rect.h * S)
-    const ctx = out.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, out.width, out.height)
-    const place = b => [(b.x - rect.x) * S, (b.y - rect.y) * S, b.w * S, b.h * S]
-    for (const s of sources) { const kx = s.nw / s.box.w, ky = s.nh / s.box.h; ctx.drawImage(s.node, (s.hit.x - s.box.x) * kx, (s.hit.y - s.box.y) * ky, s.hit.w * kx, s.hit.h * ky, ...place(s.hit)) }
-    for (const m of marks) {
-      const [x, y, w, h] = place(m.hit)
-      ctx.save(); ctx.fillStyle = m.color
-      if (m.underline) ctx.fillRect(x, y + h - 2.5 * S, w, 2.5 * S); else { ctx.globalAlpha = .45; ctx.globalCompositeOperation = 'multiply'; ctx.fillRect(x, y, w, h) }
-      ctx.restore()
+    // Handwriting alone is worth a clip in the student's copy — an exercise worked on the bare page is what Check my work is for.
+    const inked = FULL_CLIP && !!root.querySelector('.ink-svg path:not([data-live])')   // the live stroke's path is always there, empty
+    if (!shot && !sources.length && !inked) { setTool(t => ({ ...t, mode: 'select' })); dialog.alert({ title: 'Nothing to clip there', message: 'A clip captures part of a PDF page or an image. Drag the rectangle over one.' }); return }
+    let blob = shot
+    if (!blob) {
+      const out = document.createElement('canvas'); out.width = Math.round(rect.w * S); out.height = Math.round(rect.h * S)
+      const ctx = out.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, out.width, out.height)
+      const place = b => [(b.x - rect.x) * S, (b.y - rect.y) * S, b.w * S, b.h * S]
+      for (const s of sources) { const kx = s.nw / s.box.w, ky = s.nh / s.box.h; ctx.drawImage(s.node, (s.hit.x - s.box.x) * kx, (s.hit.y - s.box.y) * ky, s.hit.w * kx, s.hit.h * ky, ...place(s.hit)) }
+      for (const m of marks) {
+        const [x, y, w, h] = place(m.hit)
+        ctx.save(); ctx.fillStyle = m.color
+        if (m.underline) ctx.fillRect(x, y + h - 2.5 * S, w, 2.5 * S); else { ctx.globalAlpha = .45; ctx.globalCompositeOperation = 'multiply'; ctx.fillRect(x, y, w, h) }
+        ctx.restore()
+      }
+      // Ink: the page's SVG, re-framed to the rectangle. The theme's white ink is written black on the white clip.
+      const ink = root.querySelector('.ink-svg')
+      if (ink && ink.querySelector('path:not([data-live])')) {
+        const svg = ink.cloneNode(true)
+        svg.setAttribute('viewBox', `${rect.x} ${rect.y} ${rect.w} ${rect.h}`); svg.setAttribute('width', out.width); svg.setAttribute('height', out.height); svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+        const style = document.createElementNS('http://www.w3.org/2000/svg', 'style'); style.textContent = 'path.highlighter{opacity:.45;mix-blend-mode:multiply}'; svg.prepend(style)
+        const xml = new XMLSerializer().serializeToString(svg).replaceAll('#f2f2f7', '#1d1d1f')
+        await new Promise(res => { const im = new Image(); im.onload = () => { ctx.drawImage(im, 0, 0); res() }; im.onerror = res; im.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(xml) })
+      }
+      // All white means the page had not finished rendering (or only margin was framed): no file for that.
+      const px = ctx.getImageData(0, 0, out.width, out.height).data
+      let blank = true; for (let i = 0; i < px.length && blank; i += 4) if (px[i] < 250 || px[i + 1] < 250 || px[i + 2] < 250) blank = false
+      if (blank) { setTool(t => ({ ...t, mode: 'select' })); dialog.alert({ title: 'That clip is empty', message: 'Only white was under the rectangle. If the page was still drawing, give it a second and clip again.' }); return }
+      try { blob = await new Promise(res => out.toBlob(res, 'image/png')) } catch (e) { console.error(e) }
+      if (!blob) { onStatus('error'); setTool(t => ({ ...t, mode: 'select' })); return }
     }
-    // Ink: the page's SVG, re-framed to the rectangle. The theme's white ink is written black on the white clip.
-    const ink = root.querySelector('.ink-svg')
-    if (ink && ink.querySelector('path')) {
-      const svg = ink.cloneNode(true)
-      svg.setAttribute('viewBox', `${rect.x} ${rect.y} ${rect.w} ${rect.h}`); svg.setAttribute('width', out.width); svg.setAttribute('height', out.height); svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
-      const style = document.createElementNS('http://www.w3.org/2000/svg', 'style'); style.textContent = 'path.highlighter{opacity:.45;mix-blend-mode:multiply}'; svg.prepend(style)
-      const xml = new XMLSerializer().serializeToString(svg).replaceAll('#f2f2f7', '#1d1d1f')
-      await new Promise(res => { const im = new Image(); im.onload = () => { ctx.drawImage(im, 0, 0); res() }; im.onerror = res; im.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(xml) })
-    }
-    // All white means the page had not finished rendering (or only margin was framed): no file for that.
-    const px = ctx.getImageData(0, 0, out.width, out.height).data
-    let blank = true; for (let i = 0; i < px.length && blank; i += 4) if (px[i] < 250 || px[i + 1] < 250 || px[i + 2] < 250) blank = false
-    if (blank) { setTool(t => ({ ...t, mode: 'select' })); dialog.alert({ title: 'That clip is empty', message: 'Only white was under the rectangle. If the page was still drawing, give it a second and clip again.' }); return }
-    let blob = null
-    try { blob = await new Promise(res => out.toBlob(res, 'image/png')) } catch (e) { console.error(e) }
-    if (!blob) { onStatus('error'); setTool(t => ({ ...t, mode: 'select' })); return }
     // Beside the document that fills most of the rectangle, level with where the clip was taken. A
     // flowed document keeps its place: the clip stays clear of the flow column (SPEC §5), or it would
     // count as an obstacle and push its own source down the page.
     const main = sources.reduce((m, s) => (!m || s.hit.w * s.hit.h > m.hit.w * m.hit.h ? s : m), null)
-    const from = layoutRef.current.elements.find(e => e.id === main.id), hp = pos.get(main.id), hs = sizes.get(main.id)
+    const from = main ? layoutRef.current.elements.find(e => e.id === main.id) : null, hp = main ? pos.get(main.id) : null, hs = main ? sizes.get(main.id) : null
     // What was circled is not yet anything: it is offered as either (SPEC §20.31). Placing it puts the picture on
     // the page to drag and keep; asking sends it to Claude with the page's whole context, and leaves the page alone.
     let x = hp && hs ? Math.round(hp.x + hs.w + 24) : Math.round(rect.x + rect.w + 24)
     if (hp && !hp.pinned) x = Math.max(x, FLOW_X + MAX_AUTO_W + 8)
-    const clipInfo = { of: from?.src, ...(main.pageNo ? { page: main.pageNo } : {}), x: Math.round(rect.x - (hp?.x || 0)), y: Math.round(rect.y - (hp?.y || 0)), w: Math.round(rect.w), h: Math.round(rect.h) }
+    const clipInfo = { of: from?.src, ...(main?.pageNo ? { page: main.pageNo } : {}), x: Math.round(rect.x - (hp?.x || 0)), y: Math.round(rect.y - (hp?.y || 0)), w: Math.round(rect.w), h: Math.round(rect.h) }
     setClipped({ blob, url: URL.createObjectURL(blob), rect, x, y: Math.round(rect.y), clipInfo })
     setTool(t => ({ ...t, mode: 'select' }))
   }
@@ -788,6 +855,15 @@ const Canvas = forwardRef(function Canvas({ page, external, onStatus, onOpenTitl
       updateLayout(cur => ({ ...cur, elements: [...cur.elements, { id: newId(), type: 'image', src: a.src, size: a.size, x: c.x, y: c.y, w: Math.round(c.rect.w), h: Math.round(c.rect.h), z: maxZ(cur) + 1, clip: c.clipInfo }] }))
       scheduleLayout()
       try { await navigator.clipboard?.write?.([new ClipboardItem({ 'image/png': c.blob })]) } catch { }
+    } catch (err) { console.error(err); onStatus('error') }
+    URL.revokeObjectURL(c.url); setClipped(null)
+  }
+  // Check my work (SPEC §20.71): the exercise and the attempt, clipped together, marked by Claude from the picture; its
+  // note, if kept, goes to the right of what was clipped.
+  const checkClip = async c => {
+    try {
+      const a = await saveClip(c)
+      openAsk({ page: page.path, preset: 'check', image: `${page.dir}/${a.src}`, place: { x: c.rect.x + c.rect.w + 24, y: c.rect.y } })
     } catch (err) { console.error(err); onStatus('error') }
     URL.revokeObjectURL(c.url); setClipped(null)
   }
@@ -1042,22 +1118,26 @@ const Canvas = forwardRef(function Canvas({ page, external, onStatus, onOpenTitl
         {conflict && <ConflictBanner conflict={conflict} onReload={reloadFromDisk} onKeep={keepMine} />}
         <div className="page-scaler" style={{ width: extent.w * zoom, height: extent.h * zoom }}>
           <div className={'page' + (doc ? ' one-column' : '') + (drawing ? ' drawing ' + tool.mode : '')} ref={pageRef} style={{ width: extent.w, height: extent.h, transform: `scale(${zoom})` }} onClick={onCanvasClick} onContextMenuCapture={inkContextMenu}
-            onPointerDownCapture={onInkDown} onPointerMove={onInkMove} onPointerUp={onInkUp} onPointerCancel={onInkUp} onPointerLeave={() => setEraserPos(null)} onClickCapture={swallowClickAfterInk}>
+            onPointerDownCapture={onInkDown} onPointerMove={onInkMove} onPointerUp={onInkUp} onPointerCancel={onInkUp} onPointerLeave={() => moveEraser(null)} onClickCapture={swallowClickAfterInk}>
             {blocks.map(b => {
               const id = b.id || FIRST, p = pos.get(id); if (!p) return null
               const el = (b.id && layout.elements.find(e => e.id === b.id)) || {}
               if (el.parent && hiddenIds.has(el.parent)) return null
               const auto = p.w === 'auto'
+              // A folded text block (SPEC §20.73: a problem's solution until it is asked for) is a pill, like a folded
+              // document; its words stay in the page, unread until Show.
+              const folded = !!(b.id && el.hidden)
               return (
                 <div key={b.id === firstIdRef.current ? FIRST : id} data-id={id} data-kind="text" ref={observe} data-from={quoted.has(id) ? quoted.label : undefined}
-                  className={'el el-text' + (focused === id ? ' focused' : '') + (p.pinned ? ' pinned' : ' flowed') + (quoted.has(id) ? ' el-quercus k-' + quoted.kind : '')}
-                  onContextMenu={e => { if (!e.target.closest('.ProseMirror')) elementMenu(e, { id: b.id, key: id }, 'text') }}
-                  style={{ left: p.x, top: p.y, zIndex: zOf(p, id), width: auto ? undefined : p.w, maxWidth: auto ? Math.max(MIN_W, Math.min(measure, canvasW / zoom - p.x - 48)) : undefined,
+                  className={'el el-text' + (focused === id ? ' focused' : '') + (p.pinned ? ' pinned' : ' flowed') + (quoted.has(id) ? ' el-quercus k-' + quoted.kind : '') + (folded ? ' collapsed' : '')}
+                  onContextMenu={e => { if (!e.target.closest('.ProseMirror')) elementMenu(e, { id: b.id, key: id, hidden: folded, title: el.title, md: b.md }, 'text') }}
+                  style={{ left: p.x, top: p.y, zIndex: zOf(p, id), width: auto || folded ? undefined : p.w, maxWidth: auto && !folded ? autoWidth({ doc, x: p.x, viewW: canvasW }) : undefined,
                     visibility: sizes.has(id) ? 'visible' : 'hidden', fontFamily: el.style?.font || undefined, fontSize: el.style?.size ? el.style.size + 'px' : undefined, color: el.style?.color || undefined }}>
                   {grip(id, () => removeBlock(id))}
-                  <TextBlock id={id} md={b.md} focused={focused === id} focusPoint={focusPoint} extensions={extensions} renderer={renderer}
-                    onChange={md => setBlockMd(id, md)} onFocus={focusBlock} onBlur={() => blurBlock(id)} onEditor={setEditor} onOpenTitle={onOpenTitle} onUpload={f => api.upload(page.path, f)} onDelete={() => removeBlock(id)} />
-                  {handle(id, 'e')}
+                  {folded ? <HiddenCard el={el} kind="text" onShow={() => patchElement(b.id, { hidden: false }, true)} />
+                    : <TextBlock id={id} md={b.md} focused={focused === id} focusPoint={focusPoint} extensions={extensions} renderer={renderer}
+                      onChange={md => setBlockMd(id, md)} onFocus={focusBlock} onBlur={() => blurBlock(id)} onEditor={setEditor} onOpenTitle={onOpenTitle} onUpload={f => api.upload(page.path, f)} onDelete={() => removeBlock(id)} />}
+                  {!folded && handle(id, 'e')}
                 </div>
               )
             })}
@@ -1083,7 +1163,7 @@ const Canvas = forwardRef(function Canvas({ page, external, onStatus, onOpenTitl
                 </div>
               )
             })}
-            <InkSvg elements={layout.elements} pos={pos} live={live} extent={extent} colorMap={colorMap} />
+            <InkSvg elements={layout.elements} pos={pos} extent={extent} colorMap={colorMap} liveRef={livePath} />
             {located && <div className="locate-box" style={{ left: located.x - 6, top: located.y - 6, width: located.w + 12, height: located.h + 12 }} />}
             {inkText && (() => {
               const el = layout.elements.find(e => e.id === inkText.id && e.type === 'ink'), f = el && inkFrame(el), b = el && f && penBox(el, f)
@@ -1098,6 +1178,7 @@ const Canvas = forwardRef(function Canvas({ page, external, onStatus, onOpenTitl
               <div className="clip-ask" style={{ left: clipped.rect.x, top: Math.max(0, clipped.rect.y - 46), transform: `scale(${1 / zoom})`, transformOrigin: '0 100%' }} onPointerDown={e => e.stopPropagation()}>
                 <button onClick={() => placeClip(clipped)}><Icon.image width="13" height="13" />Put it on the page</button>
                 {ED.ask && <button onClick={() => askClip(clipped)}><Icon.ask width="13" height="13" />Ask Claude about it</button>}
+                {ED.ask && FULL_CLIP && <button onClick={() => checkClip(clipped)} title="The exercise and your answer in one selection: a verdict, a mark out of 10 and the full correction"><Icon.checkSquare width="13" height="13" />Check my work</button>}
                 <button className="clip-ask-x" title="Never mind" onClick={() => { URL.revokeObjectURL(clipped.url); setClipped(null) }}><Icon.x width="12" height="12" /></button>
               </div>
             </>)}
@@ -1120,7 +1201,7 @@ const Canvas = forwardRef(function Canvas({ page, external, onStatus, onOpenTitl
                 </div>
               </>
             )}
-            {tool.mode === 'eraser' && eraserPos && <div className="eraser-cursor" style={{ left: eraserPos.x - tool.eraserSize, top: eraserPos.y - tool.eraserSize, width: tool.eraserSize * 2, height: tool.eraserSize * 2 }} />}
+            {tool.mode === 'eraser' && <div className="eraser-cursor" ref={eraserRing} style={{ display: 'none', width: tool.eraserSize * 2, height: tool.eraserSize * 2 }} />}
             {focused && editor && focusedPos && !drawing && (
               <Toolbar editor={editor} blockStyle={focusedEl?.style} onBlockStyle={setBlockStyle}
                 style={{ left: Math.max(4, Math.min(focusedPos.x, canvasW / zoom - 760)), top: focusedPos.y > 56 ? focusedPos.y - 48 : focusedPos.y + (sizes.get(focused)?.h || 0) + 8, transform: `scale(${1 / zoom})`, transformOrigin: '0 0' }} />
@@ -1129,7 +1210,7 @@ const Canvas = forwardRef(function Canvas({ page, external, onStatus, onOpenTitl
           </div>
         </div>
       </div>
-      <Tools tool={tool} setTool={setTool} zoom={zoom} setZoom={setZoom} canUndo={hist.current.undo.length > 0} canRedo={hist.current.redo.length > 0} onUndo={undo} onRedo={redo} penInfo={penInfo}
+      <Tools tool={tool} setTool={setTool} zoom={zoom} setZoom={setZoom} canUndo={hist.current.undo.length > 0} canRedo={hist.current.redo.length > 0} onUndo={undo} onRedo={redo} penStore={penStore}
         doc={doc} setDoc={setDoc} dictation={{ on: dictating, supported: dictationSupported, error: dictError, state: dictState, toggle: toggleDictation }} />
     </div>
   )

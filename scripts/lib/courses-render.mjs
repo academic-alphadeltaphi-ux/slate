@@ -9,8 +9,8 @@ export const TEMPLATE = path.join(REPO, 'scripts', 'lib', 'terms.template.mjs')
 export const MARK = '// Rendered by scripts/courses.mjs from'
 export const DEFAULT_CALENDAR = {
   fall: { name: 'Fall 2026', start: '2026-09-07', end: '2026-12-07', reading: ['2026-10-26'] },
-  winter: { name: 'Winter 2027', start: '2027-01-04', end: '2027-04-05', reading: ['2027-02-15'] },
-  noClass: ['2026-09-07', '2026-10-12', '2027-03-26'],
+  winter: { name: 'Winter 2027', start: '2027-01-11', end: '2027-04-05', reading: ['2027-02-15'] },
+  noClass: ['2026-09-07', '2026-10-12', '2026-12-08', '2026-12-09', '2026-12-10', '2026-12-11', '2027-03-26'],
 }
 
 class Raw { constructor(s) { this.s = s } }

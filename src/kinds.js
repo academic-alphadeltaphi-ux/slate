@@ -6,6 +6,7 @@ export const KINDS = [
   { key: 'reading', icon: 'bookOpen', label: 'Reading' },
   { key: 'syllabus', icon: 'clipboard', label: 'Syllabus' },
   { key: 'problem-set', icon: 'pencil', label: 'Problem set' },
+  { key: 'problem', icon: 'checkSquare', label: 'Problem' },   // one question's own page (SPEC §20.73)
   { key: 'exam', icon: 'checklist', label: 'Exam' },
   { key: 'summary', icon: 'bookmark', label: 'Summary' },
   { key: 'notes', icon: 'notes', label: 'Notes' },
